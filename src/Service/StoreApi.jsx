@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-// const Base_Url = "http://13.201.136.34:8000/Store/";
+// const Base_Url = "http://3.7.91.234:8000/Store/";
 const Base_Url = "api/Store/"; 
   
 // Purchase gernal grn
@@ -307,5 +307,51 @@ export const SaveNewGateInward = async (data) => {
   } catch (error) {
     console.error("Error submitting MRN entry:", error);
     return null;
+  }
+};
+
+
+// GET: Fetch GRN Details
+export const getGrnDetails = async () => {
+  try {
+    const response = await axios.get(`${Base_Url}api/grn-details/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching GRN details:", error);
+    throw error;
+  }
+};
+
+
+// Get Next GRN No based on year
+export const getNextGrnNo = async (year) => {
+  try {
+    const res = await axios.get(`${Base_Url}GetNextGrnNo/?year=${year}`);
+    return res.data.next_GrnNo;
+  } catch (error) {
+    console.error("Error fetching next GRN No:", error);
+    throw error;
+  }
+};
+
+
+
+export const getGeneralDetails = async () => {
+  try {
+    const res = await axios.get(`${Base_Url}general-details/`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching general details:", error);
+    throw error;
+  }
+};
+
+export const postPurchaseGRN = async (payload) => {
+  try {
+    const response = await axios.post(`${Base_Url}api/PurchaseGRN/`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error posting GRN data:", error);
+    throw error;
   }
 };

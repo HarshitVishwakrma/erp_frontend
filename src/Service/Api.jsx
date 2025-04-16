@@ -3,7 +3,7 @@
 import axios from "axios";
 
 // Define base URLs
-// const BASE_URL = "http://13.201.136.34:8000/All_Masters/";
+// const BASE_URL = "http://3.7.91.234:8000/All_Masters/";
 const BASE_URL = "api/All_Masters/";
 const TAX_CODE_URL = `${BASE_URL}Tax_Code/`;
 const GST_MASTER_URL = `${BASE_URL}GST_Master/`;
@@ -11,7 +11,7 @@ const CUT_WISE_URL = `${BASE_URL}Cut_Wise/`;
 const UPLOAD_URL = `${BASE_URL}upload/`;
 
 // Home
-// const BASE_URL1 = "http://13.201.136.34:8000";
+// const BASE_URL1 = "http://3.7.91.234:8000";
 const BASE_URL1 = "api";
 export async function postRequest(endpoint, data) {
   try {

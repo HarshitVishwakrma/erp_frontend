@@ -3,14 +3,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
-import CachedIcon from "@mui/icons-material/Cached";
 import { Link } from "react-router-dom";
 import "./PurchaseGrn.css";
 import { FaTrash } from "react-icons/fa";
-import { postGrnDetails } from "../../Service/StoreApi.jsx";
 import { toast , ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { getNextGrnNo ,getGeneralDetails ,postPurchaseGRN} from "../../Service/StoreApi.jsx";
 
 
 const PurchaseGrn = () => {
@@ -28,103 +26,146 @@ const PurchaseGrn = () => {
     }
   }, [sideNavOpen]);
 
-  const [isCardVisible, setIsCardVisible] = useState(false);
 
-  // Function to toggle card visibility
-  const handleButtonClick = () => {
-    setIsCardVisible(!isCardVisible);
+  useEffect(() => {
+    const year = new Date().getFullYear(); // e.g., 2025
+    const shortYear = `${String(year).slice(2)}${String(year + 1).slice(2)}`; // "2425"
+    localStorage.setItem("Shortyear", shortYear);
+  }, []);
+  
+  const [grnNo, setGrnNo] = useState('');
+
+
+  const handleSeriesChange = async (e) => {
+    const selectedSeries = e.target.value;
+  
+    setFormData((prevData) => ({
+      ...prevData,
+      Series: selectedSeries,
+    }));
+  
+    if (selectedSeries === "Purchase GRN") {
+      const shortYear = localStorage.getItem("Shortyear"); // example: "2425"
+      if (shortYear) {
+        try {
+          const nextGrnNo = await getNextGrnNo(shortYear);
+          if (nextGrnNo) {
+            setGrnNo(nextGrnNo); // Show in readonly input
+            setFormData((prevData) => ({
+              ...prevData,
+              GrnNo: nextGrnNo,
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching next GRN number:", error);
+        }
+      }
+    } else {
+      // Reset GRN No if a different series is selected
+      setGrnNo("");
+      setFormData((prevData) => ({
+        ...prevData,
+        GrnNo: "",
+      }));
+    }
   };
-  const handleClose = () => {
-    setIsCardVisible(false);
-  };
+  
+  
+  
 
 
 
-
-
-  // Gernal Details
+  const [geList, setGeList] = useState([]);
   const [formData, setFormData] = useState({
-    GrnNo: '',
-    GrnDate: '',
-    GrnTime: '',
+    GrnNo:"",
+    Series:"",
+    GE_No: '',
+    Supp_Cust: '',
+    Select: '',
     ChallanNo: '',
-    ChallanDate: '',
     InvoiceNo: '',
-    InvoiceDate: '',
     EWayBillNo: '',
-    EWayBillDate: '',
     VehicleNo: '',
-    LrNo: '',
-    Transporter: '',
-    PreparedBy: '',
-    CheckedBy: '',
-    TcNo: '',
-    TcDate: '',
-    Remark: '',
-    PaymentTermDay: ''
+    Transporter: ''
   });
- 
-  const [errors, setErrors] = useState({});
-  // const [dataList, setDataList] = useState([]);
+
+  useEffect(() => {
+    getGeneralDetails()
+      .then(data => setGeList(data))
+      .catch(err => console.error('Error loading GE list:', err));
+  }, []);
+
+  const handleGEChange = (e) => {
+    const selectedGE = e.target.value;
+    const selectedData = geList.find(item => item.GE_No === selectedGE);
+
+    if (selectedData) {
+      setFormData({
+        ...formData,
+        GE_No: selectedData.GE_No,
+        Supp_Cust: selectedData.Supp_Cust,
+        Select: selectedData.Select,
+        ChallanNo: selectedData.ChallanNo,
+        InvoiceNo: selectedData.InVoiceNo,
+        EWayBillNo: selectedData.EWayBillNo,
+        VehicleNo: selectedData.VehicleNo,
+        Transporter: selectedData.Transporter
+      });
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    for (const key in formData) {
-      if (!formData[key]) {
-        newErrors[key] = `${key.replace(/([A-Z])/g, ' $1')} is required`;
-      }
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-
+  const handleSubmit = async () => {
+    const payload = {
+      NewGrnList: [/* map from form or static */],
+      GrnGst: [/* map from form or static */],
+      GrnGstTDC: [/* map from form or static */],
+      RefTC: [/* map from form or static */],
+      Plant: "Produlink",
+      Series: "Series Name",
+      GateEntryNo: formData.GE_No,
+      SelectSupplier: formData.Supp_Cust,
+      SelectPO: formData.Select,
+      AddChallanGrnQty: false,
+      SelectItem: "Item XYZ",
+      ItemDropdown: "Dropdown Option 1",
+      HeatNo: "HN123456",
+      GrnNo: formData.GrnNo,
+      GrnDate: "2025-04-02",
+      GrnTime: "12:30:00",
+      ChallanNo: formData.ChallanNo,
+      ChallanDate: "2025-04-01",
+      InvoiceNo: formData.InvoiceNo,
+      InvoiceDate: "2025-04-01",
+      EWayBillNo: formData.EWayBillNo,
+      EWayBillDate: "2025-04-02",
+      VehicleNo: formData.VehicleNo,
+      LrNo: "LR98765",
+      Transporter: formData.Transporter,
+      PreparedBy: "John Doe",
+      CheckedBy: "Jane Smith",
+      TcNo: "TC123456",
+      TcDate: "2025-04-01",
+      QcCheck: false,
+      Delivery: false,
+      Remark: "Some remarks here",
+      PaymentTermDay: "30"
+    };
+  
     try {
-      await postGrnDetails(formData);
-      toast.success('Data saved successfully');
-     
-      setFormData({
-        GrnNo: '',
-        GrnDate: '',
-        GrnTime: '',
-        ChallanNo: '',
-        ChallanDate: '',
-        InvoiceNo: '',
-        InvoiceDate: '',
-        EWayBillNo: '',
-        EWayBillDate: '',
-        VehicleNo: '',
-        LrNo: '',
-        Transporter: '',
-        PreparedBy: '',
-        CheckedBy: '',
-        TcNo: '',
-        TcDate: '',
-        Remark: '',
-        PaymentTermDay: ''
-      });
-      setErrors({}); // Clear errors on successful submission
-    } catch (error) {
-      const errorMessage = JSON.parse(error.message);
-      for (const key in errorMessage) {
-        toast.error(errorMessage[key][0]);
-      }
-      toast.error('Error saving data');
+      const result = await postPurchaseGRN(payload);
+      console.log('result',result);
+      
+      toast("GRN submitted successfully!");
+      console.log("Server Response:", result);
+    } catch (err) {
+      toast("Error submitting GRN.");
     }
   };
-
 
 
   return (
@@ -154,32 +195,37 @@ const PurchaseGrn = () => {
                           </select>
                         </div>
 
-                        {/* Label: Series and Series Select Option */}
-                        <div className="col-md-1">
-                          <label htmlFor="seriesSelect" className="form-label">
-                            Series:
-                          </label>
-                        </div>
-                        <div className="col-md-2">
-                          <select id="seriesSelect" className="form-select">
-                            <option selected>Select</option>
-                            <option value="Purchase GRN">Purchase GRN</option>
-                            <option value="s2">s2</option>
-                            <option value="s3">s3</option>
-                            <option value="s4">s4</option>
-                          </select>
-                        </div>
+                      
+                    {/* Label: Series and Series Select Option */}
+<div className="col-md-1">
+  <label htmlFor="seriesSelect" className="form-label">
+    Series:
+  </label>
+</div>
+<div className="col-md-2">
+  <select id="seriesSelect" className="form-select" onChange={handleSeriesChange}>
+    <option value="">Select</option>
+    <option value="Purchase GRN">Purchase GRN</option>
+    <option value="s2">s2</option>
+    <option value="s3">s3</option>
+    <option value="s4">s4</option>
+  </select>
+</div>
 
-                       
-                        {/* Input Field */}
-                        <div className="col-md-2">
-                          <input
-                            type="text"
-                            id="inputField"
-                            className="form-control"
-                            placeholder="Enter value"
-                          />
-                        </div>
+{/* GRN Number Input - readonly */}
+<div className="col-md-2">
+  <input
+    type="text"
+    id="inputField"
+    className="form-control"
+    placeholder="Enter value"
+    value={grnNo}
+    readOnly
+  />
+</div>
+
+
+
                         <div className="col-md-2 d-flex align-items-center">
                           <input type="checkbox" id="poGrnCheckbox" />
                           <label htmlFor="poGrnCheckbox" className="ms-1">
@@ -208,23 +254,16 @@ const PurchaseGrn = () => {
                         <div className="row">
                           <div className="col-md-4">Gate Entry No:</div>
                           <div className="col-md-6">
-                            <select id="routingSelect" className="form-select">
-                              <option selected>Select</option>
-                              <option value="">
-                                GE242503626|Supplier/Vendor : SANKET ENGINEERING
-                              </option>
-                              <option value="">
-                                GE242504231|Supplier/Vendor : SHRIPAD STEELS
-                              </option>
-                              <option value="">
-                                GE242503626|Supplier/Vendor : SHREE CHITAMANI
-                                HEAT TREATERS
-                              </option>
-                            </select>
+                          <select className="form-select" onChange={handleGEChange}>
+            <option value="">Select GE No</option>
+            {geList.map((item, idx) => (
+              <option key={idx} value={item.GE_No}>
+                {item.GE_No} - {item.Supp_Cust}
+              </option>
+            ))}
+          </select>
                           </div>
-                          <div className="col-md-2">
-                            <CachedIcon />
-                          </div>
+                         
                         </div>
                       </div>
                     </div>
@@ -233,31 +272,19 @@ const PurchaseGrn = () => {
                         <div className="row">
                           <div className="col-md-4">Select Supplier:</div>
                           <div className="col-md-6">
-                            <input className="form-control" />
+                          <input className="form-control" value={formData.Supp_Cust} readOnly />
                           </div>
-                          <div className="col-md-2">
-                            <button type="button" className="pobtn">
-                              Search
-                            </button>
-                          </div>
+                          
                         </div>
                       </div>
                       <div className="col-md-6">
                         <div className="row text-start">
                           <div className="col-md-4">Select Po:</div>
                           <div className="col-md-3">
-                            <select id="routingSelect" className="form-select">
-                              <option selected>Select</option>
-                              <option value="">
-                                242503626| SANKET ENGINEERING
-                              </option>
-                              <option value="">
-                                242504231| SHRIPAD STEELS
-                              </option>
-                              <option value="">
-                                242503626| SHREE CHITAMANI HEAT TREATERS
-                              </option>
-                            </select>
+                          <select id="routingSelect" className="form-select" value={formData.Select} readOnly>
+            <option value="">Select</option>
+            {formData.Select && <option>{formData.Select}</option>}
+          </select>
                           </div>
                           <div className="col-md-3">
                             <button type="button" className="btn">
@@ -286,7 +313,7 @@ const PurchaseGrn = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="col-md-6">
+                      {/* <div className="col-md-6">
                         <div className="row ">
                           <div className="col-md-8">
                             <button
@@ -298,7 +325,7 @@ const PurchaseGrn = () => {
                             </button>
                           </div>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 
@@ -519,7 +546,7 @@ const PurchaseGrn = () => {
                       >
                         <div className="StorePurchasegrn1 text-start">
                           <div className="container-fluid">
-                          <form onSubmit={handleSubmit}>
+                         
                             <div className="row">
                               <div className="col-md-4 text-start">
                                 <div className="container mt-4">
@@ -531,13 +558,13 @@ const PurchaseGrn = () => {
                                           <th className="col-md-4">GRN No:</th>
                                           <td>
                                           <input
-                            type="text"
-                            name="GrnNo"
-                            value={formData.GrnNo}
-                            onChange={handleChange}
-                            className="form-control"
-                          />
-                          {errors.GrnNo && <span className="text-danger">{errors.GrnNo}</span>}
+  type="text"
+  name="GrnNo"
+  value={grnNo}
+  onChange={handleChange} // optional if editable
+  className="form-control"
+/>
+                          
                                           </td>
                                         </tr>
                                         <tr>
@@ -550,7 +577,7 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.GrnDate && <span className="text-danger">{errors.GrnDate}</span>}
+                         
                                           </td>
                                         </tr>
                                         <tr>
@@ -563,20 +590,20 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.GrnTime && <span className="text-danger">{errors.GrnTime}</span>}
+                         
                                           </td>
                                         </tr>
                                         <tr>
                                           <th>Challan No:</th>
                                           <td>
                                           <input
-                            type="text"
-                            name="ChallanNo"
-                            value={formData.ChallanNo}
-                            onChange={handleChange}
-                            className="form-control"
-                          />
-                          {errors.ChallanNo && <span className="text-danger">{errors.ChallanNo}</span>}
+                type="text"
+                name="ChallanNo"
+                value={formData.ChallanNo}
+                onChange={handleChange}
+                className="form-control"
+              />
+                        
                                           </td>
                                         </tr>
                                         <tr>
@@ -589,20 +616,20 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.ChallanDate && <span className="text-danger">{errors.ChallanDate}</span>}
+                        
                                           </td>
                                         </tr>
                                         <tr>
                                           <th>Invoice No:</th>
                                           <td>
                                           <input
-                            type="text"
-                            name="InvoiceNo"
-                            value={formData.InvoiceNo}
-                            onChange={handleChange}
-                            className="form-control"
-                          />
-                          {errors.InvoiceNo && <span className="text-danger">{errors.InvoiceNo}</span>}
+                type="text"
+                name="InvoiceNo"
+                value={formData.InvoiceNo}
+                onChange={handleChange}
+                className="form-control"
+              />
+                          
                                           </td>
                                         </tr>
                                         <tr>
@@ -617,7 +644,7 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.InvoiceDate && <span className="text-danger">{errors.InvoiceDate}</span>}
+                         
                                           </td>
                                         </tr>
                                       </tbody>
@@ -635,13 +662,12 @@ const PurchaseGrn = () => {
                                           <th>E Way Bill No:</th>
                                           <td>
                                           <input
-                            type="text"
-                            name="EWayBillNo"
-                            value={formData.EWayBillNo}
-                            onChange={handleChange}
-                            className="form-control"
-                          />
-                          {errors.EWayBillNo && <span className="text-danger">{errors.EWayBillNo}</span>}
+                type="text"
+                name="EWayBillNo"
+                value={formData.EWayBillNo}
+                onChange={handleChange}
+                className="form-control"
+              />
                         </td>
                                         </tr>
                                         <tr>
@@ -654,20 +680,20 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.EWayBillDate && <span className="text-danger">{errors.EWayBillDate}</span>}
+                      
                         </td>
                                         </tr>
                                         <tr>
                                           <th>Vehical No:</th>
                                           <td>
                                           <input
-                            type="text"
-                            name="VehicleNo"
-                            value={formData.VehicleNo}
-                            onChange={handleChange}
-                            className="form-control"
-                          />
-                          {errors.VehicleNo && <span className="text-danger">{errors.VehicleNo}</span>}
+                type="text"
+                name="VehicleNo"
+                value={formData.VehicleNo}
+                onChange={handleChange}
+                className="form-control"
+              />
+                          
                         </td>
                                         </tr>
                                         <tr>
@@ -680,20 +706,20 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.LrNo && <span className="text-danger">{errors.LrNo}</span>}
+                         
                         </td>
                                         </tr>
                                         <tr>
                                           <th>Transporter:</th>
                                           <td>
                                           <input
-                            type="text"
-                            name="Transporter"
-                            value={formData.Transporter}
-                            onChange={handleChange}
-                            className="form-control"
-                          />
-                          {errors.Transporter && <span className="text-danger">{errors.Transporter}</span>}
+                type="text"
+                name="Transporter"
+                value={formData.Transporter}
+                onChange={handleChange}
+                className="form-control"
+              />
+                          
                         </td>
                                         </tr>
                                         <tr>
@@ -706,7 +732,7 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.PreparedBy && <span className="text-danger">{errors.PreparedBy}</span>}
+                         
                         </td>
                                         </tr>
                                         <tr>
@@ -719,7 +745,7 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.CheckedBy && <span className="text-danger">{errors.CheckedBy}</span>}
+                         
                         </td>
                                         </tr>
                                       </tbody>
@@ -743,7 +769,7 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.TcNo && <span className="text-danger">{errors.TcNo}</span>}
+                         
                         </td>
                                         </tr>
                                         <tr>
@@ -756,7 +782,7 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.TcDate && <span className="text-danger">{errors.TcDate}</span>}
+                         
                         </td>
                                         </tr>
                                         <tr>
@@ -828,7 +854,7 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           ></textarea>
-                          {errors.Remark && <span className="text-danger">{errors.Remark}</span>}
+                        
                         </td>
                                         </tr>
                                         <tr>
@@ -841,27 +867,17 @@ const PurchaseGrn = () => {
                             onChange={handleChange}
                             className="form-control"
                           />
-                          {errors.PaymentTermDay && <span className="text-danger">{errors.PaymentTermDay}</span>}
                         </td>
                                         </tr>
 
-                                        <tr>
-                                          <td
-                                            colspan="2"
-                                            className="text-center"
-                                          >
-                                            <button type="submit" className="btn">
-                                              Save GRN
-                                            </button>
-                                          </td>
-                                        </tr>
+                                       
                                       </tbody>
                                     </table>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                            </form>
+                           
                           </div>
                         </div>
                       </div>
@@ -1112,11 +1128,23 @@ const PurchaseGrn = () => {
                         </div>
                       </div>
                     </div>
+
+                    <div className="row text-end">
+                      <div className="col-md-2">
+                      <button className="btn btn-primary" onClick={handleSubmit}>
+  Submit GRN
+</button>
+                      </div>
+                    </div>
                   </div>
-              
+                  
+                                         
+                                        
+
+                                       
               </main>
              
-              {isCardVisible && (
+              {/* {isCardVisible && (
                 <div className="storenewmrn-overlay">
                   <div className="costtype2-overlay">
                     <div className="new-card">
@@ -1144,7 +1172,7 @@ const PurchaseGrn = () => {
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>
