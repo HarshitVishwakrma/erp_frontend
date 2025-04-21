@@ -81,7 +81,7 @@ const PurchaseGrn = () => {
     Series:"",
     GE_No: '',
     Supp_Cust: '',
-    Select: '',
+    Select: "",
     ChallanNo: '',
     InvoiceNo: '',
     EWayBillNo: '',
@@ -167,6 +167,7 @@ const PurchaseGrn = () => {
     }
   };
 
+  
 
   return (
     <div className="NewStorePurchasegrn">

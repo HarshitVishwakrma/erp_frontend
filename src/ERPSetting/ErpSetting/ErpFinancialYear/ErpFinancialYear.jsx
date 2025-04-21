@@ -33,6 +33,8 @@ const ErpFinancialYear = () => {
     ShortName: "",
   });
 
+  const [errors, setErrors] = useState({});
+
 
    // Fetch financial years on component mount
    useEffect(() => {
@@ -50,6 +52,27 @@ const ErpFinancialYear = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // Validation for ShortName
+  if (name === "ShortName") {
+    const shortNameRegex = /^\d{4}-\d{4}$/;
+    if (!shortNameRegex.test(value)) {
+      setErrors((prev) => ({
+        ...prev,
+        ShortName: "Format must be YYYY-YYYY"
+      }));
+    } else {
+      // Optional: Validate difference
+      const [start, end] = value.split("-").map(Number);
+      if (end !== start + 1) {
+        setErrors((prev) => ({
+          ...prev,
+          ShortName: "End year must be one more than start year"
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, ShortName: "" }));
+      }
+    }
+  }
     setFormData({ ...formData, [name]: value });
   };
 
@@ -177,15 +200,20 @@ const ErpFinancialYear = () => {
               />
             </div>
             <div className="form-group">
-              <label>Short Name</label>
-              <input
-                type="text"
-                name="ShortName"
-                value={formData.ShortName}
-                onChange={handleInputChange}
-                className="form-control"
-              />
-            </div>
+  <label>Short Name</label>
+  <input
+    type="text"
+    name="ShortName"
+    value={formData.ShortName}
+    onChange={handleInputChange}
+    className={`form-control ${errors.ShortName ? "is-invalid" : ""}`}
+    placeholder="e.g. 2024-2025"
+  />
+  {errors.ShortName && (
+    <div className="invalid-feedback">{errors.ShortName}</div>
+  )}
+</div>
+
             <div className="modal-actions mt-3">
               <button
                 type="button"
