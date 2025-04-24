@@ -35,6 +35,16 @@ const GrnList = () => {
       });
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10;
+
+const indexOfLastItem = currentPage * itemsPerPage;
+const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+const currentItems = grnData.slice(indexOfFirstItem, indexOfLastItem);
+
+const totalPages = Math.ceil(grnData.length / itemsPerPage);
+
+
 
   return (
     <div className="JobworkListMaster">
@@ -188,9 +198,9 @@ const GrnList = () => {
                     </thead>
                     <tbody>
                       {/* Example data row */}
-                      {grnData.map((item, index) => (
-          <tr key={item.id}>
-            <td>{index + 1}</td>
+                      {currentItems.map((item, index) => (
+    <tr key={item.id}>
+         <td>{indexOfFirstItem + index + 1}</td>
             <td>{new Date(item.GrnDate).getFullYear()}</td>
             <td>{item.Plant}</td>
             <td>{item.GrnNo}</td>
@@ -227,6 +237,26 @@ const GrnList = () => {
                   </table>
                 </div>
               </div>
+              <div className="d-flex justify-content-between align-items-center mt-3">
+  <span>Page {currentPage} of {totalPages}</span>
+  <div>
+    <button
+      className="btn btn-outline-primary mx-1"
+      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+      disabled={currentPage === 1}
+    >
+      Prev
+    </button>
+    <button
+      className="btn btn-outline-primary mx-1"
+      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+      disabled={currentPage === totalPages}
+    >
+      Next
+    </button>
+  </div>
+</div>
+
             </main>
           </div>
         </div>

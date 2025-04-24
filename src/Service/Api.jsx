@@ -10,7 +10,10 @@ const GST_MASTER_URL = `${BASE_URL}GST_Master/`;
 const CUT_WISE_URL = `${BASE_URL}Cut_Wise/`;
 const UPLOAD_URL = `${BASE_URL}upload/`;
 
+
 // Home
+
+
 // const BASE_URL1 = "http://3.7.91.234:8000";
 const BASE_URL1 = "api";
 export async function postRequest(endpoint, data) {
@@ -74,6 +77,7 @@ export const deleteGstMasterRecord = async (id) => {
     throw new Error("Error deleting GST Master record");
   }
 };
+
 
 // Tax Code Master
 export const getTaxCodes = async () => {

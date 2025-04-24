@@ -4,6 +4,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./PurchaseOderList.css"
+import { Link } from "react-router-dom";
 const PurchseOderList = () => {
     const [sideNavOpen, setSideNavOpen] = useState(false);
 
@@ -44,7 +45,7 @@ const PurchseOderList = () => {
                      
                         <button className="btn">AMC Purchase Order List</button>
                     
-                        <button className="btn">Purchase Order - Query</button>
+                        <Link  to="/Purchase-Order-Summary" className="btn">Purchase Order - Query</Link>
                   
                       </div>
                     </div>

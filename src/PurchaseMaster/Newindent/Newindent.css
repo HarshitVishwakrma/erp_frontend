@@ -21,7 +21,7 @@
 
 .newindent2 .form-group {
   flex: 1;
-  min-width: 50px;
+  min-width: 10px;
 }
 
 .newindent2 .form-group label {
@@ -58,7 +58,8 @@
 
 .newindenttable {
   background-color: #f8f9fa;
-  padding: 20px;
+ 
+
   margin-top: 20px;
 }
 

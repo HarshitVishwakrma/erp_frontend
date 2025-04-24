@@ -501,7 +501,7 @@ export const getUnitCode = async () => {
 
 
 // Function to fetch item details by ID
-export const fetchItemDetails = async (id) => {
+export const    fetchItemDetails = async (id) => {
   try {
     console.log(`Fetching details for ID: ${id}`);
     const response = await axios.get(`${BASE_URL}get-item-details/${id}/`);

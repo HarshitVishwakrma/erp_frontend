@@ -335,7 +335,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     Master Report
                   </Dropdown.Item>
                 )}
-                {permissions.All_Masters.includes("Customer State") && (
+                {/* {permissions.All_Masters.includes("Customer State") && (
                   <Dropdown.Item as={Link} to="/customer-state">
                     Customer State
                   </Dropdown.Item>
@@ -349,7 +349,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   <Dropdown.Item as={Link} to="/master-state">
                     Master State
                   </Dropdown.Item>
-                )}
+                )} */}
               </Dropdown.Menu>
             </li>
           )}

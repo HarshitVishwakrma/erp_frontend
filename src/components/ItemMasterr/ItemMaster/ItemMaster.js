@@ -136,17 +136,17 @@ const ItemMaster = () => {
 
                   <div className="search-row mt-5">
                     <div className="row align-items-center">
-                      <div className="col-md-1">
+                      {/* <div className="col-md-1">
                         <input
                           type="checkbox"
                           className="form-check-input"
                           id="itemCheckbox"
                         />
-                      </div>
-                      <div className="col-md-2" style={{ marginLeft: "-90px" }}>
+                      </div> */}
+                      <div className="col-md-1" >
                         <label htmlFor="itemSearch">Item Search</label>
                       </div>
-                      <div className="col-md-2" style={{ marginLeft: "-20px" }}>
+                      <div className="col-md-2">
                         <input
                          type="text"
                          className="form-control"

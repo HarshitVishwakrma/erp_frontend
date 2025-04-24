@@ -399,7 +399,7 @@ const [searchResults, setSearchResults] = useState([]);
                               onChange={handleSeriesChange} // ✅ Fix: Add onChange event
                             >
                               <option value="">Select</option>
-                              <option value="Purchase GRN">Purchase GRN</option>
+                              <option value="MRN">MRN</option>
                             </select>
                           </div>
 
@@ -644,7 +644,7 @@ const [searchResults, setSearchResults] = useState([]);
                                     <td>{index + 1}</td>
                                     <td>{item.ItemCode}</td>
                                     <td>{item.Description}</td>
-                                    <td>{item.Unit}</td>
+                                    <td>{item.QtyUnit}</td>
                                     <td>{item.Qty_1}</td>
                                     <td>{item.Type}</td>
                                     <td>{item.Machine}</td>

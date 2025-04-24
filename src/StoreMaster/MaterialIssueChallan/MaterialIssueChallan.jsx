@@ -1,137 +1,265 @@
-import React, { useState, useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min";
-import NavBar from "../../NavBar/NavBar.js";
-import SideNav from "../../SideNav/SideNav.js";
-import { Link } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import "react-toastify/dist/ReactToastify.css";
-import "./MaterialIssueChallan.css";
-import {
-  getMaterials,
-  addMaterial,
-  updateMaterial,
-  deleteMaterial,
-} from "../../Service/StoreApi.jsx";
-import { toast, ToastContainer } from "react-toastify";
+"use client"
+
+import { useState, useEffect } from "react"
+import "bootstrap/dist/css/bootstrap.min.css"
+import "bootstrap/dist/js/bootstrap.bundle.min"
+import NavBar from "../../NavBar/NavBar.js"
+import SideNav from "../../SideNav/SideNav.js"
+import { Link } from "react-router-dom"
+import { FaEdit, FaTrash } from "react-icons/fa"
+import "react-toastify/dist/ReactToastify.css"
+import "./MaterialIssueChallan.css"
+import { getNextChallanNo, postNewMaterialIssue, searchEmployeeDept } from "../../Service/StoreApi.jsx"
+import { fetchUnitMachines } from "../../Service/Production.jsx"
+
+import { toast, ToastContainer } from "react-toastify"
+
 const MaterialIssueChallan = () => {
-  const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [sideNavOpen, setSideNavOpen] = useState(false)
 
   const toggleSideNav = () => {
-    setSideNavOpen((prevState) => !prevState);
-  };
+    setSideNavOpen((prevState) => !prevState)
+  }
 
   useEffect(() => {
     if (sideNavOpen) {
-      document.body.classList.add("side-nav-open");
+      document.body.classList.add("side-nav-open")
     } else {
-      document.body.classList.remove("side-nav-open");
+      document.body.classList.remove("side-nav-open")
     }
-  }, [sideNavOpen]);
+  }, [sideNavOpen])
 
-  // Model
-  const [showModal, setShowModal] = useState(false);
-  const [showModal1, setShowModal1] = useState(false);
-  const [showModal2, setShowModal2] = useState(false);
+  const [series, setSeries] = useState("")
+  const [challanNo, setChallanNo] = useState("")
 
-  const handleModalClose = () => setShowModal(false);
-  const handleModalOpen = () => setShowModal(true);
+  const shortYear = localStorage.getItem("Shortyear")
 
-  const handleModalClose1 = () => setShowModal1(false);
-  const handleModalOpen1 = () => setShowModal1(true);
+  const handleSeriesChange = async (e) => {
+    const selectedSeries = e.target.value
+    setSeries(selectedSeries)
+    setFormData({ ...formData, Series: selectedSeries })
 
-  const handleModalClose2 = () => setShowModal2(false);
-  const handleModalOpen2 = () => setShowModal2(true);
+    if (selectedSeries === "Material Issue" && shortYear) {
+      try {
+        const challan = await getNextChallanNo(shortYear)
+        setChallanNo(challan)
+        setFormData((prev) => ({ ...prev, ChallanNo: challan }))
+      } catch (error) {
+        console.error("Error fetching challan number:", error)
+      }
+    } else {
+      setChallanNo("")
+      setFormData((prev) => ({ ...prev, ChallanNo: "" }))
+    }
+  }
 
-  //
-  const [materials, setMaterials] = useState([]);
+  const [plant, setPlant] = useState("")
+  const [type, setType] = useState("")
+
   const [formData, setFormData] = useState({
+    MaterialChallanTable: [],
+    Plant: "",
+    ChallanNo: "",
+    Series: "",
+    Type: "",
     Item: "",
     ItemDescription: "",
-    AvailableStock: "",
+    Available: "",
+    Stock: "",
     Machine: "",
     StoreName: "",
     Qty: "",
-    Unit: "Pcs",
+    Unit: "",
     Remark: "",
     MrnNo: "",
     Employee: "",
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [editId, setEditId] = useState(null);
+    Dept: "",
+    MaterialIssueDate: "", // format: "YYYY-MM-DD"
+    MaterialIssueTime: "", // format: "HH:mm AM/PM"
+    Contractor: "",
+  })
 
-  // Fetch the list of materials on component mount
-  useEffect(() => {
-    loadMaterials();
-  }, []);
+  const [materialChallanTable, setMaterialChallanTable] = useState([])
 
-  const loadMaterials = async () => {
-    const data = await getMaterials();
-    setMaterials(data);
-  };
-
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  // Handle form submission for adding/updating materials
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validation
-    if (
-      !formData.Item ||
-      !formData.Qty ||
-      !formData.Machine ||
-      !formData.MrnNo ||
-      !formData.Employee
-    ) {
-      toast.error("All fields are required!");
-      return;
+  const handleAddEntry = () => {
+    const newEntry = {
+      ItemDescription: formData.ItemDescription || "",
+      Stock: formData.AvailableStock || "",
+      Qty: formData.Qty || "",
+      Machine: searchTerm || "", // This will display 'M01 - Lathe Machine', for example
+      Remark: formData.Remark || "",
+      MrnNo: formData.MrnNo || "",
+      CoilNo: formData.CoilNo || "",
+      Employee: formData.Employee || "",
+      Dept: formData.Dept || "",
     }
 
-    if (isEditing) {
-      await updateMaterial(editId, formData);
-      toast.success("Material updated successfully!");
-      setIsEditing(false);
-      setEditId(null);
-    } else {
-      await addMaterial(formData);
-      toast.success("Material added successfully!");
-    }
+    console.log("Adding entry:", newEntry) // Add this to debug
 
+    setMaterialChallanTable([...materialChallanTable, newEntry])
+
+    // Reset form fields after adding
     setFormData({
-      Item: "",
+      ...formData,
       ItemDescription: "",
       AvailableStock: "",
+      Qty: "",
+      MrnNo: "",
+      Employee: "",
+      Dept: "",
+      NatureOfWork: "",
+      CoilNo: "",
+    })
+
+    setSearchTerm("") // Reset machine search
+  }
+
+  const handleDelete = (index) => {
+    const updatedTable = [...materialChallanTable]
+    updatedTable.splice(index, 1)
+    setMaterialChallanTable(updatedTable)
+  }
+
+  const handleEdit = (index) => {
+    const entry = materialChallanTable[index]
+    setFormData({
+      ...formData,
+      ItemDescription: entry.ItemDescription,
+      AvailableStock: entry.Stock,
+      Qty: entry.Qty,
+      Machine: entry.Machine,
+      NatureOfWork: entry.Remark,
+      MrnNo: entry.MrnNo,
+      CoilNo: entry.CoilNo,
+      Employee: entry.Employee,
+      Dept: entry.Dept,
+    })
+
+    // Remove from table for re-adding after edit
+    const updatedTable = [...materialChallanTable]
+    updatedTable.splice(index, 1)
+    setMaterialChallanTable(updatedTable)
+  }
+
+  // Add a new state to track form submission
+  const [isSubmitted, setIsSubmitted] = useState(false)
+
+  // Update the handleSave function to set isSubmitted to true after successful save
+  const handleSave = async () => {
+    const payload = {
+      ...formData,
+      MaterialChallanTable: materialChallanTable,
+      ChallanNo: challanNo,
+      Series: series,
+      Type: type,
+      Plant: plant,
+      MaterialIssueDate: formData.MaterialIssueDate || new Date().toISOString().split("T")[0],
+      MaterialIssueTime:
+        formData.MaterialIssueTime ||
+        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }),
+    }
+
+    console.log("Saving payload:", payload) // Add this to debug
+
+    try {
+      await postNewMaterialIssue(payload)
+      toast.success("Saved successfully!")
+      setIsSubmitted(true) // Set submitted to true after successful save
+      // Don't clear the form immediately so the user can see what was submitted
+      handleClear() // Clear the form after save
+    } catch (error) {
+      console.error("Error saving!", error)
+      toast.error("Error saving!")
+    }
+  }
+
+  const [searchResults, setSearchResults] = useState([])
+
+  const handleEmployeeChange = async (e) => {
+    const value = e.target.value
+    setFormData({ ...formData, Employee: value })
+
+    if (value.length >= 2) {
+      const results = await searchEmployeeDept(value)
+      setSearchResults(results)
+      setShowDropdown(true)
+    } else {
+      setSearchResults([])
+      setShowDropdown(false)
+    }
+  }
+
+  const handleSelectEmployee = (employee) => {
+    setFormData({
+      ...formData,
+      Employee: `${employee.Code} - ${employee.Name}`,
+      Dept: employee.Department || "", // Default to empty if null
+    })
+    setShowDropdown(false)
+  }
+
+  const [machines, setMachines] = useState([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filteredMachines, setFilteredMachines] = useState([])
+  const [showDropdown, setShowDropdown] = useState(false)
+
+  useEffect(() => {
+    const loadMachines = async () => {
+      const data = await fetchUnitMachines()
+      setMachines(data)
+    }
+    loadMachines()
+  }, [])
+
+  useEffect(() => {
+    if (searchTerm.length >= 1) {
+      const filtered = machines.filter((m) =>
+        `${m.WorkCenterCode} ${m.WorkCenterName}`.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+      setFilteredMachines(filtered)
+      setShowDropdown(true)
+    } else {
+      setFilteredMachines([])
+      setShowDropdown(false)
+    }
+  }, [searchTerm, machines])
+
+  const handleMachineSelect = (machine) => {
+    setFormData({ ...formData, Machine: `${machine.WorkCenterCode} - ${machine.WorkCenterName}` })
+    setSearchTerm(`${machine.WorkCenterCode} - ${machine.WorkCenterName}`)
+    setShowDropdown(false)
+  }
+
+  const handleClear = () => {
+    setFormData({
+      MaterialChallanTable: [],
+      Plant: "",
+      ChallanNo: "",
+      Series: "",
+      Type: "",
+      Item: "",
+      ItemDescription: "",
+      Available: "",
+      Stock: "",
       Machine: "",
       StoreName: "",
       Qty: "",
-      Unit: "Pcs",
+      Unit: "",
       Remark: "",
       MrnNo: "",
       Employee: "",
-    });
-    loadMaterials();
-  };
+      Dept: "",
+      MaterialIssueDate: "", // or optionally use new Date().toISOString().slice(0, 10)
+      MaterialIssueTime: "", // or optionally use new Date().toLocaleTimeString()
+      Contractor: "",
+    })
 
-  // Handle edit button click
-  const handleEdit = (material) => {
-    setFormData(material);
-    setIsEditing(true);
-    setEditId(material.id);
-  };
-
-  // Handle delete button click
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      await deleteMaterial(id);
-      toast.success("Material deleted successfully!");
-      loadMaterials();
-    }
-  };
+    setMaterialChallanTable([])
+    setSearchTerm("")
+    setSearchResults([])
+    setShowDropdown(false)
+    setIsSubmitted(false)
+  }
 
   return (
     <div className="NewStoreNewMaterialIssue">
@@ -141,218 +269,265 @@ const MaterialIssueChallan = () => {
           <div className="col-md-12">
             <div className="Main-NavBar">
               <NavBar toggleSideNav={toggleSideNav} />
-              <SideNav
-                sideNavOpen={sideNavOpen}
-                toggleSideNav={toggleSideNav}
-              />
+              <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="NewMaterialIssue-header mb-4 text-start mt-5">
-                    <div className="row align-items-center">
-                    <div className="col-md-2 col-sm-6">
-                      <h5 className="header-title text-start">
-                        New Material Issue
-                      </h5>
+                  <div className="row align-items-center">
+                    <div className="col-md-2">
+                      <h5 className="header-title text-start">New Material Issue</h5>
                     </div>
-                    <div className="col-md-4 col-sm-12 mt-4">
+                    <div className="col-md-5 mt-4">
                       <div className="row mb-3">
-                        <div className="col-4 col-sm-2">
-                          <label htmlFor="seriesSelect" className="form-label mt-2">
-                            Plant:
-                          </label>
-                        </div>
-                        <div className="col-8 col-sm-3">
-                          <select id="sharpSelect" className="form-select">
-                            <option selected>Produlink</option>
+                        <div className="col-2">
+                          <select
+                            id="sharpSelect"
+                            className="form-select"
+                            value={plant}
+                            onChange={(e) => {
+                              setPlant(e.target.value)
+                              setFormData({ ...formData, Plant: e.target.value })
+                            }}
+                          >
+                            <option value="Produlink">Produlink</option>
                           </select>
                         </div>
-                        <div className="col-12 col-sm-7 mt-2 mt-sm-0 ">
+
+                        <div className="col-md-1 col-sm-2 mt-3">
+                          <label htmlFor="seriesSelect" className="form-label">
+                            Series:
+                          </label>
+                        </div>
+                        <div className="col-md-2">
+                          <select
+                            id="seriesSelect"
+                            className="form-select"
+                            onChange={handleSeriesChange}
+                            value={series}
+                          >
+                            <option value="">Select</option>
+                            <option value="Material Issue">Material Issue</option>
+                          </select>
+                        </div>
+                        <div className="col-4">
                           <input
                             type="text"
                             id="inputField"
                             className="form-control mt-1"
                             placeholder="Enter value"
+                            value={challanNo}
+                            readOnly
                           />
+                        </div>
+                        {series === "Material Issue" && challanNo && isSubmitted && (
+                          <div className="col-12 mt-3">
+                            <div className="alert alert-success">
+                              <h5>Material Issue Challan Created Successfully</h5>
+                              <p>Challan Number: {challanNo}</p>
+                              <div className="mt-3">
+                                <Link to={`/material-issue-details/${challanNo}`} className="btn btn-primary me-2">
+                                  View Details
+                                </Link>
+                                <button className="btn btn-secondary me-2" onClick={() => window.print()}>
+                                  Print Challan
+                                </button>
+                                <button className="btn btn-info" onClick={handleClear}>
+                                  Create New
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        <div className="col-md-1 mt-2">
+                          <label htmlFor="typeSelect" className="form-label">
+                            Type:
+                          </label>
+                        </div>
+                        <div className="col-md-2">
+                          <select
+                            id="typeSelect"
+                            className="form-select"
+                            value={type}
+                            onChange={(e) => {
+                              setType(e.target.value)
+                              setFormData({ ...formData, Type: e.target.value })
+                            }}
+                          >
+                            <option value="">Select</option>
+                            <option value="General">General</option>
+                          </select>
                         </div>
                       </div>
                     </div>
-                    <div className="col-md-6 col-sm-12 text-end">
-                     
-                          <Link className="btn" to="/Work-Order-Material">
-                            WorkOrder Material Issue Report
-                          </Link>
+                    <div className="col-md-5 col-sm-12 text-end">
+                      <Link className="btn" to="/Work-Order-Material">
+                        WorkOrder Material Issue Report
+                      </Link>
 
-                          <Link className="btn" to="/Material-Issue">
-                            Material Issue WorkOrder Only
-                          </Link>
-                        
+                      <Link className="btn" to="/Material-Issue">
+                        Material Issue WorkOrder Only
+                      </Link>
                     </div>
                   </div>
                 </div>
 
                 <div className="NewMaterialIssue-main">
-                  <div className="NewMaterialIssue">
-                    <div className="container-fluid">
-                      <div className="row">
-                        <div className="col-md-1 col-sm-2">
-                          <label htmlFor="seriesSelect" className="form-label">
-                            Series:
-                          </label>
-                        </div>
-                        <div className="col-md-2 col-sm-4">
-                          <select id="seriesSelect" className="form-select">
-                            <option selected>Select</option>
-                            <option value="Purchase GRN">Material Issue</option>
-                          </select>
-                        </div>
-                        <div className="col-md-1 col-sm-2">
-                          <label htmlFor="typeSelect" className="form-label">
-                            Type:
-                          </label>
-                        </div>
-                        <div className="col-md-2 col-sm-4">
-                          <select id="typeSelect" className="form-select">
-                            <option selected>Select</option>
-                            <option value="Purchase GRN">Purchase GRN</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="container-fluid text-start">
                     <div className="row mt-4">
                       <div className="col-md-12">
                         <div className="table-responsive">
-                          <form onSubmit={handleSubmit}>
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr>
-                                  <th>Item</th>
-                                  <th>Item Description</th>
-                                  <th>Available Stock</th>
-                                  <th>Machine</th>
-                                  <th>Store Name</th>
-                                  <th>Qty / Unit</th>
-                                  <th>Remark</th>
-                                  <th>MRN No.</th>
-                                  <th>Employee</th>
-                                  <th>Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      name="Item"
-                                      value={formData.Item}
-                                      onChange={handleChange}
-                                      className="form-control"
-                                    />
-                                    <button className="pobtn ms-2">
-                                      Search
-                                    </button>
-                                  </td>
-                                  <td>
-                                    <textarea
-                                      name="ItemDescription"
-                                      value={formData.ItemDescription}
-                                      onChange={handleChange}
-                                      rows="1"
-                                      className="form-control"
-                                    ></textarea>
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      name="AvailableStock"
-                                      value={formData.AvailableStock}
-                                      onChange={handleChange}
-                                      className="form-control"
-                                    />
-                                  </td>
-                                  <td>
-                                    <select
-                                      name="Machine"
-                                      value={formData.Machine}
-                                      onChange={handleChange}
-                                      className="form-select"
-                                    >
-                                      <option value="">Select</option>
-                                      <option value="Drilling Machine">
-                                        Drilling Machine
-                                      </option>
-                                      <option value="Other Machine">
-                                        Other Machine
-                                      </option>
-                                    </select>
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      name="StoreName"
-                                      value={formData.StoreName}
-                                      onChange={handleChange}
-                                      className="form-control"
-                                    />
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      name="Qty"
-                                      value={formData.Qty}
-                                      onChange={handleChange}
-                                      className="form-control"
-                                    />
-                                    <select
-                                      name="Unit"
-                                      value={formData.Unit}
-                                      onChange={handleChange}
-                                      className="form-select mt-2"
-                                    >
-                                      <option value="Pcs">Pcs</option>
-                                      <option value="Kg">Kg</option>
-                                    </select>
-                                  </td>
-                                  <td>
-                                    <textarea
-                                      name="Remark"
-                                      value={formData.Remark}
-                                      onChange={handleChange}
-                                      className="form-control"
-                                    ></textarea>
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      name="MrnNo"
-                                      value={formData.MrnNo}
-                                      onChange={handleChange}
-                                      className="form-control"
-                                    />
-                                  </td>
-                                  <td>
-                                    <input
-                                      type="text"
-                                      name="Employee"
-                                      value={formData.Employee}
-                                      onChange={handleChange}
-                                      className="form-control"
-                                    />
-                                    <select className="form-select mt-2">
-                                      <option>Select</option>
-                                      <option value="Critical">Critical</option>
-                                    </select>
-                                  </td>
-                                  <td>
-                                    <button type="submit" className="pobtn">
-                                      {isEditing ? "Update" : "Add"}
-                                    </button>
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </form>
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr>
+                                <th>Item</th>
+                                <th>Item Description</th>
+                                <th>Available Stock</th>
+                                <th>Machine</th>
+                                <th>Store Name</th>
+                                <th>Qty / Unit</th>
+                                <th>Remark</th>
+                                <th>MRN No.</th>
+                                <th>Employee</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>
+                                  <input
+                                    type="text"
+                                    name="Item"
+                                    value={formData.Item || ""}
+                                    onChange={(e) => setFormData({ ...formData, Item: e.target.value })}
+                                    className="form-control"
+                                  />
+                                  <button className="pobtn ms-2">Search</button>
+                                </td>
+                                <td>
+                                  <textarea
+                                    name="ItemDescription"
+                                    value={formData.ItemDescription || ""}
+                                    onChange={(e) => setFormData({ ...formData, ItemDescription: e.target.value })}
+                                    rows="1"
+                                    className="form-control"
+                                  ></textarea>
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    name="AvailableStock"
+                                    value={formData.AvailableStock || ""}
+                                    onChange={(e) => setFormData({ ...formData, AvailableStock: e.target.value })}
+                                    className="form-control"
+                                  />
+                                </td>
+                                <td style={{ position: "relative" }}>
+                                  <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Search Machine"
+                                    className="form-control"
+                                    autoComplete="off"
+                                  />
+                                  {showDropdown && filteredMachines.length > 0 && (
+                                    <div className="dropdown-menu show" style={dropdownStyles}>
+                                      {filteredMachines.map((machine, index) => (
+                                        <div
+                                          key={index}
+                                          className="dropdown-item"
+                                          onClick={() => handleMachineSelect(machine)}
+                                        >
+                                          {machine.WorkCenterCode} - {machine.WorkCenterName}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </td>
+
+                                <td>
+                                  <input
+                                    type="text"
+                                    name="StoreName"
+                                    value={formData.StoreName || ""}
+                                    onChange={(e) => setFormData({ ...formData, StoreName: e.target.value })}
+                                    className="form-control"
+                                  />
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    name="Qty"
+                                    value={formData.Qty || ""}
+                                    onChange={(e) => setFormData({ ...formData, Qty: e.target.value })}
+                                    className="form-control"
+                                  />
+                                  <select
+                                    name="Unit"
+                                    value={formData.Unit || "Pcs"}
+                                    onChange={(e) => setFormData({ ...formData, Unit: e.target.value })}
+                                    className="form-select mt-2"
+                                  >
+                                    <option value="Pcs">Pcs</option>
+                                    <option value="Kg">Kg</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <textarea
+                                    name="Remark"
+                                    value={formData.Remark || ""}
+                                    onChange={(e) => setFormData({ ...formData, Remark: e.target.value })}
+                                    className="form-control"
+                                  ></textarea>
+                                </td>
+                                <td>
+                                  <input
+                                    type="text"
+                                    name="MrnNo"
+                                    value={formData.MrnNo || ""}
+                                    onChange={(e) => setFormData({ ...formData, MrnNo: e.target.value })}
+                                    className="form-control"
+                                  />
+                                </td>
+                                <td style={{ position: "relative" }}>
+                                  <input
+                                    type="text"
+                                    name="Employee"
+                                    placeholder="code ,employee"
+                                    value={formData.Employee}
+                                    onChange={handleEmployeeChange}
+                                    className="form-control"
+                                    autoComplete="off"
+                                  />
+                                  {showDropdown && searchResults.length > 0 && (
+                                    <div className="dropdown-menu show" style={dropdownStyles}>
+                                      {searchResults.map((emp, index) => (
+                                        <div
+                                          key={index}
+                                          className="dropdown-item"
+                                          onClick={() => handleSelectEmployee(emp)}
+                                        >
+                                          {emp.Code} - {emp.Name} ({emp.Department})
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  <input
+                                    type="text"
+                                    name="Dept"
+                                    value={formData.Dept}
+                                    onChange={(e) => setFormData({ ...formData, Dept: e.target.value })}
+                                    className="form-control"
+                                  />
+                                </td>
+
+                                <td>
+                                  <button type="button" className="pobtn" onClick={handleAddEntry}>
+                                    Add
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -370,78 +545,56 @@ const MaterialIssueChallan = () => {
                               <th>Issued | Bal Qty</th>
                               <th>Stock</th>
 
-                              <th>
-                                Qty{" "}
-                                <button
-                                  className="newbtn"
-                                  onClick={handleModalOpen}
-                                >
-                                  Add
-                                </button>
-                              </th>
-                              <th>
-                                Machine{" "}
-                                <button
-                                  className="newbtn"
-                                  onClick={handleModalOpen1}
-                                >
-                                  Add
-                                </button>
-                              </th>
+                              <th>Qty </th>
+                              <th>Machine </th>
                               <th>Nature of Work</th>
-                              <th>
-                                MRN No:{" "}
-                                <button
-                                  className="newbtn"
-                                  onClick={handleModalOpen1}
-                                >
-                                  Add
-                                </button>
-                                Cail No:
-                              </th>
-                              <th>
-                                Employee:{" "}
-                                <button
-                                  className="newbtn"
-                                  onClick={handleModalOpen2}
-                                >
-                                  See All
-                                </button>
-                              </th>
+                              <th>MRN No: Cail No:</th>
+                              <th>Employee: </th>
 
                               <th>Edit</th>
                               <th>Delete</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {materials.map((material, index) => (
-                              <tr key={material.id}>
+                            {materialChallanTable.map((entry, index) => (
+                              <tr key={index}>
                                 <td>{index + 1}</td>
-                                <td>{material.ItemDescription}</td>
 
-                                <td></td>
-                                <td></td>
-                                <td>{material.StoreName}</td>
+                                <td>{entry.ItemDescription}</td>
                                 <td>
-                                  {material.Qty} | {material.Unit}
+                                  BOM Qty: <br></br> WO Qty : <br></br>Tot Req. Qty:
                                 </td>
-                                <td>{material.Machine}</td>
-                                <td></td>
-                                <td>{material.MrnNo}</td>
-                                <td>{material.Employee}</td>
+                                <td>
+                                  Issued Qty:
+                                  <br></br>Bal Qty:
+                                </td>
+                                <td>{entry.Stock}</td>
+                                <td>{entry.Qty}</td>
+                                <td>{entry.Machine}</td>
+                                <td>{entry.Remark}</td>
+                                <td>
+                                  {entry.MrnNo}
+                                  {entry.CoilNo}
+                                </td>
+                               
+                                <td>
+                                  {entry.Employee}
+                                  {entry.Dept}
+                                </td>
 
                                 <td>
                                   <FaEdit
-                                    className="text-primary"
-                                    onClick={() => handleEdit(material)}
+                                    className="text-primary me-2"
                                     style={{ cursor: "pointer" }}
+                                    onClick={() => handleEdit(index)}
                                   />
-                                </td>
-                                <td>
+                                   </td>
+
+<td>
                                   <FaTrash
                                     className="text-danger"
-                                    onClick={() => handleDelete(material.id)}
                                     style={{ cursor: "pointer" }}
+                                    onClick={() => handleDelete(index)}
                                   />
                                 </td>
                               </tr>
@@ -449,179 +602,27 @@ const MaterialIssueChallan = () => {
                           </tbody>
                         </table>
                       </div>
-                      {/* Models */}
-                    </div>
-                    <div
-                      className={`modal fade ${
-                        showModal ? "show d-block" : ""
-                      }`}
-                      tabIndex="-1"
-                      role="dialog"
-                    >
-                      <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                          <div className="modal-header">
-                            <h5 className="modal-title">Search</h5>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              onClick={handleModalClose}
-                            >
-                              X
-                            </button>
-                          </div>
-                          <div className="modal-body">
-                            <div className="container-fluid">
-                              <div className="row mb-3">
-                                <div className="col-md-6">
-                                  <label className="form-label">
-                                    Select Employee:
-                                  </label>
-                                </div>
-                                <div className="col-md-6">
-                                  <input type="text" className="form-control" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="modal-footer">
-                            <button type="button" className="newbtn1">
-                              See ALL
-                            </button>
-                            <button
-                              type="button"
-                              className="newbtn1"
-                              onClick={handleModalClose}
-                            >
-                              Close
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className={`modal fade ${
-                        showModal1 ? "show d-block" : ""
-                      }`}
-                      tabIndex="-1"
-                      role="dialog"
-                    >
-                      <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                          <div className="modal-header">
-                            <h5 className="modal-title">Add Type</h5>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              onClick={handleModalClose1}
-                            >
-                              X
-                            </button>
-                          </div>
-                          <div className="modal-body">
-                            <div className="container-fluid">
-                              <div className="row mb-3">
-                                <div className="col-md-6">
-                                  <label className="form-label">
-                                    Select Employee:
-                                  </label>
-                                </div>
-                                <div className="col-md-6">
-                                  <input type="text" className="form-control" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="modal-footer">
-                            <button
-                              type="button"
-                              className="newbtn1"
-                              onClick={handleModalClose1}
-                            >
-                              Close
-                            </button>
-                            <button type="button" className="newbtn1">
-                              Save changes
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className={`modal fade ${
-                        showModal2 ? "show d-block" : ""
-                      }`}
-                      tabIndex="-1"
-                      role="dialog"
-                    >
-                      <div className="modal-dialog" role="document">
-                        <div className="modal-content">
-                          <div className="modal-header">
-                            <h5 className="modal-title">Add Type</h5>
-                            <button
-                              type="button"
-                              className="btn-close"
-                              onClick={handleModalClose2}
-                            >
-                              X
-                            </button>
-                          </div>
-                          <div className="modal-body">
-                            {/* Content of the modal */}
-                            <p>Type form fields here.</p>
-                          </div>
-                          <div className="modal-footer">
-                            <button
-                              type="button"
-                              className="newbtn1"
-                              onClick={handleModalClose2}
-                            >
-                              Close
-                            </button>
-                            <button type="button" className="newbtn1">
-                              Save changes
-                            </button>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
 
                   <div className="NewgrnFooter">
                     <div className="container-fluid">
-                      {/* Remarks Section */}
-                      <div className="row justify-content-end align-items-center mb-3">
-                        <div className="col-md-1 text-end">
-                          <label className="form-label">Remarks:</label>
-                        </div>
-                        <div className="col-md-3">
-                          <textarea
-                            cols="3"
-                            className="form-control"
-                            placeholder="Enter remarks here..."
-                          ></textarea>
-                        </div>
-                      </div>
-
                       {/* Input Fields */}
                       <div className="row g-3">
                         {/* M Issue No */}
-                        <div className="col-md-2">
+                        <div className="col-md-3">
                           <div className="row align-items-center">
-                            <div className="col-4 col-md-4 text-end">
+                            <div className="col-4 text-end">
                               <label>M Issue No:</label>
                             </div>
-                            <div className="col-4 col-md-4">
+                            <div className="col-8">
                               <input
-                                className="form-control mb-2"
-                                placeholder="No"
-                              />
-                            </div>
-                            <div className="col-4 col-md-4">
-                              <input
-                                className="form-control"
-                                placeholder="Details"
+                                type="text"
+                                id="inputField"
+                                className="form-control mt-1"
+                                placeholder="Enter value"
+                                value={challanNo}
+                                readOnly
                               />
                             </div>
                           </div>
@@ -634,7 +635,12 @@ const MaterialIssueChallan = () => {
                               <label>M Issue Date:</label>
                             </div>
                             <div className="col-8">
-                              <input type="date" className="form-control" />
+                              <input
+                                type="date"
+                                className="form-control"
+                                value={formData.MaterialIssueDate}
+                                onChange={(e) => setFormData({ ...formData, MaterialIssueDate: e.target.value })}
+                              />
                             </div>
                           </div>
                         </div>
@@ -650,21 +656,9 @@ const MaterialIssueChallan = () => {
                                 type="text"
                                 className="form-control"
                                 placeholder="Time"
+                                value={formData.MaterialIssueTime}
+                                onChange={(e) => setFormData({ ...formData, MaterialIssueTime: e.target.value })}
                               />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Project */}
-                        <div className="col-md-1">
-                          <div className="row align-items-center">
-                            <div className="col-4 text-end">
-                              <label>Project:</label>
-                            </div>
-                            <div className="col-8">
-                              <select className="form-select">
-                                <option>Select</option>
-                              </select>
                             </div>
                           </div>
                         </div>
@@ -676,19 +670,32 @@ const MaterialIssueChallan = () => {
                               <label>Contractor:</label>
                             </div>
                             <div className="col-8">
-                              <select className="form-select">
-                                <option>Select</option>
+                              <select
+                                className="form-select"
+                                value={formData.Contractor}
+                                onChange={(e) => setFormData({ ...formData, Contractor: e.target.value })}
+                              >
+                                <option value="">Select</option>
+                                <option value="Savi">Savi</option>
+                                <option value="Maxwell">Maxwell</option>
+                                <option value="Prime Works">Prime Works</option>
+                                {/* Add more options as needed */}
                               </select>
                             </div>
                           </div>
                         </div>
 
                         {/* Save & Clear Buttons */}
+                        {/* Save & Clear Buttons */}
                         <div className="col-md-2 d-flex justify-content-end align-items-center">
-                          <button className="btn w-100">Save Challan</button>
+                          <button className="btn w-100 btn-success" onClick={handleSave}>
+                            Save Challan
+                          </button>
                         </div>
                         <div className="col-md-1 d-flex justify-content-end align-items-center">
-                          <button className="btn w-100">Clear</button>
+                          <button className="btn w-100 btn-secondary" onClick={handleClear}>
+                            Cancel
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -700,7 +707,18 @@ const MaterialIssueChallan = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MaterialIssueChallan;
+export default MaterialIssueChallan
+const dropdownStyles = {
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  right: 0,
+  maxHeight: "200px",
+  overflowY: "auto",
+  zIndex: 1000,
+  backgroundColor: "#fff",
+  border: "1px solid #ccc",
+}

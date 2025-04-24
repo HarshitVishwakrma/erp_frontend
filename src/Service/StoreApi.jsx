@@ -92,39 +92,7 @@ export const saveJob_WorkChallan = async (data) => {
   };
 
 
-  // Material Challan
-  export const getMaterials = async () => {
-    const response = await fetch(`${Base_Url}MaterialIssue/`);
-    return await response.json();
-  };
-  
-  export const addMaterial = async (material) => {
-    const response = await fetch(`${Base_Url}MaterialIssue/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(material),
-    });
-    return await response.json();
-  };
-  
-  export const updateMaterial = async (id, material) => {
-    const response = await fetch(`${Base_Url}MaterialIssue/${id}/`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(material),
-    });
-    return await response.json();
-  };
-  
-  export const deleteMaterial = async (id) => {
-    await fetch(`${Base_Url}MaterialIssue/${id}/`, {
-      method: "DELETE",
-    });
-  };
+
 
 
   // Material Gernal
@@ -363,6 +331,45 @@ export const getPoDetailsByPoNo = async (poNo) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching PO details:", error);
+    return null;
+  }
+};
+
+
+export const fetchItemDetailsByPoAndItem = async (poNo, itemName) => {
+  try {
+    const response = await axios.get(
+      `${Base_Url}get-by-pono-item/?PoNo=${poNo}&Item=${itemName}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching item details:", error);
+    return null;
+  }
+};
+
+
+
+export const getNextChallanNo = async (year) => {
+ 
+  try {
+    const res = await axios.get(`${Base_Url}api/get-new-material-challan-no/?year=${year}`);
+    return res.data.next_challan_no; // ✅ correct key
+  } catch (error) {
+    console.error("Error fetching next Challan No:", error);
     throw error;
   }
 };
+
+export const postNewMaterialIssue = async (payload) => {
+ 
+  try {
+    const response = await axios.post(`${Base_Url}api/New-Material-Issue/`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Error posting GRN data:", error);
+    throw error;
+  }
+};
+
+

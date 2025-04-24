@@ -124,6 +124,8 @@ import SupplierWiseList from "./PurchaseMaster/Report/SupplierWiseList1/Supplier
 
 import POEdit from "./PurchaseMaster/NewPurchaseOrder/POEdit/POEdit.jsx";
 import PurchaseOrderPDF from "./PurchaseMaster/NewPurchaseOrder/PurcheseOrderPDF/PurchaseOrderPDF.jsx";
+import PurchaseQueryMaster from "./PurchaseMaster/Report/PurchaseOrderList1/PurchaseQueryMaster/PurchaseQueryMaster.jsx";
+
 ////////////////////////////////Store//////////////////////////////////////////////////////
 
 // Gate Inward Entry
@@ -140,6 +142,8 @@ import ToolMrn from "./StoreMaster/NewMRN/ToolMrn/ToolMrn.jsx";
 
 import PurchaseGrn from "./StoreMaster/PurchseGRN/PurchaseGrn.jsx";
 import GrnList from "./StoreMaster/PurchseGRN/GRNList/GrnList.jsx";
+import PurchaseOrderSummary from "./PurchaseMaster/Report/PurchaseOrderList1/PurchaseOrderSummary/PurchaseOrderSummary.jsx";
+
 
 // Subcon Grn
 
@@ -387,6 +391,8 @@ import TestReportNew from "./Quality/TestMaster/TestReportList/TestReportNew.jsx
 import TestMasterNew from "./Quality/TestMaster/TestMasterNew/TestMasterNew.jsx";
 import TestMasterList from "./Quality/TestMaster/TestMasterList/TestMasterList.jsx";
 
+
+
 function App() {
   return (
     <div className="App">
@@ -501,14 +507,15 @@ function App() {
           element={<QuotoComparisonPending />}
         />
         {/* Purchase Report */}
-        <Route path="purchase-order-list" element={<PurchseOderList />} />
+        <Route path="/purchase-order-list" element={<PurchseOderList />} />
+        <Route path="/Purchase-Order-Summary" element={<PurchaseOrderSummary/>} />
         <Route
-          path="jobwork-purchase-order-list"
+          path="/jobwork-purchase-order-list"
           element={<JobWorkPurchseOrderList />}
         />
-        <Route path="supplier-wise-list" element={<SupplierWiseList />} />
-        <Route path="purchase-report" element={<PurchaseReport />} />
-
+        <Route path="/supplier-wise-list" element={<SupplierWiseList />} />
+        <Route path="/purchase-report" element={<PurchaseReport />} />
+<Route path="/PurchaseQueryMaster" element={<PurchaseQueryMaster/>} />
   
 <Route path="/EditPo/:id" element={<POEdit/>} />
 

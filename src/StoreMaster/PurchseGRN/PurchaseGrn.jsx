@@ -5,10 +5,10 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import { Link } from "react-router-dom";
 import "./PurchaseGrn.css";
-import { FaTrash } from "react-icons/fa";
 import { toast , ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getNextGrnNo ,getGeneralDetails ,postPurchaseGRN} from "../../Service/StoreApi.jsx";
+import { getNextGrnNo ,getGeneralDetails ,postPurchaseGRN,getPoDetailsByPoNo , fetchItemDetailsByPoAndItem} from "../../Service/StoreApi.jsx";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 
 const PurchaseGrn = () => {
@@ -86,7 +86,9 @@ const PurchaseGrn = () => {
     InvoiceNo: '',
     EWayBillNo: '',
     VehicleNo: '',
-    Transporter: ''
+    Transporter: '',
+    Plant: "Produlink", // <-- Add this line
+
   });
 
   useEffect(() => {
@@ -119,55 +121,207 @@ const PurchaseGrn = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async () => {
-    const payload = {
-      NewGrnList: [/* map from form or static */],
-      GrnGst: [/* map from form or static */],
-      GrnGstTDC: [/* map from form or static */],
-      RefTC: [/* map from form or static */],
-      Plant: "Produlink",
-      Series: "Series Name",
-      GateEntryNo: formData.GE_No,
-      SelectSupplier: formData.Supp_Cust,
-      SelectPO: formData.Select,
-      AddChallanGrnQty: false,
-      SelectItem: "Item XYZ",
-      ItemDropdown: "Dropdown Option 1",
-      HeatNo: "HN123456",
-      GrnNo: formData.GrnNo,
-      GrnDate: "2025-04-02",
-      GrnTime: "12:30:00",
-      ChallanNo: formData.ChallanNo,
-      ChallanDate: "2025-04-01",
-      InvoiceNo: formData.InvoiceNo,
-      InvoiceDate: "2025-04-01",
-      EWayBillNo: formData.EWayBillNo,
-      EWayBillDate: "2025-04-02",
-      VehicleNo: formData.VehicleNo,
-      LrNo: "LR98765",
-      Transporter: formData.Transporter,
-      PreparedBy: "John Doe",
-      CheckedBy: "Jane Smith",
-      TcNo: "TC123456",
-      TcDate: "2025-04-01",
-      QcCheck: false,
-      Delivery: false,
-      Remark: "Some remarks here",
-      PaymentTermDay: "30"
-    };
-  
-    try {
-      const result = await postPurchaseGRN(payload);
-      console.log('result',result);
+
+  const [itemDetails, setItemDetails] = useState([]);
+  const [gstDetails, setGstDetails] = useState([]);
+  const [refTcDetails, setRefTcDetails] = useState([
+    {
+      ItemCode: "",
+      ItemDesc: "",
+      MillTcName: "",
+      MillTcNo: "",
+      MillTcDate: "",
+      Location: "",
+    },
+  ]);
+  const handleRefTcChange = (index, field, value) => {
+    const updatedDetails = [...refTcDetails];
+    updatedDetails[index][field] = value;
+    setRefTcDetails(updatedDetails);
+  };
+  const addRefTcRow = () => {
+    setRefTcDetails([
+      ...refTcDetails,
+      {
+        ItemCode: "",
+        ItemDesc: "",
+        MillTcName: "",
+        MillTcNo: "",
+        MillTcDate: "",
+        Location: "",
+      },
+    ]);
+  };
       
-      toast("GRN submitted successfully!");
-      console.log("Server Response:", result);
-    } catch (err) {
-      toast("Error submitting GRN.");
+
+  const handleAddAllItem = async () => {
+    if (!formData.Select) return;
+    const data = await getPoDetailsByPoNo(formData.Select);
+    if (data) {
+      setItemDetails(data.Item_Detail_Enter || []);
+      setGstDetails(data.Gst_Details || []);
     }
   };
 
+  const handleCancel = () => {
+    setItemDetails([]);
+    setGstDetails([]);
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   
+
+  const selectedPoNo = formData.Select;
+
+
+const handleSearch = async (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    if (value.length >= 2 && selectedPoNo) {
+      try {
+        const data = await fetchItemDetailsByPoAndItem(selectedPoNo, value);
+        setSuggestions(data.Item_Detail_Enter);
+      } catch (err) {
+        console.error("Error fetching suggestions", err);
+        setSuggestions([]);
+      }
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleAddItem = async (itemName) => {
+    if (!selectedPoNo) return alert("Please select a PO number first.");
+    try {
+      const data = await fetchItemDetailsByPoAndItem(selectedPoNo, itemName);
+  
+      const newItem = data.Item_Detail_Enter?.[0];
+      const newGst = data.Gst_Details?.[0];
+  
+      if (!newItem) {
+        alert("Item not found.");
+        return;
+      }
+  
+      const isAlreadyAdded = itemDetails.some(item => item.Item === newItem.Item);
+      if (isAlreadyAdded) {
+        alert("Item already added");
+        return;
+      }
+  
+      setItemDetails(prev => [...prev, newItem]);
+      setGstDetails(prev => [...prev, newGst]);
+      setSearchTerm("");
+      setSuggestions([]);
+    } catch (err) {
+      console.error("Error fetching item", err);
+    }
+  };
+
+  const handleSubmitGRN = async () => {
+    try {
+      const payload = {
+        NewGrnList: itemDetails.map((item) => ({
+          PoNo: item.PoNo,
+          Date: item.PoDate,
+          ItemNoCode: item.Item,
+          Description: item.ItemDescription,
+          Rate: item.Rate,
+          PoQty: item.Qty,
+          BalQty: item.BalQty || "0",
+          ChalQty: item.ChallanQty || "0",
+          GrnQty: item.GrnQty || "0",
+          ShortExcessQty: item.ShortExcessQty || "0",
+          UnitCode: item.Unit || "Unit",
+          Total: item.Total || (parseFloat(item.Rate) * parseFloat(item.Qty)).toFixed(2),
+          HeatNo: item.HeatNo || "",
+          MfgDate: item.DeliveryDt,
+        })),
+  
+        GrnGst: gstDetails.map((gst) => ({
+          ItemCode: gst.ItemCode,
+          HSN: gst.HSN,
+          PoRate: gst.Rate,
+          DiscRate: gst.DiscRate || "0.00",
+          Qty: gst.Qty,
+          Discount: gst.Discount || "0.00",
+          PackAmt: gst.Packing,
+          TransAmt: gst.Transport,
+          AssValue: gst.AssValue,
+          CGST: gst.CGST,
+          SGST: gst.SGST,
+          IGST: gst.IGST,
+          VAT: gst.Vat,
+          CESS: gst.Cess,
+        })),
+  
+        GrnGstTDC: [
+          {
+            assessable_value: gstDetails[0]?.TOC_AssableValue || "0.00",
+            packing_forwarding_charges: gstDetails[0]?.TOC_PackCharges || "0.00",
+            transport_charges: gstDetails[0]?.TOC_TransportCost || "0.00",
+            insurance: gstDetails[0]?.TOC_Insurance || "0.00",
+            installation_charges: gstDetails[0]?.TOC_InstallationCharges || "0.00",
+            other_charges: gstDetails[0]?.TOC_OtherCharges || "0.00",
+            Tds: gstDetails[0]?.TOC_TDS || "0.00",
+            cgst: gstDetails[0]?.TOC_CGST || "0.00",
+            sgst: gstDetails[0]?.TOC_SGST || "0.00",
+            igst: gstDetails[0]?.TOC_IGST || "0.00",
+            vat: gstDetails[0]?.TOC_VAT || "0.00",
+            cess_amount: gstDetails[0]?.TOC_CESS || "0.00",
+            tcs_amount: "0.00",
+            grand_total: gstDetails[0]?.GR_Total || "0.00"
+          }
+        ],
+  
+        RefTC: refTcDetails || [],
+  
+        Plant: "Produlink",
+        Series: formData.Series,
+        GateEntryNo: formData.GE_No,
+        SelectSupplier: formData.Supp_Cust,
+        SelectPO: formData.Select,
+        AddChallanGrnQty: false,
+        SelectItem: "Item XYZ",
+        ItemDropdown: "Dropdown Option 1",
+        HeatNo: "",
+        GrnNo: formData.GrnNo,
+        GrnDate: new Date().toISOString().split("T")[0],
+        GrnTime: new Date().toTimeString().split(" ")[0],
+        ChallanNo: formData.ChallanNo,
+        ChallanDate: formData.ChallanDate || "",
+        InvoiceNo: formData.InvoiceNo,
+        InvoiceDate: formData.InvoiceDate || "",
+        EWayBillNo: formData.EWayBillNo,
+        EWayBillDate: formData.EWayBillDate || "",
+        VehicleNo: formData.VehicleNo,
+        LrNo: formData.LrNo || "",
+        Transporter: formData.Transporter,
+        PreparedBy: formData.PreparedBy || "User",
+        CheckedBy: formData.CheckedBy || "User",
+        TcNo: formData.TcNo || "",
+        TcDate: formData.TcDate || "",
+        QcCheck: false,
+        Delivery: false,
+        Remark: formData.Remark || "",
+        PaymentTermDay: formData.PaymentTermDay || "30"
+      };
+  
+      console.log("Payload to Submit:", payload); // Debug
+      const response = await postPurchaseGRN(payload);
+      console.log("Success Response:", response);
+      toast.success("GRN submitted successfully!");
+
+  
+    } catch (error) {
+      console.error("GRN submission error:", error);
+      toast.error("Something went wrong. Check the console.");
+    }
+  };
+  
+
 
   return (
     <div className="NewStorePurchasegrn">
@@ -191,9 +345,16 @@ const PurchaseGrn = () => {
                       <div className="row mb-3">
                        
                         <div className="col-md-2">
-                          <select id="sharpSelect" className="form-select">
-                            <option selected>Produlink</option>
-                          </select>
+                        <select
+  id="sharpSelect"
+  className="form-select"
+  value={formData.Plant}
+  onChange={(e) => setFormData({ ...formData, Plant: e.target.value })}
+>
+  <option value="Produlink">Produlink</option>
+  
+</select>
+
                         </div>
 
                       
@@ -207,9 +368,7 @@ const PurchaseGrn = () => {
   <select id="seriesSelect" className="form-select" onChange={handleSeriesChange}>
     <option value="">Select</option>
     <option value="Purchase GRN">Purchase GRN</option>
-    <option value="s2">s2</option>
-    <option value="s3">s3</option>
-    <option value="s4">s4</option>
+    
   </select>
 </div>
 
@@ -288,14 +447,15 @@ const PurchaseGrn = () => {
           </select>
                           </div>
                           <div className="col-md-3">
-                            <button type="button" className="btn">
-                              Add All Item
-                            </button>
+                          <button type="button" className="btn" onClick={handleAddAllItem}>
+            Add All Item
+          </button>
+
                           </div>
                           <div className="col-md-1">
-                            <button type="button" className="btn">
-                              Cancel
-                            </button>
+                          <button type="button" className="btn" onClick={handleCancel}>
+            Cancel
+          </button>
                           </div>
                         </div>
                       </div>
@@ -305,12 +465,31 @@ const PurchaseGrn = () => {
                         <div className="row ">
                           <div className="col-md-4">Search Item:</div>
                           <div className="col-md-6">
-                            <input className="form-control" />
-                          </div>
+          <input
+            className="form-control"
+            value={searchTerm}
+            onChange={handleSearch}
+            placeholder="Type item name..."
+          />
+          {suggestions.length > 0 && (
+            <ul className="list-group position-absolute z-1 w-100">
+              {suggestions.map((item) => (
+                <li
+                  key={item.id}
+                  className="list-group-item list-group-item-action"
+                  onClick={() => handleAddItem(item.Item)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {item.Item}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
                           <div className="col-md-2">
-                            <button type="button" className="btn">
-                              Add
-                            </button>
+                          <button type="button" className="btn" onClick={() => handleAddItem(searchTerm)}>
+            Add
+          </button>
                           </div>
                         </div>
                       </div>
@@ -333,7 +512,8 @@ const PurchaseGrn = () => {
                   <div className="Purchasegrntable">
                     <div className="container-fluid mt-4 text-start">
                       <div className="table-responsive">
-                        <table className="table table-bordered">
+                      {itemDetails.length > 0 && (
+                       <table className="table table-bordered">
                           <thead>
                             <tr>
                               <th>Sr no.</th>
@@ -357,127 +537,38 @@ const PurchaseGrn = () => {
                             </tr>
                           </thead>
                           <tbody>
-                          <tr>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control mb-2"
-                                  />
-                                </td>
-
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control mb-2"
-                                  />
-                                </td>
-
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control mb-2"
-                                  />
-                                </td>
-
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control mb-2"
-                                  />
-                                </td>
-
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-control me-2"
-                                  />
-                                </td>
-                                
-                            
-                                 
-                                
-                                <td>
-                                  <button className="btn">
-                                    <FaTrash />
-                                  </button>
-                                </td>
-                              </tr>
+                          
+                          {itemDetails.map((item, index) => (
+          <tr key={item.id}>
+            <td>{index + 1}</td>
+                  <td>{item.PoNo}</td>
+                  <td>{item.PoDate}</td>
+                  <td>{item.Item}</td>
+                  <td>{item.ItemDescription}</td>
+                  <td>{item.Rate}</td>
+            <td>{item.Qty}</td>
+            <td>{/* Placeholder for Bal. Qty */}</td>
+            <td>{/* Placeholder for Challan Qty */}</td>
+            <td>{/* Placeholder for GRN Qty */}</td>
+            <td>{/* Placeholder for Short/Excess Qty */}</td>
+            <td>{item.Unit}</td>
+            <td>{parseFloat(item.Rate) * parseFloat(item.Qty)}</td>
+            <td>{/* Placeholder for Heat No. */}</td>
+            <td>{item.DeliveryDt}</td>
+            <td>{/* Placeholder for Hc */}</td>
+            <td>
+              <button className="btn"><FaEdit/></button>
+            </td>
+            <td>
+              <button className="btn"><FaTrash/></button>
+            </td>
+                </tr>
+              ))}
                           </tbody>
-                        </table>
+                        </table> )}
+
+
+   
                       </div>
                     </div>
                   </div>
@@ -891,8 +982,9 @@ const PurchaseGrn = () => {
                       >
                         <div className="StorePurchasegrn2">
                           <div className="row ">
-                            <div className="col-md-8">
+                            <div className="col-md-7">
                               <div className="table-responsive">
+                              {gstDetails.length > 0 && (
                                 <table className="table table-bordered">
                                   <thead>
                                     <tr>
@@ -912,175 +1004,218 @@ const PurchaseGrn = () => {
                                       <th>IGST</th>
                                       <th>VAT</th>
                                       <th>CESS</th>
+                                      <th>Total</th>
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    <tr>{/* Data rows will go here */}</tr>
+                                  {gstDetails.map((item, index) => (
+      <tr key={item.id}>
+        <td>{index + 1}</td>
+        <td>{item.ItemCode}</td>
+        <td>{item.HSN}</td>
+        <td>{item.Rate}</td>
+        <td>{(item.SubTotal / item.Qty).toFixed(2)}</td>
+        <td>{item.Qty}</td>
+        <td>{item.Discount}</td>
+        <td>{item.Packing}</td>
+        <td>{item.Transport}</td>
+        <td>{item.ToolAmort}</td>
+        <td>{item.AssValue}</td>
+        <td>{item.CGST}</td>
+        <td>{item.SGST}</td>
+        <td>{item.IGST}</td>
+        <td>{item.Vat}</td>
+        <td>{item.Cess}</td>
+        <td>{item.Total}</td>
+      </tr>
+    ))}
                                   </tbody>
                                 </table>
+                              )}
                               </div>
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-5">
                               <div className="row">
-                                <div className="col-md-6 text-start">
+                                <div className="col-md-7 text-start">
                                   {/* Second Column Group */}
                                   <div className="container">
                                     <div className="table-responsive">
-                                      <table className="table table-bordered">
-                                        <tbody>
-                                          <tr>
-                                            <th>TDC Assessable Value:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th className="col-md-4">
-                                              (TDC) Pack & Fwrd Charge:
-                                            </th>
-                                            <td>
-                                              <input
-                                                type="date"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>TransPort Charges:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Insurance:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Instailation Charges:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Other Charges:</th>
-                                            <td>
-                                              <input
-                                                type="date"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>TDS:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
+                                    <table className="table table-bordered">
+  <tbody>
+    <tr>
+      <th>TDC Assessable Value:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[1]?.TOC_AssableValue || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th className="col-md-4">(TDC) Pack & Fwrd Charge:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[1]?.TOC_PackCharges || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>TransPort Charges:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[1]?.TOC_TransportCost || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>Insurance:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[1]?.TOC_Insurance || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>Installation Charges:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[1]?.TOC_InstallationCharges || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>Other Charges:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[1]?.TOC_OtherCharges || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>TDS:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[1]?.TOC_TDS || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+  </tbody>
+</table>
+
                                     </div>
                                   </div>
                                 </div>
-                                <div className="col-md-6 text-start">
+                                <div className="col-md-5 text-start">
                                   {/* Third Column Group */}
                                   <div className="container mt-4">
                                     <div className="table-responsive">
-                                      <table className="table table-bordered">
-                                        <tbody>
-                                          <tr>
-                                            <th>CGST:00.00%</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th className="col-md-4">
-                                              SGST:00.00%
-                                            </th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>IGST:00.00%:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>VAT Amt:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Cess Amt:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>TCS: :</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>GR. Total:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                              />
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <td
-                                              colspan="2"
-                                              className="text-start"
-                                            >
-                                              <button className="btn">
-                                                DocTCUpload
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
+                                    <table className="table table-bordered">
+  <tbody>
+    <tr>
+      <th>CGST: 00.00%</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[0]?.TOC_CGST || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th className="col-md-4">SGST: 00.00%</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[0]?.TOC_SGST || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>IGST: 00.00%</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[0]?.TOC_IGST || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>VAT Amt:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[0]?.TOC_VAT || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>Cess Amt:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[0]?.TOC_CESS || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>TCS:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[0]?.TOC_TDS || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <th>GR. Total:</th>
+      <td>
+        <input
+          type="text"
+          className="form-control"
+          value={gstDetails[0]?.GR_Total || ""}
+          readOnly
+        />
+      </td>
+    </tr>
+    <tr>
+      <td colSpan="2" className="text-start">
+        <button className="btn btn-primary">DocTCUpload</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
                                     </div>
                                   </div>
                                 </div>
@@ -1113,9 +1248,60 @@ const PurchaseGrn = () => {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    <tr>{/* Data rows will go here */}</tr>
+                                  {refTcDetails.map((tc, index) => (
+      <tr key={index}>
+        <td>{index + 1}</td>
+        <td>
+          <input
+            className="form-control"
+            value={tc.ItemCode}
+            onChange={(e) => handleRefTcChange(index, "ItemCode", e.target.value)}
+          />
+        </td>
+        <td>
+          <input
+            className="form-control"
+            value={tc.ItemDesc}
+            onChange={(e) => handleRefTcChange(index, "ItemDesc", e.target.value)}
+          />
+        </td>
+        <td>
+          <input
+            className="form-control"
+            value={tc.MillTcName}
+            onChange={(e) => handleRefTcChange(index, "MillTcName", e.target.value)}
+          />
+        </td>
+        <td>
+          <input
+            className="form-control"
+            value={tc.MillTcNo}
+            onChange={(e) => handleRefTcChange(index, "MillTcNo", e.target.value)}
+          />
+        </td>
+        <td>
+          <input
+            type="date"
+            className="form-control"
+            value={tc.MillTcDate}
+            onChange={(e) => handleRefTcChange(index, "MillTcDate", e.target.value)}
+          />
+        </td>
+        <td>
+          <input
+            className="form-control"
+            value={tc.Location}
+            onChange={(e) => handleRefTcChange(index, "Location", e.target.value)}
+          />
+        </td>
+      </tr>
+    ))}
+  
                                   </tbody>
                                 </table>
+                                <button type="button" className="btn mt-2" onClick={addRefTcRow}>
+  + Add Row
+</button>
                               </div>
                             </div>
                           </div>
@@ -1132,7 +1318,7 @@ const PurchaseGrn = () => {
 
                     <div className="row text-end">
                       <div className="col-md-2">
-                      <button className="btn btn-primary" onClick={handleSubmit}>
+                      <button className="btn btn-primary" onClick={handleSubmitGRN}>
   Submit GRN
 </button>
                       </div>

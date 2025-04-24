@@ -70,12 +70,13 @@ const Newindent = () => {
                               <form className="d-flex flex-wrap">
                                 <div className="form-group col-md-1">
                                   <label htmlFor="sharp" className="form-label">
-                                    Produlink:
+                                    Plant:
                                   </label>
                                   <select id="sharp" className="form-control">
+                                  <option value="Select">Select</option>
                                     <option value="Produlink">Produlink</option>
-                                    <option value="option1">Option 1</option>
-                                    <option value="option2">Option 2</option>
+                                    
+                                    
                                   </select>
                                 </div>
                                 <div className="form-group col-md-1">
@@ -85,28 +86,18 @@ const Newindent = () => {
                                   >
                                     Series:
                                   </label>
-                                  <input
-                                    type="text"
-                                    className="form-control"
-                                    id="series"
-                                  />
-                                </div>
-                                <div className="form-group col-md-1 ">
-                                  <label
-                                    htmlFor="purchase"
-                                    className="form-label"
-                                  >
-                                    Purchase:
-                                  </label>
                                   <select
                                     id="purchase"
                                     className="form-control"
                                   >
                                     <option value="">Purchase...</option>
-                                    <option value="option1">Option 1</option>
-                                    <option value="option2">Option 2</option>
+                                    <option value="Purchase Indent">Purchase Indent</option>
+                                  
                                   </select>
                                 </div>
+                               
+                               
+                                 
                                 <div className="form-group col-md-1 ">
                                   <label
                                     htmlFor="indentNo"
@@ -157,7 +148,7 @@ const Newindent = () => {
                                     className="form-control"
                                   >
                                     <option value="">Office</option>
-                                    <option value="option1">Option 1</option>
+                                    <option value="option1">factory</option>
                                     <option value="option2">Option 2</option>
                                   </select>
                                 </div>
