@@ -521,6 +521,8 @@ function App() {
 
 <Route path="/POpdf/:id" element={<PurchaseOrderPDF />} />
 
+<Route path="/Supplier-Customer-Master/:id" element={<SupplierCustomerMaster />} />
+<Route path="/item-master-gernal/:id" element={<ItemMasterGernal/>} />
 
 
 

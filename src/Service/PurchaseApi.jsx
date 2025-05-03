@@ -536,4 +536,23 @@ export const deleteItem = async (id) => {
   }
 };
 
+export const getNextIndentNo = async (year) => {
+  try {
+    const response = await axios.get(`${BASE_URL}get-next-indent-no/?year=${year}`);
+    return response.data.next_IndentNo; // Correct access after await
+  } catch (error) {
+    throw new Error("Error fetching next indent number: " + error.message);
+  }
+};
 
+
+// In Services/PurchaseApi.jsx
+export const postIndent = async (data) => {
+  try {
+    const response = await axios.post(`${BASE_URL}api/indents/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error saving indent:", error);
+    throw error;
+  }
+};

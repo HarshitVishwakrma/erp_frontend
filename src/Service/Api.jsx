@@ -190,121 +190,135 @@ export const uploadFile = async (file) => {
 
 // Supplier Customer Master
 
-// Bant detail
-export const fetchBankDetails = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}Bank_Details/`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching bank details:", error);
-    throw error;
-  }
-};
 
-export const addBankDetail = async (formData) => {
-  try {
-    await axios.post(`${BASE_URL}Bank_Details/`, formData);
-  } catch (error) {
-    console.error("Error adding bank detail:", error);
-    throw error;
-  }
-};
-
-export const updateBankDetail = async (id, formData) => {
-  try {
-    await axios.put(`${BASE_URL}Bank_Details/${id}/`, formData);
-  } catch (error) {
-    console.error("Error updating bank detail:", error);
-    throw error;
-  }
-};
-
-export const deleteBankDetail = async (id) => {
-  try {
-    await axios.delete(`${BASE_URL}Bank_Details/${id}`);
-  } catch (error) {
-    console.error("Error deleting bank detail:", error);
-    throw error;
-  }
-};
-
-// Buyer Contact Details
-
-export const fetchBuyerContactDetails = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}Buyer_Contact/`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching buyer contact details:", error);
-    throw error;
-  }
-};
-
-export const addBuyerContactDetail = async (formData) => {
-  try {
-    await axios.post(`${BASE_URL}Buyer_Contact/`, formData);
-  } catch (error) {
-    console.error("Error adding buyer contact detail:", error);
-    throw error;
-  }
-};
-
-export const updateBuyerContactDetail = async (id, formData) => {
-  try {
-    await axios.put(`${BASE_URL}Buyer_Contact/${id}/`, formData);  // Note the trailing slash
-  } catch (error) {
-    console.error("Error updating buyer contact detail:", error);
-    throw error;
-  }
-};
-
-export const deleteBuyerContactDetail = async (id) => {
-  try {
-    await axios.delete(`${BASE_URL}Buyer_Contact/${id}`);
-  } catch (error) {
-    console.error("Error deleting buyer contact detail:", error);
-    throw error;
-  }
-};
 
 // Supplier Customer
 export const getNextNumber = async (type) => {
-  try{
-  const response = await fetch(`${BASE_URL}items/?type=${type}`);
-  const data = await response.json();
-    
-  if (data && data.next_number) {
-    return data.next_number;  // Return next_number if found
-  } else {
-    return "";  // Return empty string if no next_number found
+  try {
+    const response = await axios.get(`${BASE_URL}get-next-item-number/?type=${type}`);
+    return response.data.next_number;
+  } catch (error) {
+    console.error("Error fetching next item number:", error);
+    return "";
   }
-} catch (error) {
-  console.error("Error fetching next number:", error);
-  return "";  // Return empty string in case of error
-}
 };
 
-// Function to save form data
+// Function to save supplier/customer data
 export const SuplliersaveData = async (data) => {
   try {
-    const response = await fetch(`${BASE_URL}items/`, {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}api/SupplierData/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      throw new Error("Network response was not ok " + response.statusText);
+      const errorData = await response.json();
+      console.error("API Error Response:", errorData);
+      throw new Error(errorData.detail || "Network response was not ok");
     }
 
     return await response.json();
   } catch (error) {
     console.error("Error submitting form:", error);
-    return false;  // Return false in case of error
+    return { status: false, message: error.message };
   }
 };
+
+// Function to get supplier/customer data by ID
+export const getSupplierDataById = async (id) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}api/SupplierData/${id}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Network response was not ok");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching supplier data:", error);
+    return { status: false, message: error.message };
+  }
+};
+
+// Function to update supplier/customer data
+export const updateSupplierData = async (id, data) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}api/SupplierData/${id}/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Network response was not ok");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating supplier data:", error);
+    return { status: false, message: error.message };
+  }
+};
+
+
+// Function to delete supplier/customer data
+export const deleteSupplierData = async (id) => {
+  try {
+    const token = localStorage.getItem("access")
+
+    const response = await fetch(`${BASE_URL}api/SupplierData/${id}/`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.detail || "Network response was not ok")
+    }
+
+    return { status: true, message: "Supplier data deleted successfully" }
+  } catch (error) {
+    console.error("Error deleting supplier data:", error)
+    return { status: false, message: error.message }
+  }
+}
+
 
 // Supplier Vendor List
 export const getSupplierCustomerData = async () => {
@@ -321,6 +335,34 @@ export const getSupplierCustomerData = async () => {
     throw error;
   }
 };
+
+
+export const getSupplierList = async () => {
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}SupplierCustomerVendorList/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Network response was not ok");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching supplier list:", error);
+    throw error;
+  }
+};
+
 
 // Supplier card 1
 
@@ -2345,16 +2387,8 @@ export const searchRegionByCode = async (code) => {
 };
 
 
-// Vendor List
-export const getSupplierList = async () => {
-  try {
-    const response = await axios.get(`${BASE_URL}items/details/`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching supplier list:', error);
-    throw error;
-  }
-};
+
+
 
 
 // Supplier Fetch country
@@ -2393,7 +2427,7 @@ export const fetchCurrencyCodes = async () => {
 // item master main group
 export const fetchMainGroupData = async () => {
   try {
-    const response = await fetch(`${BASE_URL}MainGroupCode/tools/`);
+    const response = await fetch(`${BASE_URL}api/maingroup/`);
     const data = await response.json();
     return data;
   } catch (error) {
@@ -2414,28 +2448,24 @@ export const searchItemCrossItem = async (query) => {
 
 
 // APi Item
-const fetchData = async (query) => {
-  try {
-    const response = await axios.get(`${BASE_URL}ItemMasterList/?search=${query}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
-  }
-};
-
-export { fetchData };
-
 export const fetchItems = async () => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
   try {
-    const response = await axios.get(`${BASE_URL}AddItems/`);
+    const response = await axios.get(`${BASE_URL}api/item/summary/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error) {
-    console.error('Error fetching items:', error);
+    console.error("Error fetching items:", error);
     throw error;
   }
 };
-
 
 // State 
 export const fetchStateData = async () => {

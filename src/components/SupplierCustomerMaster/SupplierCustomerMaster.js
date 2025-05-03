@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom"
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -23,6 +24,9 @@ import {
   fetchPaymentTerms,
   // fetchRegions,
   // fetchStates,
+
+  getSupplierDataById,
+  updateSupplierData
 } from "../../Service/Api.jsx";
 
 
@@ -43,7 +47,16 @@ import { fetchStateData ,fetchStateDetails } from "../../Service/Api.jsx";
 
 
 const SupplierCustomerMaster = () => {
+
+  const { id } = useParams() // Get the ID from URL if in edit mode
+  const navigate = useNavigate()
+  const isEditMode = !!id // Check if we're in edit mode
+
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [bankDetails, setBankDetails] = useState([])
+  const [buyerContacts, setBuyerContacts] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const toggleSideNav = () => {
     setSideNavOpen(!sideNavOpen);
@@ -185,15 +198,94 @@ const SupplierCustomerMaster = () => {
   const [errors, setErrors] = useState({});
   const [showGSTNo2, setShowGSTNo2] = useState(false);
 
+  // Load supplier data if in edit mode
+  useEffect(() => {
+    const fetchSupplierData = async () => {
+      if (isEditMode) {
+        setIsLoading(true)
+        try {
+          const data = await getSupplierDataById(id)
+          if (data && !data.status) {
+            // Set form data
+            setFormData({
+              ...data,
+              // Convert date strings to proper format for date inputs
+              Insurance_Policy_Expiry_Date: data.Insurance_Policy_Expiry_Date
+                ? new Date(data.Insurance_Policy_Expiry_Date).toISOString().split("T")[0]
+                : "",
+              QMSC_Date: data.QMSC_Date ? new Date(data.QMSC_Date).toISOString().split("T")[0] : "",
+            })
+
+            // Set GST No2 visibility
+            setShowGSTNo2(data.GST_No === "Registered")
+
+            // Set bank details and buyer contacts
+            if (data.bank_details && Array.isArray(data.bank_details)) {
+              const bankDetailsWithIds = data.bank_details.map((detail, index) => ({
+                ...detail,
+                id: index + 1, // Add temporary IDs for UI operations
+              }))
+              setBankDetails(bankDetailsWithIds)
+              localStorage.setItem("bankDetails", JSON.stringify(bankDetailsWithIds))
+            }
+
+            if (data.buyer_contacts && Array.isArray(data.buyer_contacts)) {
+              const contactsWithIds = data.buyer_contacts.map((contact, index) => ({
+                ...contact,
+                id: index + 1, // Add temporary IDs for UI operations
+              }))
+              setBuyerContacts(contactsWithIds)
+              localStorage.setItem("buyerContacts", JSON.stringify(contactsWithIds))
+            }
+          } else {
+            toast.error("Failed to load supplier data")
+            navigate("/Vender-List") // Redirect back to list on error
+          }
+        } catch (error) {
+          console.error("Error loading supplier data:", error)
+          toast.error("Error loading supplier data")
+          navigate("/Vender-List") // Redirect back to list on error
+        } finally {
+          setIsLoading(false)
+        }
+      } else {
+        // Clear any existing data when creating a new supplier
+        localStorage.removeItem("bankDetails")
+        localStorage.removeItem("buyerContacts")
+        setBankDetails([])
+        setBuyerContacts([])
+        setFormData(initialFormData)
+      }
+    }
+
+    fetchSupplierData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isEditMode, navigate])
+
+  // Load bank details and buyer contacts from localStorage
+  useEffect(() => {
+    if (!isEditMode) {
+      const storedBankDetails = localStorage.getItem("bankDetails")
+      if (storedBankDetails) {
+        setBankDetails(JSON.parse(storedBankDetails))
+      }
+
+      const storedBuyerContacts = localStorage.getItem("buyerContacts")
+      if (storedBuyerContacts) {
+        setBuyerContacts(JSON.parse(storedBuyerContacts))
+      }
+    }
+  }, [isEditMode])
+
   const validate = () => {
-    const newErrors = {};
+    const newErrors = {}
 
     // List of fields that are required
     const requiredFields = [
       "type",
       "Name",
-      "Address_Line_1", 
-    "Region",
+      "Address_Line_1",
+      "Region",
       "PAN_Type",
       "PAN_NO",
       "State_Code",
@@ -201,153 +293,232 @@ const SupplierCustomerMaster = () => {
       "number",
       "Payment_Term",
       "Pin_Code",
-   
+    ]
 
-      
-      // Add other required fields here
-    ];
     requiredFields.forEach((field) => {
       if (!formData[field] || formData[field].trim() === "") {
-        newErrors[field] = "This field is required";
+        newErrors[field] = "This field is required"
       }
-    });
+    })
 
     // Validate PAN number format
     if (formData.PAN_NO && !validatePAN(formData.PAN_NO)) {
-      newErrors.PAN_NO = "Invalid PAN format";
+      newErrors.PAN_NO = "Invalid PAN format"
     }
 
     // Validate email format
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (formData.Email_Id && !emailPattern.test(formData.Email_Id)) {
-      newErrors.Email_Id = "Invalid email format";
+      newErrors.Email_Id = "Invalid email format"
     }
 
     // Validate phone number (example pattern)
-    const phonePattern = /^[0-9]{10}$/;
+    const phonePattern = /^[0-9]{10}$/
     if (formData.Contact_No && !phonePattern.test(formData.Contact_No)) {
-      newErrors.Contact_No = "Invalid contact number";
+      newErrors.Contact_No = "Invalid contact number"
     }
 
     // Validate GST number format (example pattern)
-    // const gstPattern = /^[0-9A-Z]{15}$/;
-    // if (formData.GST_No && !gstPattern.test(formData.GST_No)) {
-    //   newErrors.GST_No = "Invalid GST number format";
-    // }
-
-
-    if (!formData.GST_No || formData.GST_No.trim() === "") {
-      newErrors.GST_No = "GST Type is required";
+    if (formData.GST_No === "Registered" && (!formData.GST_No2 || !validateGST(formData.GST_No2))) {
+      newErrors.GST_No2 = "Invalid GST number format"
     }
-  
-
 
     // Validate URL format for website
-    const urlPattern = /^(https?:\/\/)?[^\s/$.?#].[^\s]*$/i;
+    const urlPattern = /^(https?:\/\/)?[^\s/$.?#].[^\s]*$/i
     if (formData.Website && !urlPattern.test(formData.Website)) {
-      newErrors.Website = "Invalid URL format";
+      newErrors.Website = "Invalid URL format"
     }
 
     // Validate discount percentage (0-100)
-    if (
-      formData.Discount_Per &&
-      (formData.Discount_Per < 0 || formData.Discount_Per > 100)
-    ) {
-      newErrors.Discount_Per = "Discount percentage must be between 0 and 100";
+    if (formData.Discount_Per && (formData.Discount_Per < 0 || formData.Discount_Per > 100)) {
+      newErrors.Discount_Per = "Discount percentage must be between 0 and 100"
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
+  const validateGST = (gst) => {
+    // GST format: 2 digit state code + 10 digit PAN + 1 digit entity number + 1 digit check digit + Z
+    const gstPattern = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/
+    return gstPattern.test(gst)
+  }
   const handleChange = async (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked } = e.target
 
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: type === "checkbox" ? checked : value,
-    }));
+    }))
 
-
-    if (name === 'GST_No') {
-      setShowGSTNo2(value === 'Registered');
+    if (name === "GST_No") {
+      setShowGSTNo2(value === "Registered")
     }
 
     if (name === "GST_No2" && value.length >= 3) {
-      const lastThreeDigits = value.slice(-3);
-      const updatedGST_No2 = `${formData.State_Code}${formData.PAN_NO}${lastThreeDigits}`;
-      setFormData({
-        ...formData,
-        GST_No2: updatedGST_No2,
-      });
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (formData.type) {  // Ensure 'type' is not empty
-        const nextNumber = await getNextNumber(formData.type);
-        setFormData((prevData) => ({
-          ...prevData,
-          number: nextNumber,  // Automatically update the 'number' field with next_number
-        }));
+      // Only update if we have state code and PAN number
+      if (formData.State_Code && formData.PAN_NO) {
+        const lastThreeDigits = value.slice(-3)
+        const updatedGST_No2 = `${formData.State_Code}${formData.PAN_NO}${lastThreeDigits}`
+        setFormData((prev) => ({
+          ...prev,
+          GST_No2: updatedGST_No2,
+          LastThreeDigits: lastThreeDigits,
+        }))
       }
-    };
-    fetchData();
-  }, [formData.type]);
+    }
 
-
+    // If changing 'type', fetch next number
+    if (name === "type") {
+      try {
+        const nextNumber = await getNextNumber(value)
+        setFormData((prev) => ({ ...prev, number: nextNumber, type: value }))
+      } catch (error) {
+        console.error("Error fetching next number:", error)
+        toast.error("Failed to fetch next number")
+      }
+    }
+  }
 
   const validatePAN = (pan) => {
-    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    return panPattern.test(pan);
-  };
+    const panPattern = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/
+    return panPattern.test(pan)
+  }
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (formData.type) {  // Ensure 'type' is not empty
+  //       const nextNumber = await getNextNumber(formData.type);
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         number: nextNumber,  // Automatically update the 'number' field with next_number
+  //       }));
+  //     }
+  //   };
+  //   fetchData();
+  // }, [formData.type]);
+
+
+
+
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newErrors = {};
+    e.preventDefault()
 
-    console.log("Form Data Before Submission:", formData);
+    if (isSubmitting) return // Prevent multiple submissions
 
-    if (!formData.PAN_NO) {
-      newErrors.PAN_NO = "PAN is required";
-    } else if (!validatePAN(formData.PAN_NO)) {
-      newErrors.PAN_NO = "Invalid PAN format";
-    }
-
-    if (!formData.PAN_Type) {
-      newErrors.PAN_Type = "PAN type is required";
-    }
-    if (!formData.type || !formData.number) {
-      setErrors({ type: "Type is required", number: "Code No is required" });
-      return;
-    }
+    setIsSubmitting(true)
 
     if (validate()) {
       try {
-        const response = await SuplliersaveData(formData);
-  
-        if (response.status === false) {
-          console.error("Failed to submit form:", response.message);
-          toast.error(`Failed to submit form: ${response.message}`);
+        // Prepare the data with bank details and buyer contacts
+        const dataToSubmit = {
+          ...formData,
+          bank_details: bankDetails.map((detail) => ({
+            Account_Holder_name: detail.Account_Holder_name,
+            Bank_Name: detail.Bank_Name,
+            Branch_Name: detail.Branch_Name,
+            Bank_Account: detail.Bank_Account,
+            IFSC_Code: detail.IFSC_Code,
+          })),
+          buyer_contacts: buyerContacts.map((contact) => ({
+            Person_Name: contact.Person_Name,
+            Contact_No: contact.Contact_No,
+            Email: contact.Email,
+            Department: contact.Department,
+            Designation: contact.Designation,
+            Birth_Date: contact.Birth_Date,
+          })),
+        }
+
+        let response
+        if (isEditMode) {
+          // Update existing supplier
+          response = await updateSupplierData(id, dataToSubmit)
         } else {
-          console.log("Form submitted successfully:", response);
-          toast.success("Form submitted successfully!");
-          setFormData(initialFormData);  // Reset form
+          // Create new supplier
+          response = await SuplliersaveData(dataToSubmit)
+        }
+
+        if (response.status === false) {
+          console.error("Failed to submit form:", response.message)
+          toast.error(`Failed to submit form: ${response.message}`)
+        } else {
+          console.log("Form submitted successfully:", response)
+          toast.success(`Supplier ${isEditMode ? "updated" : "created"} successfully!`)
+
+          // Clear the stored bank details and buyer contacts
+          localStorage.removeItem("bankDetails")
+          localStorage.removeItem("buyerContacts")
+
+          // Redirect to list page after successful submission
+          setTimeout(() => {
+            navigate("/Vender-List")
+          }, 2000)
         }
       } catch (error) {
-        console.error("Unexpected error occurred during submission:", error.message);
-        toast.error(`Unexpected error occurred: ${error.message}`);
+        console.error("Unexpected error occurred during submission:", error.message)
+        toast.error(`Unexpected error occurred: ${error.message}`)
+      } finally {
+        setIsSubmitting(false)
       }
     } else {
-      console.log("Validation errors:", errors);
+      console.log("Validation errors:", errors)
+      toast.error("Please fix the validation errors before submitting")
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleClear = () => {
-    console.log("clear");
-    setFormData(initialFormData);
-  };
+    if (isEditMode) {
+      // In edit mode, reload the original data
+      const fetchSupplierData = async () => {
+        try {
+          const data = await getSupplierDataById(id)
+          if (data && !data.status) {
+            setFormData({
+              ...data,
+              Insurance_Policy_Expiry_Date: data.Insurance_Policy_Expiry_Date
+                ? new Date(data.Insurance_Policy_Expiry_Date).toISOString().split("T")[0]
+                : "",
+              QMSC_Date: data.QMSC_Date ? new Date(data.QMSC_Date).toISOString().split("T")[0] : "",
+            })
+            setShowGSTNo2(data.GST_No === "Registered")
+
+            if (data.bank_details && Array.isArray(data.bank_details)) {
+              const bankDetailsWithIds = data.bank_details.map((detail, index) => ({
+                ...detail,
+                id: index + 1,
+              }))
+              setBankDetails(bankDetailsWithIds)
+              localStorage.setItem("bankDetails", JSON.stringify(bankDetailsWithIds))
+            }
+
+            if (data.buyer_contacts && Array.isArray(data.buyer_contacts)) {
+              const contactsWithIds = data.buyer_contacts.map((contact, index) => ({
+                ...contact,
+                id: index + 1,
+              }))
+              setBuyerContacts(contactsWithIds)
+              localStorage.setItem("buyerContacts", JSON.stringify(contactsWithIds))
+            }
+          }
+        } catch (error) {
+          console.error("Error reloading supplier data:", error)
+        }
+      }
+      fetchSupplierData()
+    } else {
+      // In create mode, reset to initial state
+      setFormData(initialFormData)
+      setErrors({})
+      localStorage.removeItem("bankDetails")
+      localStorage.removeItem("buyerContacts")
+      setBankDetails([])
+      setBuyerContacts([])
+    }
+    toast.info("Form reset")
+  }
 
   
 
@@ -504,6 +675,16 @@ useEffect(() => {
 
   // Type supplier
 
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading supplier data...</p>
+      </div>
+    )
+  }
   return (
     <div className="SupplierC">
       <ToastContainer />

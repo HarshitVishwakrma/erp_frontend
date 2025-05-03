@@ -1,127 +1,100 @@
-import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import toast styles
-import {
-  fetchBankDetails,
-  addBankDetail,
-  deleteBankDetail,
-  updateBankDetail,
-} from "../../Service/Api.jsx";
+"use client"
 
-// Helper function to capitalize the first letter of a string
-const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+import { useState, useEffect } from "react"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
-const BankDetails = () => {
+const BankDetail = ({ bankDetails, setBankDetails }) => {
+  const [editingId, setEditingId] = useState(null)
   const [formData, setFormData] = useState({
     Account_Holder_name: "",
     Bank_Name: "",
     Branch_Name: "",
     Bank_Account: "",
     IFSC_Code: "",
-  });
+  })
+  const [errors, setErrors] = useState({})
 
-  const [bankDetails, setBankDetails] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [editingId, setEditingId] = useState(null);
+  // Function to capitalize first letter of error messages
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1)
+  }
 
+  // Update localStorage when bank details change
   useEffect(() => {
-    const loadBankDetails = async () => {
-      try {
-        const data = await fetchBankDetails();
-        setBankDetails(data);
-      } catch (error) {
-        toast.error("Error fetching bank details!");
-      }
-    };
-
-    loadBankDetails();
-  }, []);
-
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setErrors({ ...errors, [e.target.name]: "" });
-  };
+    if (bankDetails && bankDetails.length > 0) {
+      localStorage.setItem("bankDetails", JSON.stringify(bankDetails))
+    }
+  }, [bankDetails])
 
   const validateForm = () => {
-    let valid = true;
-    const newErrors = {};
-
+    const newErrors = {}
     if (!formData.Account_Holder_name) {
-      newErrors.Account_Holder_name = "Account Holder Name is required.";
-      valid = false;
+      newErrors.Account_Holder_name = "account holder name is required"
     }
     if (!formData.Bank_Name) {
-      newErrors.Bank_Name = "Bank Name is required.";
-      valid = false;
+      newErrors.Bank_Name = "bank name is required"
     }
     if (!formData.Branch_Name) {
-      newErrors.Branch_Name = "Branch Name is required.";
-      valid = false;
+      newErrors.Branch_Name = "branch name is required"
     }
     if (!formData.Bank_Account) {
-      newErrors.Bank_Account = "Bank Account Number is required.";
-      valid = false;
-    } else if (!/^\d{9,18}$/.test(formData.Bank_Account)) {
-      newErrors.Bank_Account = "Invalid account number. It should be 9 to 18 digits long.";
-      valid = false;
+      newErrors.Bank_Account = "bank account number is required"
     }
     if (!formData.IFSC_Code) {
-      newErrors.IFSC_Code = "IFSC Code is required.";
-      valid = false;
-    } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.IFSC_Code)) {
-      newErrors.IFSC_Code = "Invalid IFSC Code. It should be in the format ABCD0123456.";
-      valid = false;
+      newErrors.IFSC_Code = "IFSC code is required"
     }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
-    setErrors(newErrors);
-    return valid;
-  };
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData({
+      ...formData,
+      [name]: value,
+    })
+  }
 
-  const handleAddOrUpdateBankDetail = async () => {
-    if (validateForm()) {
-      try {
-        if (editingId) {
-          // Update existing bank detail
-          await updateBankDetail(editingId, formData);
-          toast.success("Bank detail updated successfully!");
-        } else {
-          // Check if bank account or IFSC already exists
-          const isDuplicate = bankDetails.some(
-            (detail) =>
-              detail.Bank_Account === formData.Bank_Account ||
-              detail.IFSC_Code === formData.IFSC_Code
-          );
-  
-          if (isDuplicate) {
-            toast.error("Bank detail with the same Account Number or IFSC Code already exists!");
-            return;
-          }
-  
-          // Add new bank detail
-          await addBankDetail(formData);
-          toast.success("Bank detail added successfully!");
-        }
-  
-        // Refresh the list
-        const updatedBankDetails = await fetchBankDetails();
-        setBankDetails(updatedBankDetails);
-        setFormData({
-          Account_Holder_name: "",
-          Bank_Name: "",
-          Branch_Name: "",
-          Bank_Account: "",
-          IFSC_Code: "",
-        });
-        setEditingId(null);
-      } catch (error) {
-        toast.error("Error saving bank detail!");
+  const handleAddOrUpdateBankDetail = () => {
+    if (!validateForm()) return
+
+    if (editingId) {
+      // Update existing bank detail
+      const updatedBankDetails = bankDetails.map((detail) =>
+        detail.id === editingId ? { ...formData, id: editingId } : detail,
+      )
+      setBankDetails(updatedBankDetails)
+      toast.success("Bank detail updated successfully")
+      setEditingId(null)
+    } else {
+      // Add new bank detail
+      const newBankDetail = {
+        ...formData,
+        id: Date.now(), // Use timestamp as temporary ID
       }
+      setBankDetails([...bankDetails, newBankDetail])
+      toast.success("Bank detail added successfully")
     }
-  };
-  
+
+    // Reset form
+    setFormData({
+      Account_Holder_name: "",
+      Bank_Name: "",
+      Branch_Name: "",
+      Bank_Account: "",
+      IFSC_Code: "",
+    })
+    setErrors({})
+  }
+
+  const handleDeleteBankDetail = (id) => {
+    if (window.confirm("Are you sure you want to delete this bank detail?")) {
+      const filteredBankDetails = bankDetails.filter((detail) => detail.id !== id)
+      setBankDetails(filteredBankDetails)
+      toast.success("Bank detail deleted successfully")
+    }
+  }
 
   const handleEditBankDetail = (detail) => {
     setFormData({
@@ -130,21 +103,10 @@ const BankDetails = () => {
       Branch_Name: detail.Branch_Name,
       Bank_Account: detail.Bank_Account,
       IFSC_Code: detail.IFSC_Code,
-    });
-    setEditingId(detail.id);
-  };
-
-  const handleDeleteBankDetail = async (id) => {
-    try {
-      await deleteBankDetail(id);
-      const updatedBankDetails = await fetchBankDetails(); // Refresh the list
-      setBankDetails(updatedBankDetails);
-      toast.success("Bank detail deleted successfully!");
-    } catch (error) {
-      toast.error("Error deleting bank detail!");
-    }
-  };
-
+    })
+    setEditingId(detail.id)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   return (
     <div className="Bankdetail">
@@ -161,11 +123,21 @@ const BankDetails = () => {
                 <table className="table table-bordered">
                   <thead>
                     <tr>
-                      <th className="blue-th">Account Holder Name <span className="text-danger">*</span>:</th>
-                      <th className="blue-th">Bank Name<span className="text-danger">*</span>:</th>
-                      <th className="blue-th">Branch Name<span className="text-danger">*</span>:</th>
-                      <th className="blue-th">Bank A/c No<span className="text-danger">*</span>:</th>
-                      <th className="blue-th">IFSC Code<span className="text-danger">*</span>:</th>
+                      <th className="blue-th">
+                        Account Holder Name <span className="text-danger">*</span>:
+                      </th>
+                      <th className="blue-th">
+                        Bank Name<span className="text-danger">*</span>:
+                      </th>
+                      <th className="blue-th">
+                        Branch Name<span className="text-danger">*</span>:
+                      </th>
+                      <th className="blue-th">
+                        Bank A/c No<span className="text-danger">*</span>:
+                      </th>
+                      <th className="blue-th">
+                        IFSC Code<span className="text-danger">*</span>:
+                      </th>
                       <th className="blue-th">Action</th>
                     </tr>
                   </thead>
@@ -180,7 +152,9 @@ const BankDetails = () => {
                           className="form-control"
                           placeholder="Enter name"
                         />
-                        {errors.Account_Holder_name && <div className="text-danger">{capitalizeFirstLetter(errors.Account_Holder_name)}</div>}
+                        {errors.Account_Holder_name && (
+                          <div className="text-danger">{capitalizeFirstLetter(errors.Account_Holder_name)}</div>
+                        )}
                       </td>
                       <td>
                         <input
@@ -191,7 +165,9 @@ const BankDetails = () => {
                           className="form-control"
                           placeholder="Enter bank name"
                         />
-                        {errors.Bank_Name && <div className="text-danger">{capitalizeFirstLetter(errors.Bank_Name)}</div>}
+                        {errors.Bank_Name && (
+                          <div className="text-danger">{capitalizeFirstLetter(errors.Bank_Name)}</div>
+                        )}
                       </td>
                       <td>
                         <input
@@ -202,7 +178,9 @@ const BankDetails = () => {
                           className="form-control"
                           placeholder="Enter branch name"
                         />
-                        {errors.Branch_Name && <div className="text-danger">{capitalizeFirstLetter(errors.Branch_Name)}</div>}
+                        {errors.Branch_Name && (
+                          <div className="text-danger">{capitalizeFirstLetter(errors.Branch_Name)}</div>
+                        )}
                       </td>
                       <td>
                         <input
@@ -213,7 +191,9 @@ const BankDetails = () => {
                           className="form-control"
                           placeholder="Enter account number"
                         />
-                        {errors.Bank_Account && <div className="text-danger">{capitalizeFirstLetter(errors.Bank_Account)}</div>}
+                        {errors.Bank_Account && (
+                          <div className="text-danger">{capitalizeFirstLetter(errors.Bank_Account)}</div>
+                        )}
                       </td>
                       <td>
                         <input
@@ -224,13 +204,12 @@ const BankDetails = () => {
                           className="form-control"
                           placeholder="Enter IFSC code"
                         />
-                        {errors.IFSC_Code && <div className="text-danger">{capitalizeFirstLetter(errors.IFSC_Code)}</div>}
+                        {errors.IFSC_Code && (
+                          <div className="text-danger">{capitalizeFirstLetter(errors.IFSC_Code)}</div>
+                        )}
                       </td>
                       <td>
-                        <button
-                          className="bankbtn"
-                          onClick={handleAddOrUpdateBankDetail}
-                        >
+                        <button className="bankbtn" onClick={handleAddOrUpdateBankDetail}>
                           <i className="fas fa-plus"></i> {editingId ? "Update" : "Add"}
                         </button>
                       </td>
@@ -254,33 +233,35 @@ const BankDetails = () => {
                       <th className="blue-th">Branch Name</th>
                       <th className="blue-th">Bank Ac No</th>
                       <th className="blue-th">IFSC Code</th>
-                      <th className="blue-th">Delete</th>
+                      <th className="blue-th">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {bankDetails.map((detail) => (
-                      <tr key={detail.id}>
-                        <td>{detail.Account_Holder_name}</td>
-                        <td>{detail.Bank_Name}</td>
-                        <td>{detail.Branch_Name}</td>
-                        <td>{detail.Bank_Account}</td>
-                        <td>{detail.IFSC_Code}</td>
-                        <td>
-                          <button
-                            className="bankbtn2"
-                            onClick={() => handleDeleteBankDetail(detail.id)}
-                          >
-                            <i className="fas fa-trash-alt"></i>
-                          </button>
-                          <button
-                            className="bankbtn2"
-                            onClick={() => handleEditBankDetail(detail)}
-                          >
-                            <i className="fas fa-edit"></i>
-                          </button>
+                    {bankDetails && bankDetails.length > 0 ? (
+                      bankDetails.map((detail) => (
+                        <tr key={detail.id}>
+                          <td>{detail.Account_Holder_name}</td>
+                          <td>{detail.Bank_Name}</td>
+                          <td>{detail.Branch_Name}</td>
+                          <td>{detail.Bank_Account}</td>
+                          <td>{detail.IFSC_Code}</td>
+                          <td>
+                            <button className="bankbtn2 me-2" onClick={() => handleEditBankDetail(detail)}>
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button className="bankbtn2" onClick={() => handleDeleteBankDetail(detail.id)}>
+                              <i className="fas fa-trash-alt"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="text-center">
+                          No bank details added yet
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -290,7 +271,7 @@ const BankDetails = () => {
       </div>
       <ToastContainer />
     </div>
-  );
-};
+  )
+}
 
-export default BankDetails;
+export default BankDetail

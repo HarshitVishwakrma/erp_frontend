@@ -1,124 +1,112 @@
-import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import {
-  fetchBuyerContactDetails,
-  addBuyerContactDetail,
-  updateBuyerContactDetail,
-  deleteBuyerContactDetail,
-} from "../../Service/Api";
+"use client"
 
-const BuyerContactDetail = () => {
+import { useState, useEffect } from "react"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+
+const BuyerContactDetail = ({ buyerContacts, setBuyerContacts }) => {
   const [formData, setFormData] = useState({
-    id: null,
     Person_Name: "",
     Contact_No: "",
     Email: "",
     Department: "",
     Designation: "",
     Birth_Date: "",
-  });
+  })
+  const [errors, setErrors] = useState({})
 
-  const [buyerContacts, setBuyerContacts] = useState([]);
-  const [errors, setErrors] = useState({});
+  // Function to capitalize first letter of error messages
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1)
+  }
 
+  // Update localStorage when buyer contacts change
   useEffect(() => {
-    const loadBuyerContacts = async () => {
-      try {
-        const data = await fetchBuyerContactDetails();
-        setBuyerContacts(data);
-      } catch (error) {
-        toast.error("Error fetching buyer contact details!");
-      }
-    };
-
-    loadBuyerContacts();
-  }, []);
+    if (buyerContacts && buyerContacts.length > 0) {
+      localStorage.setItem("buyerContacts", JSON.stringify(buyerContacts))
+    }
+  }, [buyerContacts])
 
   const validateForm = () => {
-    const newErrors = {};
-    const phoneRegex = /^[0-9]{10}$/; // Adjust the regex as needed
-
-    if (!formData.Person_Name) newErrors.Person_Name = "Person name is required";
-    if (!formData.Contact_No || !phoneRegex.test(formData.Contact_No)) newErrors.Contact_No = "Valid contact number is required";
-    if (!formData.Email || !/\S+@\S+\.\S+/.test(formData.Email)) newErrors.Email = "Valid email is required";
-    if (!formData.Department) newErrors.Department = "Department is required";
-    if (!formData.Designation) newErrors.Designation = "Designation is required";
-    if (!formData.Birth_Date) newErrors.Birth_Date = "Birth date is required";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    const newErrors = {}
+    if (!formData.Person_Name) {
+      newErrors.Person_Name = "person name is required"
+    }
+    if (!formData.Contact_No) {
+      newErrors.Contact_No = "contact number is required"
+    } else if (!/^\+?[0-9]{10,15}$/.test(formData.Contact_No)) {
+      newErrors.Contact_No = "invalid contact number format"
+    }
+    if (!formData.Email) {
+      newErrors.Email = "email is required"
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
+      newErrors.Email = "invalid email format"
+    }
+    if (!formData.Department) {
+      newErrors.Department = "department is required"
+    }
+    if (!formData.Designation) {
+      newErrors.Designation = "designation is required"
+    }
+    if (!formData.Birth_Date) {
+      newErrors.Birth_Date = "birth date is required"
+    }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+      [name]: value,
+    })
+  }
 
-  const handleAddBuyerContact = async () => {
-    if (!validateForm()) return;
-  
-    try {
-      if (formData.id) {
-        // Updating existing contact
-        await updateBuyerContactDetail(formData.id, formData);
-        toast.success("Buyer contact detail updated successfully!");
-      } else {
-        // Check for duplicate email or contact number
-        const isDuplicate = buyerContacts.some(
-          (contact) =>
-            contact.Email.toLowerCase() === formData.Email.toLowerCase() ||
-            contact.Contact_No === formData.Contact_No
-        );
-  
-        if (isDuplicate) {
-          toast.error("A contact with the same email or phone number already exists!");
-          return;
-        }
-  
-        // Add new buyer contact
-        await addBuyerContactDetail(formData);
-        toast.success("Buyer contact detail added successfully!");
+  const handleAddBuyerContact = () => {
+    if (!validateForm()) return
+
+    if (formData.id) {
+      // Update existing contact
+      const updatedContacts = buyerContacts.map((contact) => (contact.id === formData.id ? { ...formData } : contact))
+      setBuyerContacts(updatedContacts)
+      toast.success("Contact updated successfully")
+    } else {
+      // Add new contact
+      const newContact = {
+        ...formData,
+        id: Date.now(), // Use timestamp as temporary ID
       }
-  
-      // Refresh the list
-      const updatedBuyerContacts = await fetchBuyerContactDetails();
-      setBuyerContacts(updatedBuyerContacts);
-      setFormData({
-        id: null,
-        Person_Name: "",
-        Contact_No: "",
-        Email: "",
-        Department: "",
-        Designation: "",
-        Birth_Date: "",
-      });
-    } catch (error) {
-      toast.error("Error saving buyer contact detail!");
+      setBuyerContacts([...buyerContacts, newContact])
+      toast.success("Contact added successfully")
     }
-  };
-  
+
+    // Reset form
+    setFormData({
+      Person_Name: "",
+      Contact_No: "",
+      Email: "",
+      Department: "",
+      Designation: "",
+      Birth_Date: "",
+    })
+    setErrors({})
+  }
+
+  const handleDeleteBuyerContact = (id) => {
+    if (window.confirm("Are you sure you want to delete this contact?")) {
+      const filteredContacts = buyerContacts.filter((contact) => contact.id !== id)
+      setBuyerContacts(filteredContacts)
+      toast.success("Contact deleted successfully")
+    }
+  }
 
   const handleEditBuyerContact = (contact) => {
-    setFormData(contact);
-  };
-
-  const handleDeleteBuyerContact = async (id) => {
-    try {
-      await deleteBuyerContactDetail(id);
-      const updatedBuyerContacts = await fetchBuyerContactDetails();
-      setBuyerContacts(updatedBuyerContacts);
-      toast.success("Buyer contact detail deleted successfully!");
-    } catch (error) {
-      toast.error("Error deleting buyer contact detail!");
-    }
-  };
-
-  const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
+    setFormData({
+      ...contact,
+    })
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   return (
     <div className="Buyer">
@@ -170,9 +158,7 @@ const BuyerContactDetail = () => {
                           placeholder="Enter name"
                         />
                         {errors.Person_Name && (
-                          <small className="text-danger">
-                            {capitalizeFirstLetter(errors.Person_Name)}
-                          </small>
+                          <small className="text-danger">{capitalizeFirstLetter(errors.Person_Name)}</small>
                         )}
                       </td>
                       <td>
@@ -185,9 +171,7 @@ const BuyerContactDetail = () => {
                           placeholder="Enter contact"
                         />
                         {errors.Contact_No && (
-                          <small className="text-danger">
-                            {capitalizeFirstLetter(errors.Contact_No)}
-                          </small>
+                          <small className="text-danger">{capitalizeFirstLetter(errors.Contact_No)}</small>
                         )}
                       </td>
                       <td>
@@ -199,11 +183,7 @@ const BuyerContactDetail = () => {
                           className="form-control"
                           placeholder="Enter email"
                         />
-                        {errors.Email && (
-                          <small className="text-danger">
-                            {capitalizeFirstLetter(errors.Email)}
-                          </small>
-                        )}
+                        {errors.Email && <small className="text-danger">{capitalizeFirstLetter(errors.Email)}</small>}
                       </td>
                       <td>
                         <input
@@ -215,9 +195,7 @@ const BuyerContactDetail = () => {
                           placeholder="Enter department"
                         />
                         {errors.Department && (
-                          <small className="text-danger">
-                            {capitalizeFirstLetter(errors.Department)}
-                          </small>
+                          <small className="text-danger">{capitalizeFirstLetter(errors.Department)}</small>
                         )}
                       </td>
                       <td>
@@ -230,9 +208,7 @@ const BuyerContactDetail = () => {
                           placeholder="Enter designation"
                         />
                         {errors.Designation && (
-                          <small className="text-danger">
-                            {capitalizeFirstLetter(errors.Designation)}
-                          </small>
+                          <small className="text-danger">{capitalizeFirstLetter(errors.Designation)}</small>
                         )}
                       </td>
                       <td>
@@ -244,20 +220,19 @@ const BuyerContactDetail = () => {
                           className="form-control"
                         />
                         {errors.Birth_Date && (
-                          <small className="text-danger">
-                            {capitalizeFirstLetter(errors.Birth_Date)}
-                          </small>
+                          <small className="text-danger">{capitalizeFirstLetter(errors.Birth_Date)}</small>
                         )}
                       </td>
                       <td>
-                        <button
-                          className="bankbtn"
-                          onClick={handleAddBuyerContact}
-                        >
+                        <button className="bankbtn" onClick={handleAddBuyerContact}>
                           {formData.id ? (
-                            <><i className="fas fa-save"></i> Save</>
+                            <>
+                              <i className="fas fa-save"></i> Save
+                            </>
                           ) : (
-                            <><i className="fas fa-plus"></i> Add</>
+                            <>
+                              <i className="fas fa-plus"></i> Add
+                            </>
                           )}
                         </button>
                       </td>
@@ -295,35 +270,37 @@ const BuyerContactDetail = () => {
                         Birth Date
                       </th>
                       <th className="blue-th" scope="col">
-                        Delete
+                        Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {buyerContacts.map((contact) => (
-                      <tr key={contact.id}>
-                        <td>{contact.Person_Name}</td>
-                        <td>{contact.Contact_No}</td>
-                        <td>{contact.Email}</td>
-                        <td>{contact.Department}</td>
-                        <td>{contact.Designation}</td>
-                        <td>{contact.Birth_Date}</td>
-                        <td>
-                          <button
-                            className="bankbtn"
-                            onClick={() => handleEditBuyerContact(contact)}
-                          >
-                            <i className="fas fa-edit"></i> 
-                          </button>
-                          <button
-                            className="bankbtn"
-                            onClick={() => handleDeleteBuyerContact(contact.id)}
-                          >
-                            <i className="fas fa-trash"></i> 
-                          </button>
+                    {buyerContacts && buyerContacts.length > 0 ? (
+                      buyerContacts.map((contact) => (
+                        <tr key={contact.id}>
+                          <td>{contact.Person_Name}</td>
+                          <td>{contact.Contact_No}</td>
+                          <td>{contact.Email}</td>
+                          <td>{contact.Department}</td>
+                          <td>{contact.Designation}</td>
+                          <td>{contact.Birth_Date}</td>
+                          <td>
+                            <button className="bankbtn me-2" onClick={() => handleEditBuyerContact(contact)}>
+                              <i className="fas fa-edit"></i>
+                            </button>
+                            <button className="bankbtn" onClick={() => handleDeleteBuyerContact(contact.id)}>
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="text-center">
+                          No contacts added yet
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -333,7 +310,7 @@ const BuyerContactDetail = () => {
       </div>
       <ToastContainer />
     </div>
-  );
-};
+  )
+}
 
-export default BuyerContactDetail;
+export default BuyerContactDetail

@@ -39,10 +39,12 @@ const Login = () => {
   
       if (data.message === "Login successful") {
         // Store the full year and Shortyear in localStorage
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("year", data.year); // Store the full year (e.g., "2024-2025")
-        localStorage.setItem("Shortyear", data.Shortyear); // Store the Shortyear (e.g., "2425")
-        localStorage.setItem("permissions", JSON.stringify(data.permissions));
+        localStorage.setItem("accessToken", data.access);
+  localStorage.setItem("refreshToken", data.refresh);
+  localStorage.setItem("username", data.username);
+  localStorage.setItem("year", data.year);
+  localStorage.setItem("Shortyear", data.Shortyear);
+  localStorage.setItem("permissions", JSON.stringify(data.permissions));
   
         // Redirect to dashboard or another page
         navigate("/dashboard");

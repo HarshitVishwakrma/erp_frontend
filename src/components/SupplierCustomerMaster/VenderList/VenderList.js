@@ -214,17 +214,13 @@ const VenderList = () => {
                                     <th className="blue-th" scope="col">
                                       User
                                     </th>
+                                 
+                                   
                                     <th className="blue-th" scope="col">
-                                      Rev
+                                      View
                                     </th>
                                     <th className="blue-th" scope="col">
                                       Edit
-                                    </th>
-                                    <th className="blue-th" scope="col">
-                                      View1
-                                    </th>
-                                    <th className="blue-th" scope="col">
-                                      View2
                                     </th>
                                   </tr>
                                 </thead>
@@ -243,16 +239,33 @@ const VenderList = () => {
                                       <td>{item.GST_No}</td>
                                       <td>{item.GST_No2}</td>
                                       <td>{item.GST_Tax_Code}</td>
-                                      <td>{item.Auth}</td>
-                                      <td>{item.User}</td>
-                                      <td>{item.Rev}</td>
                                       <td>
-                                        <button style={{ border: "none" }}>
-                                          <FaEdit />
-                                        </button>
-                                      </td>
-                                      <td>View</td>
-                                      <td>View</td>
+  {item.Auth ? <i className="fas fa-check text-success"></i> : <i className="fas fa-times text-danger"></i>}
+</td>
+
+                                      <td>{item.User}</td>
+                                      
+                                     
+                                      <td>
+                                      <a
+  href={`http://3.7.91.234:8000${item.View}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="btn btn-sm btn-primary"
+>
+  View
+</a>
+
+        </td>
+        <td>
+        <Link
+  to={`/Supplier-Customer-Master/${item.id}`}
+  className="btn btn-sm btn-warning"
+>
+  <FaEdit />
+</Link>
+        </td>
+                                      
                                     </tr>
                                   ))}
                                 </tbody>
