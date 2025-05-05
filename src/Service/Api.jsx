@@ -2502,6 +2502,34 @@ export const fetchItems = async () => {
   }
 };
 
+
+export const fetchItemById = async (id) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}api/item/summary/${id}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Network response was not ok");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching supplier data:", error);
+    return { status: false, message: error.message };
+  }
+};
 // State 
 export const fetchStateData = async () => {
   try {

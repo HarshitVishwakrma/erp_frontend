@@ -83,15 +83,30 @@ loginUser = async (username, password,year) => {
   
   // Assign permissions
   export const assignPermissions = async (userId, modulesToSubmit) => {
+    const token = localStorage.getItem("accessToken");
+  
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+  
     try {
-      const response = await axios.post(`${BASE_URL}api/assign-permission/`, {
-        id: userId,
-        modules: modulesToSubmit,
-      });
-      return response.data; // Ensure only `response.data` is returned
+      const response = await axios.post(
+        `${BASE_URL}api/assign-permission/`,
+        {
+          id: userId,
+          modules: modulesToSubmit,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
     } catch (error) {
       console.error("Error in assignPermissions API:", error);
-      throw error; // Re-throw the error for the caller to handle
+      throw error;
     }
   };
   

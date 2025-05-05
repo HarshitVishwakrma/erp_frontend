@@ -327,7 +327,7 @@ export const postPurchaseGRN = async (payload) => {
 
 export const getPoDetailsByPoNo = async (poNo) => {
   try {
-    const response = await axios.get(`${Base_Url}api/get-by-pono/${poNo}/`);
+    const response = await axios.get(`${Base_Url}get-by-pono/${poNo}/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching PO details:", error);

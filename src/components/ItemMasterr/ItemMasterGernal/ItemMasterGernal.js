@@ -25,7 +25,7 @@ import NewCardParentFg from "../ItemGernalCard/NewCardParentFg.jsx";
 import { saveItemMaster } from "../../../Service/Api.jsx";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
+import { Link ,useParams ,useNavigate} from "react-router-dom";
 import {
   getItems,
   // getGrades,
@@ -40,34 +40,35 @@ import {
   getItemSections,
   getItemGroups,
 } from "../../../Service/Api.jsx";
-import { fetchNextPartNo, getUnitCode } from "../../../Service/Api.jsx";
+import { fetchNextPartNo, getUnitCode , fetchItemById } from "../../../Service/Api.jsx";
 
 const ItemMasterGernal = () => {
-  const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [showNewCardMainGroup, setShowNewCardMainGroup] = useState(false);
+  const { id } = useParams() // Get the item ID from URL if it exists
+  const navigate = useNavigate()
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [sideNavOpen, setSideNavOpen] = useState(false)
+  const [showNewCardMainGroup, setShowNewCardMainGroup] = useState(false)
 
-  const [showNewCardUnit, setShowNewCardUnit] = useState(false);
-  const [showNewCardTdc, setShowNewCardTdc] = useState(false);
-  const [showNewCardItemgroup, setShowNewCardItemgroup] = useState(false);
-  const [showNewCardStoreLocation, setShowNewCardStoreLocation] =
-    useState(false);
-  const [showNewCardRoute, setShowNewCardRoute] = useState(false);
-  const [showNewCardSector, setShowNewCardSector] = useState(false);
-  const [showNewCardItemSector, setShowNewCardItemSector] = useState(false);
-  const [showNewCardGrade, setShowNewCardGrade] = useState(false);
-  const [showNewCardGradeMaster, setShowNewCardGradeMaster] = useState(false);
-  const [showNewCardModelType, setShowNewCardModelType] = useState(false);
-  const [showNewCardParentFg, setShowNewCardParentFg] = useState(false);
-  const [items, setItems] = useState([]);
-  const [unitCodes, setUnitCodes] = useState([]);
+  const [showNewCardUnit, setShowNewCardUnit] = useState(false)
+  const [showNewCardTdc, setShowNewCardTdc] = useState(false)
+  const [showNewCardItemgroup, setShowNewCardItemgroup] = useState(false)
+  const [showNewCardStoreLocation, setShowNewCardStoreLocation] = useState(false)
+  const [showNewCardRoute, setShowNewCardRoute] = useState(false)
+  const [showNewCardSector, setShowNewCardSector] = useState(false)
+  const [showNewCardItemSector, setShowNewCardItemSector] = useState(false)
+  const [showNewCardGrade, setShowNewCardGrade] = useState(false)
+  const [showNewCardGradeMaster, setShowNewCardGradeMaster] = useState(false)
+  const [showNewCardModelType, setShowNewCardModelType] = useState(false)
+  const [showNewCardParentFg, setShowNewCardParentFg] = useState(false)
+  const [items, setItems] = useState([])
+  const [unitCodes, setUnitCodes] = useState([])
   // const [grades, setGrades] = useState([]);
 
-    // New state for data from other tabs
-    const [technicalSpecifications, setTechnicalSpecifications] = useState([])
-    const [npdDetails, setNpdDetails] = useState([])
-    const [data2Fields, setData2Fields] = useState({})
+  // New state for data from other tabs
+  const [technicalSpecifications, setTechnicalSpecifications] = useState([])
+  const [npdDetails, setNpdDetails] = useState([])
+  const [data2Fields, setData2Fields] = useState({})
 
-    
   // Callback functions to receive data from child components
   const handleTechnicalDataChange = (specs) => {
     setTechnicalSpecifications(specs)
@@ -81,78 +82,158 @@ const ItemMasterGernal = () => {
     setData2Fields(data)
   }
 
+  // Load item data if in edit mode
+  useEffect(() => {
+    if (id) {
+      setIsEditMode(true)
+      fetchItemData(id)
+    }
+  }, [id])
+
+  const fetchItemData = async (itemId) => {
+    try {
+      const itemData = await fetchItemById(itemId)
+
+      // Set form data from the fetched item
+      setFormData({
+        main_group: itemData.main_group || "",
+        part_no: itemData.part_no || "",
+        Unit_Code: itemData.Unit_Code || "",
+        Part_Code: itemData.Part_Code || "",
+        Cut_Weight_kg: itemData.Cut_Weight_kg || "",
+        Rate: itemData.Rate || "",
+        Revision_No: itemData.Revision_No || "",
+        Item_Size: itemData.Item_Size || "",
+        Heat_Treatment: itemData.Heat_Treatment || "",
+        Color_Code: itemData.Color_Code || "",
+        Min_Rate: itemData.Min_Rate || "",
+        Length: itemData.Length || "",
+        Shape: itemData.Shape || "",
+        Rate_Remark: itemData.Rate_Remark || "",
+        Metal_Type: itemData.Metal_Type || "",
+        Specific_Gravity: itemData.Specific_Gravity || "",
+        item_group: itemData.item_group || "",
+        Name_Description: itemData.Name_Description || "",
+        Store_Location: itemData.Store_Location || "",
+        Route: itemData.Route || "",
+        Parent_FG_Code: itemData.Parent_FG_Code || "",
+        Finish_Weight: itemData.Finish_Weight || "",
+        Sector: itemData.Sector || "",
+        SAC_Code: itemData.SAC_Code || "",
+        Item_Sector: itemData.Item_Sector || "",
+        Hardness: itemData.Hardness || "",
+        Male: itemData.Male || "",
+        Max_Rate: itemData.Max_Rate || "",
+        Thickness: itemData.Thickness || "",
+        Diameter: itemData.Diameter || "",
+        Other_Desce: itemData.Other_Desce || "",
+        Metal: itemData.Metal || "",
+        Finish: itemData.Finish || "",
+        Subgroup: itemData.Subgroup || "",
+        HSN_SAC_Code: itemData.HSN_SAC_Code || "",
+        Gross_Weight: itemData.Gross_Weight || "",
+        Tool_Die_Life: itemData.Tool_Die_Life || "",
+        Resharpening_Reconditionning: itemData.Resharpening_Reconditionning || "",
+        Item_ClassName: itemData.Item_ClassName || "",
+        QC_Application: itemData.QC_Application || "",
+        Jominy: itemData.Jominy || "",
+        Microstructure: itemData.Microstructure || "",
+        Drawing_No: itemData.Drawing_No || "",
+        Width: itemData.Width || "",
+        Old_ERP_Code: itemData.Old_ERP_Code || "",
+        Note: itemData.Note || "",
+        KgMM3: itemData.KgMM3 || "",
+      })
+
+      // Set data for other tabs
+      if (itemData.technical_specifications) {
+        setTechnicalSpecifications(itemData.technical_specifications)
+      }
+
+      if (itemData.npd_details) {
+        setNpdDetails(itemData.npd_details)
+      }
+
+      if (itemData.item_master_data) {
+        setData2Fields(itemData.item_master_data)
+      }
+    } catch (error) {
+      console.error("Error fetching item data:", error)
+      toast.error("Failed to load item data")
+    }
+  }
 
   const toggleSideNav = () => {
-    setSideNavOpen(!sideNavOpen);
-  };
+    setSideNavOpen(!sideNavOpen)
+  }
 
   useEffect(() => {
     if (sideNavOpen) {
-      document.body.classList.add("side-nav-open");
+      document.body.classList.add("side-nav-open")
     } else {
-      document.body.classList.remove("side-nav-open");
+      document.body.classList.remove("side-nav-open")
     }
-  }, [sideNavOpen]);
+  }, [sideNavOpen])
 
   const handleNewCardMainGroup = (e) => {
-    e.preventDefault();
-    setShowNewCardMainGroup(!showNewCardMainGroup);
-  };
+    e.preventDefault()
+    setShowNewCardMainGroup(!showNewCardMainGroup)
+  }
 
   const handleNewButtonClick = (e) => {
-    e.preventDefault();
-    setShowNewCardUnit(!showNewCardUnit);
-  };
+    e.preventDefault()
+    setShowNewCardUnit(!showNewCardUnit)
+  }
 
   const handleNewButtonTDC = (e) => {
-    e.preventDefault();
-    setShowNewCardTdc(!showNewCardTdc);
-  };
+    e.preventDefault()
+    setShowNewCardTdc(!showNewCardTdc)
+  }
 
   const handleNewButtonItemgroup = (e) => {
-    e.preventDefault();
-    setShowNewCardItemgroup(!showNewCardItemgroup);
-  };
+    e.preventDefault()
+    setShowNewCardItemgroup(!showNewCardItemgroup)
+  }
 
   const handleNewButtonStoreLocation = (e) => {
-    e.preventDefault();
-    setShowNewCardStoreLocation(!showNewCardStoreLocation);
-  };
+    e.preventDefault()
+    setShowNewCardStoreLocation(!showNewCardStoreLocation)
+  }
 
   const handleNewButtonRoute = (e) => {
-    e.preventDefault();
-    setShowNewCardRoute(!showNewCardRoute);
-  };
+    e.preventDefault()
+    setShowNewCardRoute(!showNewCardRoute)
+  }
 
   const handleNewButtonSector = (e) => {
-    e.preventDefault();
-    setShowNewCardSector(!showNewCardSector);
-  };
+    e.preventDefault()
+    setShowNewCardSector(!showNewCardSector)
+  }
 
   const handleNewButtonItemSector = (e) => {
-    e.preventDefault();
-    setShowNewCardItemSector(!showNewCardItemSector);
-  };
+    e.preventDefault()
+    setShowNewCardItemSector(!showNewCardItemSector)
+  }
 
   const handleNewButtonGrade = (e) => {
-    e.preventDefault();
-    setShowNewCardGrade(!showNewCardGrade);
-  };
+    e.preventDefault()
+    setShowNewCardGrade(!showNewCardGrade)
+  }
 
   const handleNewButtonGradeMaster = (e) => {
-    e.preventDefault();
-    setShowNewCardGradeMaster(!showNewCardGradeMaster);
-  };
+    e.preventDefault()
+    setShowNewCardGradeMaster(!showNewCardGradeMaster)
+  }
 
   const handleNewButtonModelType = (e) => {
-    e.preventDefault();
-    setShowNewCardModelType(!showNewCardModelType);
-  };
+    e.preventDefault()
+    setShowNewCardModelType(!showNewCardModelType)
+  }
 
   const handleNewButtonParentFg = (e) => {
-    e.preventDefault();
-    setShowNewCardParentFg(!showNewCardParentFg);
-  };
+    e.preventDefault()
+    setShowNewCardParentFg(!showNewCardParentFg)
+  }
 
   // Gernal data
   const [formData, setFormData] = useState({
@@ -207,24 +288,23 @@ const ItemMasterGernal = () => {
     Old_ERP_Code: "",
     Note: "",
     KgMM3: "",
-  });
+  })
 
-  const [errors, setErrors] = useState({});
-  const [mainGroups, setMainGroups] = useState([]);
+  const [errors, setErrors] = useState({})
+  const [mainGroups, setMainGroups] = useState([])
 
   const fetchMainGroups = async () => {
     try {
-      const data = await getMainGroups(); // Calls your export
-      setMainGroups(data); // Updates dropdown
+      const data = await getMainGroups() // Calls your export
+      setMainGroups(data) // Updates dropdown
     } catch (error) {
-      console.error("Failed to load main groups:", error);
+      console.error("Failed to load main groups:", error)
     }
-  };
-  
+  }
+
   useEffect(() => {
-    fetchMainGroups(); // Load on initial mount
-  }, []);
-  
+    fetchMainGroups() // Load on initial mount
+  }, [])
 
   // useEffect(() => {
   //   // Trigger part number fetch if both dropdowns have valid selections
@@ -243,7 +323,7 @@ const ItemMasterGernal = () => {
   // }, [formData.main_group, formData.item_group]);
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = {}
     const requiredFields = [
       "main_group",
       "part_no",
@@ -254,55 +334,50 @@ const ItemMasterGernal = () => {
       "Store_Location",
 
       "HSN_SAC_Code",
-    ];
+    ]
 
     requiredFields.forEach((field) => {
       if (!formData[field]) {
-        newErrors[field] = "This field is required.";
+        newErrors[field] = "This field is required."
       }
-    });
+    })
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleInputChange = async (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-    setErrors({ ...errors, [e.target.name]: "" }); // Clear errors on input change
+    })
+    setErrors({ ...errors, [e.target.name]: "" }) // Clear errors on input change
 
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
-    }));
-   
-  };
+    }))
+  }
 
   useEffect(() => {
     const getPartNo = async () => {
       if (formData.main_group && formData.item_group) {
         try {
-          const nextCode = await fetchNextPartNo(
-            formData.main_group,
-            formData.item_group
-          );
-          setFormData((prev) => ({ ...prev, part_no: nextCode }));
+          const nextCode = await fetchNextPartNo(formData.main_group, formData.item_group)
+          setFormData((prev) => ({ ...prev, part_no: nextCode }))
         } catch (err) {
-          console.error("Failed to generate part number", err);
+          console.error("Failed to generate part number", err)
         }
       }
-    };
-  
-    getPartNo();
-  }, [formData.main_group, formData.item_group]);
-  
+    }
+
+    getPartNo()
+  }, [formData.main_group, formData.item_group])
 
   const handleSaveitem = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     console.log("Form data before validation:", formData)
     console.log("Technical specs:", technicalSpecifications)
@@ -310,23 +385,33 @@ const ItemMasterGernal = () => {
     console.log("Data-2 fields:", data2Fields)
 
     if (!validateForm()) {
-      console.log("Validation errors:", errors);
-      return;
+      console.log("Validation errors:", errors)
+      return
     }
 
     try {
-      console.log("Attempting to save data...");
-      const result = await saveItemMaster(formData, technicalSpecifications, npdDetails, data2Fields)
-      toast.success("Data saved successfully!");
-      console.log("Data saved successfully:", result);
+      console.log(`Attempting to ${isEditMode ? "update" : "save"} data...`)
+      const result = await saveItemMaster(
+        formData,
+        technicalSpecifications,
+        npdDetails,
+        data2Fields,
+        isEditMode ? id : null,
+      )
+
+      toast.success(`Data ${isEditMode ? "updated" : "saved"} successfully!`)
+      console.log(`Data ${isEditMode ? "updated" : "saved"} successfully:`, result)
+
+      // Navigate back to the item list after successful save/update
+      navigate("/item-master")
     } catch (error) {
-      toast.error("Failed to save data.");
-      console.error("Error occurred while saving data:", {
+      toast.error(`Failed to ${isEditMode ? "update" : "save"} data.`)
+      console.error(`Error occurred while ${isEditMode ? "updating" : "saving"} data:`, {
         message: error.message,
         stack: error.stack,
-      });
+      })
     }
-  };
+  }
 
   const handleClear = () => {
     setFormData({
@@ -381,24 +466,24 @@ const ItemMasterGernal = () => {
       Old_ERP_Code: "",
       Note: "",
       KgMM3: "",
-    });
-    setErrors({});
-    console.log("data clear");
-  };
+    })
+    setErrors({})
+    console.log("data clear")
+  }
 
   // Subgroup
   useEffect(() => {
-    fetchItems();
-  }, []);
+    fetchItems()
+  }, [])
 
   const fetchItems = async () => {
     try {
-      const response = await getItems();
-      setItems(response);
+      const response = await getItems()
+      setItems(response)
     } catch (error) {
-      console.error("Error fetching qty packs:", error);
+      console.error("Error fetching qty packs:", error)
     }
-  };
+  }
 
   // fetch grade
 
@@ -415,19 +500,19 @@ const ItemMasterGernal = () => {
   // };
 
   // metal type
-  const [metalTypes, setMetalTypes] = useState([]);
+  const [metalTypes, setMetalTypes] = useState([])
   useEffect(() => {
-    fetchMetalTypes();
-  }, []);
+    fetchMetalTypes()
+  }, [])
 
   const fetchMetalTypes = async () => {
     try {
-      const response = await getMetalTypes();
-      setMetalTypes(response);
+      const response = await getMetalTypes()
+      setMetalTypes(response)
     } catch (error) {
-      console.error("Error fetching metal types:", error);
+      console.error("Error fetching metal types:", error)
     }
-  };
+  }
 
   // // TDC
   // const [data, setData] = useState([]);
@@ -459,101 +544,101 @@ const ItemMasterGernal = () => {
   useEffect(() => {
     const fetchUnitCodes = async () => {
       try {
-        const data = await getUnitCode();
-        setUnitCodes(data);
+        const data = await getUnitCode()
+        setUnitCodes(data)
       } catch (error) {
-        console.error("Error fetching unit codes:", error);
+        console.error("Error fetching unit codes:", error)
       }
-    };
+    }
 
-    fetchUnitCodes();
-  }, []);
+    fetchUnitCodes()
+  }, [])
 
   // Store Location
-  const [storelocation, setStoreLocation] = useState([]);
+  const [storelocation, setStoreLocation] = useState([])
 
   useEffect(() => {
-    fetchstorelocation();
-  }, []);
+    fetchstorelocation()
+  }, [])
   const fetchstorelocation = async () => {
     try {
-      const response = await getStoreLocations();
-      setStoreLocation(response);
+      const response = await getStoreLocations()
+      setStoreLocation(response)
     } catch (error) {
-      console.error("Error fetching metal types:", error);
+      console.error("Error fetching metal types:", error)
     }
-  };
+  }
 
   //  Sector
-  const [Sector, setSector] = useState([]);
+  const [Sector, setSector] = useState([])
   useEffect(() => {
-    fetchSector();
-  }, []);
+    fetchSector()
+  }, [])
   const fetchSector = async () => {
     try {
-      const response = await getSectors();
-      setSector(response);
+      const response = await getSectors()
+      setSector(response)
     } catch (error) {
-      console.error("Error fetching metal types:", error);
+      console.error("Error fetching metal types:", error)
     }
-  };
+  }
 
   // Route
-  const [Route, setRoute] = useState([]);
+  const [Route, setRoute] = useState([])
   useEffect(() => {
-    fetchRoute();
-  }, []);
+    fetchRoute()
+  }, [])
   const fetchRoute = async () => {
     try {
-      const response = await getRoutes();
-      setRoute(response);
+      const response = await getRoutes()
+      setRoute(response)
     } catch (error) {
-      console.error("Error fetching metal types:", error);
+      console.error("Error fetching metal types:", error)
     }
-  };
+  }
 
   // Parent FG
-  const [ParentFG, setParentFG] = useState([]);
+  const [ParentFG, setParentFG] = useState([])
   useEffect(() => {
-    fetchParentFG();
-  }, []);
+    fetchParentFG()
+  }, [])
   const fetchParentFG = async () => {
     try {
-      const response = await getParentFgCodes();
-      setParentFG(response);
+      const response = await getParentFgCodes()
+      setParentFG(response)
     } catch (error) {
-      console.error("Error fetching metal types:", error);
+      console.error("Error fetching metal types:", error)
     }
-  };
+  }
 
   // item sector
-  const [ItemSection, setItemSection] = useState([]);
+  const [ItemSection, setItemSection] = useState([])
   useEffect(() => {
-    fetchItemSection();
-  }, []);
+    fetchItemSection()
+  }, [])
   const fetchItemSection = async () => {
     try {
-      const response = await getItemSections();
-      setItemSection(response);
+      const response = await getItemSections()
+      setItemSection(response)
     } catch (error) {
-      console.error("Error fetching metal types:", error);
+      console.error("Error fetching metal types:", error)
     }
-  };
+  }
 
   // item Group
-  const [itemGroups, setItemGroups] = useState([]);
+  const [itemGroups, setItemGroups] = useState([])
   useEffect(() => {
-    fetchItemGroups();
-  }, []);
-  
+    fetchItemGroups()
+  }, [])
+
   const fetchItemGroups = async () => {
     try {
-      const response = await getItemGroups();
-      setItemGroups(response);
+      const response = await getItemGroups()
+      setItemGroups(response)
     } catch (error) {
-      console.error("Failed to fetch item groups:", error);
+      console.error("Failed to fetch item groups:", error)
     }
-  };
+  }
 
   return (
     <div className="Itemmastergernalpage">
@@ -563,10 +648,7 @@ const ItemMasterGernal = () => {
           <div className="col-md-12">
             <div className="Main-NavBar">
               <NavBar toggleSideNav={toggleSideNav} />
-              <SideNav
-                sideNavOpen={sideNavOpen}
-                toggleSideNav={toggleSideNav}
-              />
+              <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
 
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="axcv mt-5">
@@ -574,7 +656,7 @@ const ItemMasterGernal = () => {
                   <div className="top-but3-header mb-4 text-start">
                     <div className="row align-items-center">
                       <div className="col-md-2">
-                        <h5 className="header-title">Item List</h5>
+                        <h5 className="header-title">{isEditMode ? "Edit Item" : "Add New Item"}</h5>
                       </div>
                       <div className="col-md-10 text-end">
                         <div className="d-flex align-items-center justify-content-end">
@@ -583,9 +665,7 @@ const ItemMasterGernal = () => {
                           </label>
                           <input type="text" id="input" className="me-2" />
                           <button className="btn-uper me-2">Copy Item</button>
-                          <button className="btn-uper me-2">
-                            Section Group Master
-                          </button>
+                          <button className="btn-uper me-2">Section Group Master</button>
                           <Link to={"/item-master"} className="btn-uper">
                             Item List
                           </Link>
@@ -597,11 +677,7 @@ const ItemMasterGernal = () => {
                     <div className="container-fluid">
                       <div className="row">
                         <div className="col-md-12">
-                          <ul
-                            className="nav nav-pills mb-3"
-                            id="pills-tab"
-                            role="tablist"
-                          >
+                          <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
                             <li className="nav-item" role="presentation">
                               <button
                                 className="nav-link active"
@@ -659,11 +735,7 @@ const ItemMasterGernal = () => {
                               </button>
                             </li>
                           </ul>
-                          <div
-                            className="tab-content"
-                            id="pills-tabContent"
-                            style={{ border: "none" }}
-                          >
+                          <div className="tab-content" id="pills-tabContent" style={{ border: "none" }}>
                             <div
                               className="tab-pane fade show active"
                               id="pills-home"
@@ -679,14 +751,8 @@ const ItemMasterGernal = () => {
                                         <div className="col-md-4">
                                           <div className="row text-start">
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="main_group"
-                                                className="col-sm-5 col-form-label"
-                                              >
-                                                Main Group:{" "}
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
+                                              <label htmlFor="main_group" className="col-sm-5 col-form-label">
+                                                Main Group: <span className="text-danger">*</span>
                                               </label>
                                               <div className="col-sm-4">
                                                 <select
@@ -700,25 +766,18 @@ const ItemMasterGernal = () => {
                                                     Select ..
                                                   </option>
                                                   {mainGroups.map((group) => (
-    <option key={group.id} value={group.subgroup_name}>
-      {group.subgroup_name}
-    </option>
-  ))}
+                                                    <option key={group.id} value={group.subgroup_name}>
+                                                      {group.subgroup_name}
+                                                    </option>
+                                                  ))}
                                                 </select>
                                                 {errors.main_group && (
-                                                  <div className="text-danger">
-                                                    {errors.main_group}
-                                                  </div>
+                                                  <div className="text-danger">{errors.main_group}</div>
                                                 )}
                                               </div>
 
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewCardMainGroup
-                                                  }
-                                                >
+                                                <button className="btn" onClick={handleNewCardMainGroup}>
                                                   New
                                                 </button>
                                               </div>
@@ -734,14 +793,8 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="part_no"
-                                                className="col-sm-5 col-form-label"
-                                              >
-                                                Part No:{" "}
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
+                                              <label for="part_no" className="col-sm-5 col-form-label">
+                                                Part No: <span className="text-danger">*</span>
                                               </label>
                                               <div className="col-sm-7">
                                                 <input
@@ -750,26 +803,16 @@ const ItemMasterGernal = () => {
                                                   id="part_no"
                                                   name="part_no"
                                                   value={formData.part_no}
-                                                  
                                                   readOnly
                                                   style={{ width: "115%" }}
                                                 />
-                                                {errors.part_no && (
-                                                  <div className="text-danger">
-                                                    {errors.part_no}
-                                                  </div>
-                                                )}
+                                                {errors.part_no && <div className="text-danger">{errors.part_no}</div>}
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Unit_Code"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Unit_Code" className="col-sm-5 col-form-label">
                                                 Unit Code:
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
+                                                <span className="text-danger">*</span>
                                               </label>
                                               <div className="col-md-7">
                                                 <select
@@ -779,24 +822,15 @@ const ItemMasterGernal = () => {
                                                   value={formData.Unit_Code}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
-                                                  {unitCodes.map(
-                                                    (unit, index) => (
-                                                      <option
-                                                        key={index}
-                                                        value={unit.name}
-                                                      >
-                                                        {unit.name}
-                                                      </option>
-                                                    )
-                                                  )}
+                                                  <option value="">Select ..</option>
+                                                  {unitCodes.map((unit, index) => (
+                                                    <option key={index} value={unit.name}>
+                                                      {unit.name}
+                                                    </option>
+                                                  ))}
                                                 </select>
                                                 {errors.Unit_Code && (
-                                                  <div className="text-danger">
-                                                    {errors.Unit_Code}
-                                                  </div>
+                                                  <div className="text-danger">{errors.Unit_Code}</div>
                                                 )}
                                               </div>
                                             </div>
@@ -854,14 +888,9 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div> */}
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Part_Code"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Part_Code" className="col-sm-5 col-form-label">
                                                 Item/Part Code:
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
+                                                <span className="text-danger">*</span>
                                               </label>
                                               <div className="col-sm-7">
                                                 <input
@@ -874,9 +903,7 @@ const ItemMasterGernal = () => {
                                                   onChange={handleInputChange}
                                                 />
                                                 {errors.Part_Code && (
-                                                  <div className="text-danger">
-                                                    {errors.Part_Code}
-                                                  </div>
+                                                  <div className="text-danger">{errors.Part_Code}</div>
                                                 )}
                                               </div>
                                               <div className="form-check">
@@ -886,19 +913,13 @@ const ItemMasterGernal = () => {
                                                   value=""
                                                   id="flexCheckDefault"
                                                 />
-                                                <label
-                                                  className="form-check-label"
-                                                  for="flexCheckDefault"
-                                                >
+                                                <label className="form-check-label" for="flexCheckDefault">
                                                   Same As Part No
                                                 </label>
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Cut_Weight_kg"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Cut_Weight_kg" className="col-sm-5 col-form-label">
                                                 Cut Weight kg:
                                               </label>
                                               <div className="col-sm-7">
@@ -919,10 +940,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Rate"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Rate" className="col-sm-5 col-form-label">
                                                 Rate:
                                               </label>
                                               <div className="col-sm-7">
@@ -944,10 +962,7 @@ const ItemMasterGernal = () => {
                                             </div>
 
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Revision_No"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Revision_No" className="col-sm-5 col-form-label">
                                                 Revision No:
                                               </label>
                                               <div className="col-sm-7">
@@ -968,10 +983,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Item_Size"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Item_Size" className="col-sm-5 col-form-label">
                                                 Item Size:
                                               </label>
                                               <div className="col-sm-3">
@@ -998,9 +1010,7 @@ const ItemMasterGernal = () => {
                                                   onChange={handleInputChange}
                                                   name="Item_Size"
                                                 >
-                                                  <option selected>
-                                                    Select ..
-                                                  </option>
+                                                  <option selected>Select ..</option>
                                                   <option>BLOCK</option>
                                                   <option>D/A</option>
                                                   <option>@</option>
@@ -1017,10 +1027,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Heat_Treatment"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Heat_Treatment" className="col-sm-5 col-form-label">
                                                 Heat Treatment:
                                               </label>
                                               <div className="col-sm-7">
@@ -1030,9 +1037,7 @@ const ItemMasterGernal = () => {
                                                   id="Heat_Treatment"
                                                   className="form-control"
                                                   style={{ width: "115%" }}
-                                                  value={
-                                                    formData.Heat_Treatment
-                                                  }
+                                                  value={formData.Heat_Treatment}
                                                   onChange={handleInputChange}
                                                 />
                                                 {/* {errors.Heat_Treatment && (
@@ -1043,10 +1048,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Color_Code"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Color_Code" className="col-sm-5 col-form-label">
                                                 Color Code:
                                               </label>
                                               <div className="col-sm-7">
@@ -1067,10 +1069,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Min_Rate"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Min_Rate" className="col-sm-5 col-form-label">
                                                 Min Rate:
                                               </label>
                                               <div className="col-sm-7">
@@ -1092,10 +1091,7 @@ const ItemMasterGernal = () => {
                                             </div>
 
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Length"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Length" className="col-sm-5 col-form-label">
                                                 Length (MM):
                                               </label>
                                               <div className="col-sm-7">
@@ -1116,10 +1112,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Shape"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Shape" className="col-sm-5 col-form-label">
                                                 Shape:
                                               </label>
                                               <div className="col-sm-7">
@@ -1140,10 +1133,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Rate_Remark"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Rate_Remark" className="col-sm-5 col-form-label">
                                                 Rate Remark:
                                               </label>
                                               <div className="col-sm-7">
@@ -1164,10 +1154,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Metal_Type"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Metal_Type" className="col-sm-5 col-form-label">
                                                 Metal Type:
                                               </label>
                                               <div className="col-sm-4">
@@ -1178,14 +1165,9 @@ const ItemMasterGernal = () => {
                                                   name="Metal_Type"
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
+                                                  <option value="">Select ..</option>
                                                   {metalTypes.map((metal) => (
-                                                    <option
-                                                      key={metal.id}
-                                                      value={metal.MetalType}
-                                                    >
+                                                    <option key={metal.id} value={metal.MetalType}>
                                                       {metal.MetalType}
                                                     </option>
                                                   ))}
@@ -1199,12 +1181,7 @@ const ItemMasterGernal = () => {
                                                 )} */}
                                               </div>
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewButtonModelType
-                                                  }
-                                                >
+                                                <button className="btn" onClick={handleNewButtonModelType}>
                                                   New
                                                 </button>
                                               </div>
@@ -1225,10 +1202,7 @@ const ItemMasterGernal = () => {
                                         <div className="col-md-4">
                                           <div className="row text-start">
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Specific_Gravity"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Specific_Gravity" className="col-sm-5 col-form-label">
                                                 Specific Gravity:
                                               </label>
                                               <div className="col-sm-7">
@@ -1238,9 +1212,7 @@ const ItemMasterGernal = () => {
                                                   id="Specific_Gravity"
                                                   className="form-control"
                                                   style={{ width: "115%" }}
-                                                  value={
-                                                    formData.Specific_Gravity
-                                                  }
+                                                  value={formData.Specific_Gravity}
                                                   onChange={handleInputChange}
                                                 />
                                                 {/* {errors.Specific_Gravity && (
@@ -1251,57 +1223,52 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-  <label htmlFor="item_group" className="col-sm-5 col-form-label">
-    Item Group: <span className="text-danger">*</span>
-  </label>
-  <div className="col-sm-4">
-    <select
-      id="item_group"
-      name="item_group"
-      className="form-select"
-      value={formData.item_group}
-      onChange={handleInputChange}
-    >
-      <option value="" disabled>
-        Select ..
-      </option>
-      {itemGroups.map((group) => (
-    <option key={group.id} value={group.group_name}>
-      {group.group_name}
-    </option>
-  ))}
-    </select>
-    {errors.item_group && (
-      <div className="text-danger">{errors.item_group}</div>
-    )}
-  </div>
+                                              <label htmlFor="item_group" className="col-sm-5 col-form-label">
+                                                Item Group: <span className="text-danger">*</span>
+                                              </label>
+                                              <div className="col-sm-4">
+                                                <select
+                                                  id="item_group"
+                                                  name="item_group"
+                                                  className="form-select"
+                                                  value={formData.item_group}
+                                                  onChange={handleInputChange}
+                                                >
+                                                  <option value="" disabled>
+                                                    Select ..
+                                                  </option>
+                                                  {itemGroups.map((group) => (
+                                                    <option key={group.id} value={group.group_name}>
+                                                      {group.group_name}
+                                                    </option>
+                                                  ))}
+                                                </select>
+                                                {errors.item_group && (
+                                                  <div className="text-danger">{errors.item_group}</div>
+                                                )}
+                                              </div>
 
-  <div className="col-sm-2">
-    <button className="btn" onClick={handleNewButtonItemgroup}>
-      New
-    </button>
-  </div>
-  <div className="col-sm-1">
-  <button
-      className="btn"
-      style={{ fontSize: "10px" }}
-      type="button"
-      onClick={fetchItemGroups}
-    >
-      <CachedIcon />
-    </button>
-  </div>
-</div>
+                                              <div className="col-sm-2">
+                                                <button className="btn" onClick={handleNewButtonItemgroup}>
+                                                  New
+                                                </button>
+                                              </div>
+                                              <div className="col-sm-1">
+                                                <button
+                                                  className="btn"
+                                                  style={{ fontSize: "10px" }}
+                                                  type="button"
+                                                  onClick={fetchItemGroups}
+                                                >
+                                                  <CachedIcon />
+                                                </button>
+                                              </div>
+                                            </div>
 
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Name_Description"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Name_Description" className="col-sm-5 col-form-label">
                                                 Name Description:
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
+                                                <span className="text-danger">*</span>
                                               </label>
                                               <div className="col-sm-7">
                                                 <input
@@ -1310,78 +1277,50 @@ const ItemMasterGernal = () => {
                                                   id="Name_Description"
                                                   className="form-control"
                                                   style={{ width: "115%" }}
-                                                  value={
-                                                    formData.Name_Description
-                                                  }
+                                                  value={formData.Name_Description}
                                                   onChange={handleInputChange}
                                                 />
                                                 {errors.Name_Description && (
-                                                  <div className="text-danger">
-                                                    {errors.Name_Description}
-                                                  </div>
+                                                  <div className="text-danger">{errors.Name_Description}</div>
                                                 )}
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Store_Location"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Store_Location" className="col-sm-5 col-form-label">
                                                 Store Location:
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
+                                                <span className="text-danger">*</span>
                                               </label>
                                               <div className="col-sm-4">
                                                 <select
                                                   id="Store_Location"
                                                   name="Store_Location"
                                                   className="form-select"
-                                                  value={
-                                                    formData.Store_Location
-                                                  }
+                                                  value={formData.Store_Location}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
-                                                  {storelocation.map(
-                                                    (store) => (
-                                                      <option
-                                                        key={store.id}
-                                                        value={
-                                                          store.EnterStoreName
-                                                        }
-                                                      >
-                                                        {store.EnterStoreName}
-                                                      </option>
-                                                    )
-                                                  )}
+                                                  <option value="">Select ..</option>
+                                                  {storelocation.map((store) => (
+                                                    <option key={store.id} value={store.EnterStoreName}>
+                                                      {store.EnterStoreName}
+                                                    </option>
+                                                  ))}
                                                   <option>Store</option>
                                                   <option>Maintenance</option>
                                                 </select>
                                                 {errors.Store_Location && (
-                                                  <div className="text-danger">
-                                                    {errors.Store_Location}
-                                                  </div>
+                                                  <div className="text-danger">{errors.Store_Location}</div>
                                                 )}
                                               </div>
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewButtonStoreLocation
-                                                  }
-                                                >
+                                                <button className="btn" onClick={handleNewButtonStoreLocation}>
                                                   New
                                                 </button>
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
-                                                 type="button"
-                                                 className="btn"
-                                                 onClick={fetchstorelocation}
-                                                
+                                                  type="button"
+                                                  className="btn"
+                                                  onClick={fetchstorelocation}
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1389,10 +1328,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Route"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Route" className="col-sm-5 col-form-label">
                                                 Route:
                                               </label>
                                               <div className="col-sm-4">
@@ -1403,14 +1339,9 @@ const ItemMasterGernal = () => {
                                                   value={formData.Route}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
+                                                  <option value="">Select ..</option>
                                                   {Route.map((Route) => (
-                                                    <option
-                                                      key={Route.id}
-                                                      value={Route.Name}
-                                                    >
+                                                    <option key={Route.id} value={Route.Name}>
                                                       {Route.Name}
                                                     </option>
                                                   ))}
@@ -1425,10 +1356,7 @@ const ItemMasterGernal = () => {
                                                 )} */}
                                               </div>
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={handleNewButtonRoute}
-                                                >
+                                                <button className="btn" onClick={handleNewButtonRoute}>
                                                   New
                                                 </button>
                                               </div>
@@ -1445,32 +1373,20 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Parent_FG_Code"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Parent_FG_Code" className="col-sm-5 col-form-label">
                                                 Parent FG Code:
                                               </label>
                                               <div className="col-sm-4">
                                                 <select
                                                   id="Parent_FG_Code"
                                                   className="form-select"
-                                                  value={
-                                                    formData.Parent_FG_Code
-                                                  }
+                                                  value={formData.Parent_FG_Code}
                                                   name="Parent_FG_Code"
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
+                                                  <option value="">Select ..</option>
                                                   {ParentFG.map((Parent) => (
-                                                    <option
-                                                      key={Parent.id}
-                                                      value={
-                                                        Parent.Parent_FG_Code
-                                                      }
-                                                    >
+                                                    <option key={Parent.id} value={Parent.Parent_FG_Code}>
                                                       {Parent.Parent_FG_Code}
                                                     </option>
                                                   ))}
@@ -1484,21 +1400,16 @@ const ItemMasterGernal = () => {
                                                 )} */}
                                               </div>
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewButtonParentFg
-                                                  }
-                                                >
+                                                <button className="btn" onClick={handleNewButtonParentFg}>
                                                   New
                                                 </button>
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
-                                                 type="button"
-                                                 className="btn"
-                                                 onClick={fetchParentFG}
-                                                 title="Refresh metal types"
+                                                  type="button"
+                                                  className="btn"
+                                                  onClick={fetchParentFG}
+                                                  title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1506,10 +1417,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Finish_Weight"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Finish_Weight" className="col-sm-5 col-form-label">
                                                 Finish Weight (KG):
                                               </label>
                                               <div className="col-sm-7">
@@ -1530,10 +1438,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Sector"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Sector" className="col-sm-5 col-form-label">
                                                 Sector:
                                               </label>
                                               <div className="col-sm-4">
@@ -1544,17 +1449,11 @@ const ItemMasterGernal = () => {
                                                   value={formData.Sector}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option
-                                                    selected
-                                                    style={{ color: "black" }}
-                                                  >
+                                                  <option selected style={{ color: "black" }}>
                                                     Select ..
                                                   </option>
                                                   {Sector.map((Sector) => (
-                                                    <option
-                                                      key={Sector.id}
-                                                      value={Sector.Sector_Name}
-                                                    >
+                                                    <option key={Sector.id} value={Sector.Sector_Name}>
                                                       {Sector.Sector_Name}
                                                     </option>
                                                   ))}
@@ -1569,12 +1468,7 @@ const ItemMasterGernal = () => {
                                                 )} */}
                                               </div>
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewButtonSector
-                                                  }
-                                                >
+                                                <button className="btn" onClick={handleNewButtonSector}>
                                                   New
                                                 </button>
                                               </div>
@@ -1591,10 +1485,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="SAC_Code"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="SAC_Code" className="col-sm-5 col-form-label">
                                                 SAC Code:
                                               </label>
                                               <div className="col-sm-7">
@@ -1608,17 +1499,12 @@ const ItemMasterGernal = () => {
                                                   onChange={handleInputChange}
                                                 />
                                                 {errors.SAC_Code && (
-                                                  <div className="text-danger">
-                                                    {errors.SAC_Code}
-                                                  </div>
+                                                  <div className="text-danger">{errors.SAC_Code}</div>
                                                 )}
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Item_Sector"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Item_Sector" className="col-sm-5 col-form-label">
                                                 Item Sector:
                                               </label>
                                               <div className="col-sm-4">
@@ -1630,26 +1516,14 @@ const ItemMasterGernal = () => {
                                                   value={formData.Item_Sector}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option
-                                                    selected
-                                                    style={{ color: "black" }}
-                                                  >
+                                                  <option selected style={{ color: "black" }}>
                                                     Select ..
                                                   </option>
-                                                  {ItemSection.map(
-                                                    (itemselect) => (
-                                                      <option
-                                                        key={itemselect.id}
-                                                        value={
-                                                          itemselect.Section_Name
-                                                        }
-                                                      >
-                                                        {
-                                                          itemselect.Section_Name
-                                                        }
-                                                      </option>
-                                                    )
-                                                  )}
+                                                  {ItemSection.map((itemselect) => (
+                                                    <option key={itemselect.id} value={itemselect.Section_Name}>
+                                                      {itemselect.Section_Name}
+                                                    </option>
+                                                  ))}
                                                   <option>SF</option>
                                                   <option>BO</option>
                                                   <option>DI</option>
@@ -1661,12 +1535,7 @@ const ItemMasterGernal = () => {
                                                 )} */}
                                               </div>
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewButtonSector
-                                                  }
-                                                >
+                                                <button className="btn" onClick={handleNewButtonSector}>
                                                   New
                                                 </button>
                                               </div>
@@ -1683,10 +1552,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Hardness"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Hardness" className="col-sm-5 col-form-label">
                                                 Hardness (BHN):
                                               </label>
                                               <div className="col-sm-7">
@@ -1707,10 +1573,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="inputEmail3"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="inputEmail3" className="col-sm-5 col-form-label">
                                                 Male:
                                               </label>
                                               <div className="col-sm-7">
@@ -1731,10 +1594,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Max_Rate"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Max_Rate" className="col-sm-5 col-form-label">
                                                 Max Rate:
                                               </label>
                                               <div className="col-sm-7">
@@ -1756,10 +1616,7 @@ const ItemMasterGernal = () => {
                                             </div>
 
                                             <div className="row mb-3">
-                                              <label
-                                                for="Thickness"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Thickness" className="col-sm-5 col-form-label">
                                                 Thickness:
                                               </label>
                                               <div className="col-sm-7">
@@ -1780,10 +1637,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Diameter"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Diameter" className="col-sm-5 col-form-label">
                                                 Diameter:
                                               </label>
                                               <div className="col-sm-7">
@@ -1804,10 +1658,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                for="Other_Desce"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label for="Other_Desce" className="col-sm-5 col-form-label">
                                                 Other Desc:
                                               </label>
                                               <div className="col-sm-7">
@@ -1856,10 +1707,7 @@ const ItemMasterGernal = () => {
                                         <div className="col-md-4">
                                           <div className="row text-start">
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Metal"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Metal" className="col-sm-5 col-form-label">
                                                 Metal:
                                               </label>
                                               <div className="col-sm-7">
@@ -1880,10 +1728,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Finish"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Finish" className="col-sm-5 col-form-label">
                                                 Finish:
                                               </label>
                                               <div className="col-sm-7">
@@ -1962,10 +1807,7 @@ const ItemMasterGernal = () => {
                                             </div> */}
 
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Subgroup"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Subgroup" className="col-sm-5 col-form-label">
                                                 Subgroup:
                                               </label>
                                               <div className="col-sm-4">
@@ -1976,14 +1818,9 @@ const ItemMasterGernal = () => {
                                                   value={formData.Subgroup}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
+                                                  <option value="">Select ..</option>
                                                   {items.map((item) => (
-                                                    <option
-                                                      key={item.id}
-                                                      value={item.Sub_Group}
-                                                    >
+                                                    <option key={item.id} value={item.Sub_Group}>
                                                       {item.Sub_Group}
                                                     </option>
                                                   ))}
@@ -1995,21 +1832,16 @@ const ItemMasterGernal = () => {
                                                 )} */}
                                               </div>
                                               <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewButtonGradeMaster
-                                                  }
-                                                >
+                                                <button className="btn" onClick={handleNewButtonGradeMaster}>
                                                   New
                                                 </button>
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
-                                                 type="button"
-                                                 className="btn"
-                                                 onClick={fetchItems}
-                                                 title="Refresh metal types"
+                                                  type="button"
+                                                  className="btn"
+                                                  onClick={fetchItems}
+                                                  title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -2017,14 +1849,9 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-5">
-                                              <label
-                                                htmlFor="HSN_SAC_Code"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="HSN_SAC_Code" className="col-sm-5 col-form-label">
                                                 HSN/SAC Code:
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
+                                                <span className="text-danger">*</span>
                                               </label>
                                               <div className="col-sm-7">
                                                 <input
@@ -2037,17 +1864,12 @@ const ItemMasterGernal = () => {
                                                   onChange={handleInputChange}
                                                 />
                                                 {errors.HSN_SAC_Code && (
-                                                  <div className="text-danger">
-                                                    {errors.HSN_SAC_Code}
-                                                  </div>
+                                                  <div className="text-danger">{errors.HSN_SAC_Code}</div>
                                                 )}
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Gross_Weight"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Gross_Weight" className="col-sm-5 col-form-label">
                                                 Gross Weight (kg):
                                               </label>
                                               <div className="col-sm-7">
@@ -2068,10 +1890,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Tool_Die_Life"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Tool_Die_Life" className="col-sm-5 col-form-label">
                                                 Tool/Die Life:
                                               </label>
                                               <div className="col-sm-7">
@@ -2096,8 +1915,7 @@ const ItemMasterGernal = () => {
                                                 htmlFor="Resharpening_Reconditionning"
                                                 className="col-sm-5 col-form-label"
                                               >
-                                                No of
-                                                Resharpening_Reconditionning/Reconditioning:
+                                                No of Resharpening_Reconditionning/Reconditioning:
                                               </label>
                                               <div className="col-sm-7">
                                                 <input
@@ -2106,9 +1924,7 @@ const ItemMasterGernal = () => {
                                                   type="text"
                                                   className="form-control"
                                                   style={{ width: "115%" }}
-                                                  value={
-                                                    formData.Resharpening_Reconditionning
-                                                  }
+                                                  value={formData.Resharpening_Reconditionning}
                                                   onChange={handleInputChange}
                                                 />
                                                 {/* {errors.Resharpening_Reconditionning && (
@@ -2121,10 +1937,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Item_ClassName"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Item_ClassName" className="col-sm-5 col-form-label">
                                                 Item Class:
                                               </label>
                                               <div className="col-sm-7">
@@ -2132,14 +1945,10 @@ const ItemMasterGernal = () => {
                                                   id="Item_ClassName"
                                                   name="Item_ClassName"
                                                   className="form-select"
-                                                  value={
-                                                    formData.Item_ClassName
-                                                  }
+                                                  value={formData.Item_ClassName}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
+                                                  <option value="">Select ..</option>
 
                                                   <option value="SF">A</option>
                                                   <option value="BO">B</option>
@@ -2156,10 +1965,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="QC_Application"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="QC_Application" className="col-sm-5 col-form-label">
                                                 QC Application:
                                               </label>
                                               <div className="col-sm-7">
@@ -2167,18 +1973,12 @@ const ItemMasterGernal = () => {
                                                   id="QC_Application"
                                                   name="QC_Application"
                                                   className="form-select"
-                                                  value={
-                                                    formData.QC_Application
-                                                  }
+                                                  value={formData.QC_Application}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option value="">
-                                                    Select ..
-                                                  </option>
+                                                  <option value="">Select ..</option>
 
-                                                  <option value="SF">
-                                                    Yes
-                                                  </option>
+                                                  <option value="SF">Yes</option>
                                                   <option value="BO">No</option>
                                                 </select>
 
@@ -2190,10 +1990,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Jominy"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Jominy" className="col-sm-5 col-form-label">
                                                 Jominy:
                                               </label>
                                               <div className="col-sm-7">
@@ -2214,10 +2011,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Microstructure"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Microstructure" className="col-sm-5 col-form-label">
                                                 Microstructure:
                                               </label>
                                               <div className="col-sm-7">
@@ -2227,9 +2021,7 @@ const ItemMasterGernal = () => {
                                                   type="text"
                                                   className="form-control"
                                                   style={{ width: "115%" }}
-                                                  value={
-                                                    formData.Microstructure
-                                                  }
+                                                  value={formData.Microstructure}
                                                   onChange={handleInputChange}
                                                 />
                                                 {/* {errors.Microstructure && (
@@ -2240,10 +2032,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Drawing_No"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Drawing_No" className="col-sm-5 col-form-label">
                                                 Drawing No:
                                               </label>
                                               <div className="col-sm-7">
@@ -2269,19 +2058,13 @@ const ItemMasterGernal = () => {
                                                   value=""
                                                   id="flexCheckDefault"
                                                 />
-                                                <label
-                                                  className="form-check-label"
-                                                  for="flexCheckDefault"
-                                                >
+                                                <label className="form-check-label" for="flexCheckDefault">
                                                   Sent(FG)Part Code
                                                 </label>
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Width"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Width" className="col-sm-5 col-form-label">
                                                 Width:
                                               </label>
                                               <div className="col-sm-7">
@@ -2302,10 +2085,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Old_ERP_Code"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Old_ERP_Code" className="col-sm-5 col-form-label">
                                                 Old ERP Code:
                                               </label>
                                               <div className="col-sm-7">
@@ -2326,10 +2106,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="Note"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="Note" className="col-sm-5 col-form-label">
                                                 Note:
                                               </label>
                                               <div className="col-sm-7">
@@ -2350,10 +2127,7 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="KgMM3"
-                                                className="col-sm-5 col-form-label"
-                                              >
+                                              <label htmlFor="KgMM3" className="col-sm-5 col-form-label">
                                                 Kg/MM³:
                                               </label>
                                               <div className="col-sm-7">
@@ -2381,10 +2155,7 @@ const ItemMasterGernal = () => {
                                         <div className="col-md-3">
                                           <div className="row">
                                             <div className="col-md-4 text-start">
-                                              <label
-                                                className="form-check-label"
-                                                for="flexCheckDefault"
-                                              >
+                                              <label className="form-check-label" for="flexCheckDefault">
                                                 Active:
                                               </label>
                                             </div>
@@ -2396,10 +2167,7 @@ const ItemMasterGernal = () => {
                                                   value=""
                                                   id="flexCheckDefault"
                                                 />
-                                                <label
-                                                  className="form-check-label"
-                                                  for="flexCheckDefault"
-                                                >
+                                                <label className="form-check-label" for="flexCheckDefault">
                                                   Sales
                                                 </label>
                                               </div>
@@ -2413,10 +2181,7 @@ const ItemMasterGernal = () => {
                                                   value=""
                                                   id="flexCheckDefault"
                                                 />
-                                                <label
-                                                  className="form-check-label"
-                                                  for="flexCheckDefault"
-                                                >
+                                                <label className="form-check-label" for="flexCheckDefault">
                                                   Purchase
                                                 </label>
                                               </div>
@@ -2427,16 +2192,10 @@ const ItemMasterGernal = () => {
                                         <div className="col-md-9 text-end">
                                           <div className="row mb-3">
                                             <div className="col-sm-12 text-end">
-                                              <button
-                                                className="btn me-2"
-                                                onClick={handleSaveitem}
-                                              >
-                                                Save
+                                              <button className="btn me-2" onClick={handleSaveitem}>
+                                                {isEditMode ? "Update" : "Save"}
                                               </button>
-                                              <button
-                                                className="btn"
-                                                onClick={handleClear}
-                                              >
+                                              <button className="btn" onClick={handleClear}>
                                                 Clear
                                               </button>
                                             </div>
@@ -2480,10 +2239,7 @@ const ItemMasterGernal = () => {
                                       <div className="card-header">
                                         <div className="row">
                                           <div className="col-md-6 text-start">
-                                            <h5
-                                              className="card-title text-start"
-                                              style={{ color: "blue" }}
-                                            >
+                                            <h5 className="card-title text-start" style={{ color: "blue" }}>
                                               Main Group Master
                                             </h5>
                                           </div>
@@ -2524,10 +2280,7 @@ const ItemMasterGernal = () => {
                                       <div className="card-header">
                                         <div className="row">
                                           <div className="col-md-6 text-start">
-                                            <h5
-                                              className="card-title text-start"
-                                              style={{ color: "blue" }}
-                                            >
+                                            <h5 className="card-title text-start" style={{ color: "blue" }}>
                                               Item Unit Master
                                             </h5>
                                           </div>
@@ -2561,9 +2314,7 @@ const ItemMasterGernal = () => {
                                       <div className="card-header">
                                         <div className="row">
                                           <div className="col-md-6 text-start">
-                                            <h5 className="card-title text-start">
-                                              Item TDC Master
-                                            </h5>
+                                            <h5 className="card-title text-start">Item TDC Master</h5>
                                           </div>
                                           <div className="col-md-6 text-end">
                                             <button
@@ -2594,9 +2345,7 @@ const ItemMasterGernal = () => {
                                       <div className="card-header">
                                         <div className="row">
                                           <div className="col-md-6 text-start">
-                                            <h5 className="card-title text-start">
-                                              Item Group Master Name
-                                            </h5>
+                                            <h5 className="card-title text-start">Item Group Master Name</h5>
                                           </div>
                                           <div className="col-md-6 text-end">
                                             <button
@@ -2626,10 +2375,7 @@ const ItemMasterGernal = () => {
                                       <div className="card-header">
                                         <div className="row">
                                           <div className="col-md-6 text-start">
-                                            <h5
-                                              className="card-title text-start"
-                                              style={{ color: "blue" }}
-                                            >
+                                            <h5 className="card-title text-start" style={{ color: "blue" }}>
                                               Store Location
                                             </h5>
                                           </div>
@@ -2642,9 +2388,7 @@ const ItemMasterGernal = () => {
                                                 border: "none",
                                                 padding: "10px",
                                               }}
-                                              onClick={
-                                                handleNewButtonStoreLocation
-                                              }
+                                              onClick={handleNewButtonStoreLocation}
                                             >
                                               X
                                             </button>
@@ -2665,9 +2409,7 @@ const ItemMasterGernal = () => {
                                         <div className="card-header">
                                           <div className="row">
                                             <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                Item Route Master
-                                              </h5>
+                                              <h5 className="card-title text-start">Item Route Master</h5>
                                             </div>
                                             <div className="col-md-6 text-end">
                                               <button
@@ -2700,9 +2442,7 @@ const ItemMasterGernal = () => {
                                       <div className="card-header">
                                         <div className="row">
                                           <div className="col-md-6 text-start">
-                                            <h5 className="card-title text-start">
-                                              Sector Master
-                                            </h5>
+                                            <h5 className="card-title text-start">Sector Master</h5>
                                           </div>
                                           <div className="col-md-6 text-end">
                                             <button
@@ -2735,9 +2475,7 @@ const ItemMasterGernal = () => {
                                         <div className="card-header">
                                           <div className="row">
                                             <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                Grade Master
-                                              </h5>
+                                              <h5 className="card-title text-start">Grade Master</h5>
                                             </div>
                                             <div className="col-md-6 text-end">
                                               <button
@@ -2770,9 +2508,7 @@ const ItemMasterGernal = () => {
                                         <div className="card-header">
                                           <div className="row">
                                             <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                New Grade Master
-                                              </h5>
+                                              <h5 className="card-title text-start">New Grade Master</h5>
                                             </div>
                                             <div className="col-md-6 text-end">
                                               <button
@@ -2783,9 +2519,7 @@ const ItemMasterGernal = () => {
                                                   border: "none",
                                                   padding: "10px",
                                                 }}
-                                                onClick={
-                                                  handleNewButtonGradeMaster
-                                                }
+                                                onClick={handleNewButtonGradeMaster}
                                               >
                                                 X
                                               </button>
@@ -2807,9 +2541,7 @@ const ItemMasterGernal = () => {
                                         <div className="card-header">
                                           <div className="row">
                                             <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                Item Sector Master
-                                              </h5>
+                                              <h5 className="card-title text-start">Item Sector Master</h5>
                                             </div>
                                             <div className="col-md-6 text-end">
                                               <button
@@ -2820,9 +2552,7 @@ const ItemMasterGernal = () => {
                                                   border: "none",
                                                   padding: "10px",
                                                 }}
-                                                onClick={
-                                                  handleNewButtonItemSector
-                                                }
+                                                onClick={handleNewButtonItemSector}
                                               >
                                                 X
                                               </button>
@@ -2844,9 +2574,7 @@ const ItemMasterGernal = () => {
                                         <div className="card-header">
                                           <div className="row">
                                             <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                Model Type Master
-                                              </h5>
+                                              <h5 className="card-title text-start">Model Type Master</h5>
                                             </div>
                                             <div className="col-md-6 text-end">
                                               <button
@@ -2857,9 +2585,7 @@ const ItemMasterGernal = () => {
                                                   border: "none",
                                                   padding: "10px",
                                                 }}
-                                                onClick={
-                                                  handleNewButtonModelType
-                                                }
+                                                onClick={handleNewButtonModelType}
                                               >
                                                 X
                                               </button>
@@ -2881,9 +2607,7 @@ const ItemMasterGernal = () => {
                                         <div className="card-header">
                                           <div className="row">
                                             <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                Parent Fg Master
-                                              </h5>
+                                              <h5 className="card-title text-start">Parent Fg Master</h5>
                                             </div>
                                             <div className="col-md-6 text-end">
                                               <button
@@ -2894,9 +2618,7 @@ const ItemMasterGernal = () => {
                                                   border: "none",
                                                   padding: "10px",
                                                 }}
-                                                onClick={
-                                                  handleNewButtonParentFg
-                                                }
+                                                onClick={handleNewButtonParentFg}
                                               >
                                                 X
                                               </button>
@@ -2926,7 +2648,7 @@ const ItemMasterGernal = () => {
                               aria-labelledby="pills-contact-tab"
                               tabIndex="0"
                             >
-                              <Technical  onDataChange={handleTechnicalDataChange} />
+                              <Technical onDataChange={handleTechnicalDataChange} />
                             </div>
                             <div
                               className="tab-pane fade"
@@ -2935,7 +2657,7 @@ const ItemMasterGernal = () => {
                               aria-labelledby="pills-about-tab"
                               tabIndex="0"
                             >
-                              <Npd onDataChange={handleNpdDataChange}/>
+                              <Npd onDataChange={handleNpdDataChange} />
                             </div>
                           </div>
                         </div>
@@ -2949,7 +2671,7 @@ const ItemMasterGernal = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 export default ItemMasterGernal;
