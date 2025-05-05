@@ -74,18 +74,22 @@ const Poinfo = ({ updateFormData, paymentTermsFromSupplier }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
+  
     // Update local state
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
-
-    // Update parent state (so the API receives correct data)
-    setPaymentTerms(value);
+  
+    // Update only if the field is payment terms
+    if (name === "paymentTerms") {
+      setPaymentTerms(value);
+    }
+  
+    // Update parent state
     updateFormData(name, value);
   };
-
+  
   const handleSeriesChange = async (e) => {
     const seriesValue = e.target.value;
     setSelectedSeries(seriesValue);

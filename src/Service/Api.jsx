@@ -40,9 +40,24 @@ export async function postRequest(endpoint, data) {
 
 
 // GST Master
+const getAuthConfig = () => {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
 export const fetchGstMasterRecords = async () => {
   try {
-    const response = await axios.get(GST_MASTER_URL);
+    const config = getAuthConfig();
+    const response = await axios.get(GST_MASTER_URL, config);
     return response.data;
   } catch (error) {
     console.error("Error fetching GST Master records:", error.message);
@@ -52,16 +67,19 @@ export const fetchGstMasterRecords = async () => {
 
 export const createGstMasterRecord = async (data) => {
   try {
-    const response = await axios.post(GST_MASTER_URL, data);
+    const config = getAuthConfig();
+    const response = await axios.post(GST_MASTER_URL, data, config);
     return response.data;
   } catch (error) {
+    console.error("Error creating GST Master record:", error.message);
     throw new Error("Error creating GST Master record");
   }
 };
 
 export const updateGstMasterRecord = async (id, data) => {
   try {
-    const response = await axios.put(`${GST_MASTER_URL}${id}/`, data);
+    const config = getAuthConfig();
+    const response = await axios.put(`${GST_MASTER_URL}${id}/`, data, config);
     return response.data;
   } catch (error) {
     console.error("Error updating GST Master record:", error.message);
@@ -71,13 +89,13 @@ export const updateGstMasterRecord = async (id, data) => {
 
 export const deleteGstMasterRecord = async (id) => {
   try {
-    await axios.delete(`${GST_MASTER_URL}${id}/`);
+    const config = getAuthConfig();
+    await axios.delete(`${GST_MASTER_URL}${id}/`, config);
   } catch (error) {
     console.error("Error deleting GST Master record:", error.message);
     throw new Error("Error deleting GST Master record");
   }
 };
-
 
 // Tax Code Master
 export const getTaxCodes = async () => {
@@ -1192,43 +1210,55 @@ export const saveItemMasterData = async (data) => {
 
 // Item Master Gernal
 
-export const saveItemMaster = async (data) => {
+export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2Fields) => {
   try {
-    const response = await fetch(`${BASE_URL}AddItems/`, {
+    const token = localStorage.getItem("accessToken")
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.")
+    }
+
+    // Construct the complete data object with all tab data
+    const completeData = {
+      // General tab data (main form)
+      ...formData,
+
+      // Data-2 tab data
+      item_master_data: {
+        ...data2Fields,
+      },
+
+      // Technical Specification tab data
+      technical_specifications: technicalSpecs || [],
+
+      // NPD tab data
+      npd_details: npdDetails || [],
+    }
+
+    console.log("Submitting data to API:", completeData)
+
+    const response = await fetch(`${BASE_URL}api/item-table/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
-    });
+      body: JSON.stringify(completeData),
+    })
 
     if (!response.ok) {
-      const errorData = await response.json();
-
-      console.error("Error occurred while saving data:", {
-        status: response.status,
-        statusText: response.statusText,
-        data: errorData,
-      });
-
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      const errorData = await response.json()
+      console.error("API Error Response:", errorData)
+      throw new Error(errorData.detail || "Network response was not ok")
     }
 
-    return await response.json();
+    return await response.json()
   } catch (error) {
-    console.error("Error occurred while saving data:", {
-      message: error.message,
-    });
-
-    if (error.response && error.response.data) {
-      console.log("Error Details:", error.response.data);
-    } else {
-      console.log("An unexpected error occurred:", error.message);
-    }
-
-    throw error;
+    console.error("Error submitting form:", error)
+    return { status: false, message: error.message }
   }
-};
+}
+
 
 // Cost Center Master
 export const saveCostCenter = async (data) => {
@@ -1438,7 +1468,7 @@ export const savePriceList = async (data) => {
 // Item card Main Group
 export const saveMainGroup = async (data) => {
   try {
-    const response = await fetch(`${BASE_URL}AddMainGroup/`, {
+    const response = await fetch(`${BASE_URL}api/maingroup/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1455,7 +1485,7 @@ export const saveMainGroup = async (data) => {
 
 export const getMainGroups = async () => {
   try {
-    const response = await fetch(`${BASE_URL}AddMainGroup/`);
+    const response = await fetch(`${BASE_URL}api/maingroup/`);
     if (!response.ok) throw new Error("Failed to fetch data");
     return await response.json();
   } catch (error) {
@@ -1466,7 +1496,7 @@ export const getMainGroups = async () => {
 
 export const deleteMainGroup = async (id) => {
   try {
-    const response = await fetch(`${BASE_URL}AddMainGroup/${id}`, {
+    const response = await fetch(`${BASE_URL}api/maingroup/${id}`, {
       method: "DELETE",
     });
 
@@ -1483,7 +1513,7 @@ export const deleteMainGroup = async (id) => {
 
 export const updateMainGroup = async (id, data) => {
   try {
-    const response = await fetch(`${BASE_URL}AddMainGroup/${id}/`, {
+    const response = await fetch(`${BASE_URL}api/maingroup/${id}/`, {
       method: "PUT", // Use PUT for updating
       headers: {
         "Content-Type": "application/json",
@@ -1506,7 +1536,7 @@ export const updateMainGroup = async (id, data) => {
 // item group
 export const saveItemGroup = async (data) => {
   try {
-    const response = await fetch(`${BASE_URL}AddItemGroup/`, {
+    const response = await fetch(`${BASE_URL}api/itemgroup/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1523,7 +1553,7 @@ export const saveItemGroup = async (data) => {
 
 export const updateItemGroup = async (id, data) => {
   try {
-    const response = await fetch(`${BASE_URL}AddItemGroup/${id}/`, {
+    const response = await fetch(`${BASE_URL}api/itemgroup/${id}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -1540,7 +1570,7 @@ export const updateItemGroup = async (id, data) => {
 
 export const getItemGroups = async () => {
   try {
-    const response = await fetch(`${BASE_URL}AddItemGroup/`);
+    const response = await fetch(`${BASE_URL}api/itemgroup/`);
     if (!response.ok) throw new Error("Failed to fetch data");
     return await response.json();
   } catch (error) {
@@ -1551,7 +1581,7 @@ export const getItemGroups = async () => {
 
 export const deleteItemGroup = async (id) => {
   try {
-    const response = await fetch(`${BASE_URL}AddItemGroup/${id}/`, {
+    const response = await fetch(`${BASE_URL}api/itemgroup/${id}/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -1576,21 +1606,22 @@ export const deleteItemGroup = async (id) => {
 
 
 // Part No
-export const fetchNextPartNo =  async (main_group, item_group) => {
+export const fetchNextPartNo = async (main_group, item_group) => {
   try {
     const response = await fetch(
-      `${BASE_URL}AddItems/next-part-no/?main_group=${main_group}&item_group=${item_group}`
+      `${BASE_URL}generate-code/?subgroup_name=${main_group}&group_name=${item_group}`
     );
     if (!response.ok) {
       throw new Error("Failed to fetch next part number");
     }
     const data = await response.json();
-    return data.next_part_no;
+    return data.generated_code;
   } catch (error) {
     console.error("Error fetching next part number:", error);
     throw error;
   }
 };
+
 
 
 
@@ -1730,13 +1761,17 @@ export const deleteStoreLocation = async (id) => {
     const response = await fetch(`${BASE_URL}Store_Location/${id}/`, {
       method: "DELETE",
     });
+
     if (!response.ok) throw new Error("Failed to delete data");
-    return await response.json();
+
+    // Don't try to parse JSON if there's no response body
+    return true;
   } catch (error) {
     console.error("Error occurred while deleting data:", error);
     throw error;
   }
 };
+
 
 // Item master Sector
 

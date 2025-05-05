@@ -1,41 +1,49 @@
-import React, { useState } from "react";
-import { addNPD } from "../../../Service/Api";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import "./Npd.css";
-const Npd = () => {
-  const [npd, setNpd] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [npdQty, setNpdQty] = useState("");
-  const [npdDueDate, setNpdDueDate] = useState("");
-  const [dataSaved, setDataSaved] = useState(false);
+"use client"
 
-  const handleSave = async () => {
-    if (!npd || !customerName || !npdQty || !npdDueDate) {
-      toast.error("All fields are required");
-      return;
+import { useState, useEffect } from "react"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import "./Npd.css"
+
+const Npd = ({ onDataChange }) => {
+  const [npdData, setNpdData] = useState([])
+  const [npd, setNpd] = useState("")
+  const [customerName, setCustomerName] = useState("")
+  const [npdQty, setNpdQty] = useState("")
+  const [npdDueDate, setNpdDueDate] = useState("")
+
+  // Pass data to parent component whenever it changes
+  useEffect(() => {
+    if (onDataChange) {
+      onDataChange(npdData)
     }
+  }, [npdData, onDataChange])
 
-    try {
-      await addNPD(npd, customerName, npdQty, npdDueDate);
-      toast.success("Data saved successfully");
-      console.log("NpD data save");
+  // Function to add a new NPD entry
+  const handleAddNpd = () => {
+    if (npd && customerName && npdQty && npdDueDate) {
+      const newNpdEntry = {
+        NPD: npd,
+        CustomerName: customerName,
+        NPD_Qty: npdQty,
+        NPD_Due_Date: npdDueDate,
+      }
 
-      setDataSaved(true);
-    } catch (error) {
-      toast.error("Failed to save data");
-      console.log(error);
+      const updatedNpdData = [...npdData, newNpdEntry]
+      setNpdData(updatedNpdData)
+
+      // Clear form fields
+      setNpd("")
+      setCustomerName("")
+      setNpdQty("")
+      setNpdDueDate("")
+
+      // Update parent component
+      if (onDataChange) {
+        onDataChange(updatedNpdData)
+      }
     }
-  };
-
-  const handleClear = () => {
-    setNpd("");
-    setCustomerName("");
-    setNpdQty("");
-    setNpdDueDate("");
-    setDataSaved(false);
-    console.log("clear");
-  };
+  }
 
   return (
     <div className="Npd123">
@@ -55,9 +63,9 @@ const Npd = () => {
                   aria-label="Default select example"
                 >
                   <option value="">Select...</option>
-                  <option value="1">No</option>
-                  <option value="2">Two</option>
-                  <option value="3">Three</option>
+                  <option value="New Part Dev A">New Part Dev A</option>
+                  <option value="New Part Dev B">New Part Dev B</option>
+                  <option value="New Part Dev C">New Part Dev C</option>
                 </select>
               </div>
             </div>
@@ -106,70 +114,43 @@ const Npd = () => {
                 </div>
               </div>
             </div>
+            <div className="row mb-3">
+              <div className="col-sm-12 text-end">
+                <button className="btn btn-primary" onClick={handleAddNpd}>
+                  Add NPD
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="container">
-          <div className="row">
-            <div className="col-md-3">
-              <div className="row">
-                <div className="col-md-4 text-start">
-                  <label className="form-check-label" for="flexCheckDefault">
-                    Active:
-                  </label>
-                </div>
-                <div className="col-md-4 text-start">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      value=""
-                      id="flexCheckDefault"
-                    />
-                    <label className="form-check-label" for="flexCheckDefault">
-                      Sales
-                    </label>
-                  </div>
-                </div>
-
-                <div className="col-md-4 text-start">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      value=""
-                      id="flexCheckDefault"
-                    />
-                    <label className="form-check-label" for="flexCheckDefault">
-                      Purchase
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-9 text-end">
-              <div className="row mb-3">
-                <div className="col-sm-12 text-end">
-                  <button
-                    className="btn me-2"
-                    onClick={handleSave}
-                    disabled={dataSaved}
-                  >
-                    Save
-                  </button>
-                  <button className="btn" onClick={handleClear}>
-                    Clear
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div className="col-md-7">
+            <h6>NPD Entries</h6>
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th>NPD</th>
+                  <th>Customer Name</th>
+                  <th>Qty</th>
+                  <th>Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {npdData.map((entry, index) => (
+                  <tr key={index}>
+                    <td>{entry.NPD}</td>
+                    <td>{entry.CustomerName}</td>
+                    <td>{entry.NPD_Qty}</td>
+                    <td>{entry.NPD_Due_Date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
       <ToastContainer />
     </div>
-  );
-};
+  )
+}
 
-export default Npd;
+export default Npd

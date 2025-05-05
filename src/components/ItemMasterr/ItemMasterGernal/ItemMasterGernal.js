@@ -40,7 +40,7 @@ import {
   getItemSections,
   getItemGroups,
 } from "../../../Service/Api.jsx";
-import {fetchNextPartNo, getUnitCode } from "../../../Service/Api.jsx";
+import { fetchNextPartNo, getUnitCode } from "../../../Service/Api.jsx";
 
 const ItemMasterGernal = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -61,6 +61,26 @@ const ItemMasterGernal = () => {
   const [items, setItems] = useState([]);
   const [unitCodes, setUnitCodes] = useState([]);
   // const [grades, setGrades] = useState([]);
+
+    // New state for data from other tabs
+    const [technicalSpecifications, setTechnicalSpecifications] = useState([])
+    const [npdDetails, setNpdDetails] = useState([])
+    const [data2Fields, setData2Fields] = useState({})
+
+    
+  // Callback functions to receive data from child components
+  const handleTechnicalDataChange = (specs) => {
+    setTechnicalSpecifications(specs)
+  }
+
+  const handleNpdDataChange = (npd) => {
+    setNpdDetails(npd)
+  }
+
+  const handleData2Change = (data) => {
+    setData2Fields(data)
+  }
+
 
   const toggleSideNav = () => {
     setSideNavOpen(!sideNavOpen);
@@ -192,21 +212,19 @@ const ItemMasterGernal = () => {
   const [errors, setErrors] = useState({});
   const [mainGroups, setMainGroups] = useState([]);
 
-
-
+  const fetchMainGroups = async () => {
+    try {
+      const data = await getMainGroups(); // Calls your export
+      setMainGroups(data); // Updates dropdown
+    } catch (error) {
+      console.error("Failed to load main groups:", error);
+    }
+  };
+  
   useEffect(() => {
-    const fetchMainGroups = async () => {
-      try {
-        const response = await getMainGroups();
-        console.log("Main Groups:", response); // Check what the response looks like
-        setMainGroups(response);
-      } catch (error) {
-        console.error("Error fetching main groups:", error);
-      }
-    };
-
-    fetchMainGroups();
+    fetchMainGroups(); // Load on initial mount
   }, []);
+  
 
   // useEffect(() => {
   //   // Trigger part number fetch if both dropdowns have valid selections
@@ -224,7 +242,6 @@ const ItemMasterGernal = () => {
   //   }
   // }, [formData.main_group, formData.item_group]);
 
-
   const validateForm = () => {
     const newErrors = {};
     const requiredFields = [
@@ -235,7 +252,7 @@ const ItemMasterGernal = () => {
       "item_group",
       "Name_Description",
       "Store_Location",
-     
+
       "HSN_SAC_Code",
     ];
 
@@ -249,7 +266,7 @@ const ItemMasterGernal = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = async(e) => {
+  const handleInputChange = async (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -262,30 +279,35 @@ const ItemMasterGernal = () => {
       ...prevData,
       [name]: value,
     }));
-    if (name === "main_group" || name === "item_group") {
-      const main_group = name === "main_group" ? value : formData.main_group;
-      const item_group = name === "item_group" ? value : formData.item_group;
-  
-      if (main_group && item_group) {
+   
+  };
+
+  useEffect(() => {
+    const getPartNo = async () => {
+      if (formData.main_group && formData.item_group) {
         try {
-          // Call the function from the Service page to get the next part number
-          const nextPartNo = await fetchNextPartNo(main_group, item_group);
-          // Set the fetched part_no in the state
-          setFormData((prevData) => ({
-            ...prevData,
-            part_no: nextPartNo,
-          }));
-        } catch (error) {
-          console.error("Error fetching part number:", error);
+          const nextCode = await fetchNextPartNo(
+            formData.main_group,
+            formData.item_group
+          );
+          setFormData((prev) => ({ ...prev, part_no: nextCode }));
+        } catch (err) {
+          console.error("Failed to generate part number", err);
         }
       }
-    }
-  };
+    };
+  
+    getPartNo();
+  }, [formData.main_group, formData.item_group]);
+  
 
   const handleSaveitem = async (e) => {
     e.preventDefault();
 
-    console.log("Form data before validation:", formData);
+    console.log("Form data before validation:", formData)
+    console.log("Technical specs:", technicalSpecifications)
+    console.log("NPD details:", npdDetails)
+    console.log("Data-2 fields:", data2Fields)
 
     if (!validateForm()) {
       console.log("Validation errors:", errors);
@@ -294,7 +316,7 @@ const ItemMasterGernal = () => {
 
     try {
       console.log("Attempting to save data...");
-      const result = await saveItemMaster(formData);
+      const result = await saveItemMaster(formData, technicalSpecifications, npdDetails, data2Fields)
       toast.success("Data saved successfully!");
       console.log("Data saved successfully:", result);
     } catch (error) {
@@ -504,8 +526,6 @@ const ItemMasterGernal = () => {
     }
   };
 
- 
-
   // item sector
   const [ItemSection, setItemSection] = useState([]);
   useEffect(() => {
@@ -523,14 +543,15 @@ const ItemMasterGernal = () => {
   // item Group
   const [itemGroups, setItemGroups] = useState([]);
   useEffect(() => {
-    fetchitemGroups();
+    fetchItemGroups();
   }, []);
-  const fetchitemGroups = async () => {
+  
+  const fetchItemGroups = async () => {
     try {
       const response = await getItemGroups();
       setItemGroups(response);
     } catch (error) {
-      console.error("Error fetching metal types:", error);
+      console.error("Failed to fetch item groups:", error);
     }
   };
 
@@ -638,7 +659,11 @@ const ItemMasterGernal = () => {
                               </button>
                             </li>
                           </ul>
-                          <div className="tab-content" id="pills-tabContent" style={{border:"none"}}>
+                          <div
+                            className="tab-content"
+                            id="pills-tabContent"
+                            style={{ border: "none" }}
+                          >
                             <div
                               className="tab-pane fade show active"
                               id="pills-home"
@@ -671,29 +696,14 @@ const ItemMasterGernal = () => {
                                                   value={formData.main_group}
                                                   onChange={handleInputChange}
                                                 >
-                                                  <option
-                                                    selected
-                                                    style={{ color: "black" }}
-                                                  >
+                                                  <option value="" disabled>
                                                     Select ..
                                                   </option>
                                                   {mainGroups.map((group) => (
-                                                    <option
-                                                      key={group.id}
-                                                      value={group.name}
-                                                    >
-                                                      {group.name}
-                                                    </option>
-                                                  ))}
-
-                                                  {/* {mainGroups.map((main) => (
-                                                    <option
-                                                      key={main.id}
-                                                      value={main.name}
-                                                    >
-                                                      {main.name}
-                                                    </option>
-                                                  ))} */}
+    <option key={group.id} value={group.subgroup_name}>
+      {group.subgroup_name}
+    </option>
+  ))}
                                                 </select>
                                                 {errors.main_group && (
                                                   <div className="text-danger">
@@ -701,6 +711,7 @@ const ItemMasterGernal = () => {
                                                   </div>
                                                 )}
                                               </div>
+
                                               <div className="col-sm-2">
                                                 <button
                                                   className="btn"
@@ -715,6 +726,8 @@ const ItemMasterGernal = () => {
                                                 <button
                                                   className="btn"
                                                   style={{ fontSize: "10px" }}
+                                                  type="button"
+                                                  onClick={fetchMainGroups}
                                                 >
                                                   <CachedIcon />
                                                 </button>
@@ -737,7 +750,7 @@ const ItemMasterGernal = () => {
                                                   id="part_no"
                                                   name="part_no"
                                                   value={formData.part_no}
-                                                  onChange={handleInputChange}
+                                                  
                                                   readOnly
                                                   style={{ width: "115%" }}
                                                 />
@@ -1197,7 +1210,10 @@ const ItemMasterGernal = () => {
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
+                                                  type="button"
                                                   className="btn"
+                                                  onClick={fetchMetalTypes}
+                                                  title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1235,60 +1251,48 @@ const ItemMasterGernal = () => {
                                               </div>
                                             </div>
                                             <div className="row mb-3">
-                                              <label
-                                                htmlFor="item_group"
-                                                className="col-sm-5 col-form-label"
-                                              >
-                                                Item Group:
-                                                <span className="text-danger">
-                                                  *
-                                                </span>
-                                              </label>
-                                              <div className="col-sm-4">
-                                                <select
-                                                  id="item_group"
-                                                  name="item_group"
-                                                  className="form-select"
-                                                  value={formData.item_group}
-                                                  onChange={handleInputChange}
-                                                >
-                                                  <option
-                                                    selected
-                                                    style={{ color: "black" }}
-                                                  >
-                                                    Select ..
-                                                  </option>
-                                                  {itemGroups.map((group) => (
-    <option key={group.id} value={group.name}> {/* Use `group.name` if your API returns it */}
-      {group.name}
+  <label htmlFor="item_group" className="col-sm-5 col-form-label">
+    Item Group: <span className="text-danger">*</span>
+  </label>
+  <div className="col-sm-4">
+    <select
+      id="item_group"
+      name="item_group"
+      className="form-select"
+      value={formData.item_group}
+      onChange={handleInputChange}
+    >
+      <option value="" disabled>
+        Select ..
+      </option>
+      {itemGroups.map((group) => (
+    <option key={group.id} value={group.group_name}>
+      {group.group_name}
     </option>
   ))}
-                                                </select>
-                                                {errors.item_group && (
-                                                  <div className="text-danger">
-                                                    {errors.item_group}
-                                                  </div>
-                                                )}
-                                              </div>
-                                              <div className="col-sm-2">
-                                                <button
-                                                  className="btn"
-                                                  onClick={
-                                                    handleNewButtonItemgroup
-                                                  }
-                                                >
-                                                  New
-                                                </button>
-                                              </div>
-                                              <div className="col-sm-1">
-                                                <button
-                                                  className="btn"
-                                                  style={{ fontSize: "10px" }}
-                                                >
-                                                  <CachedIcon />
-                                                </button>
-                                              </div>
-                                            </div>
+    </select>
+    {errors.item_group && (
+      <div className="text-danger">{errors.item_group}</div>
+    )}
+  </div>
+
+  <div className="col-sm-2">
+    <button className="btn" onClick={handleNewButtonItemgroup}>
+      New
+    </button>
+  </div>
+  <div className="col-sm-1">
+  <button
+      className="btn"
+      style={{ fontSize: "10px" }}
+      type="button"
+      onClick={fetchItemGroups}
+    >
+      <CachedIcon />
+    </button>
+  </div>
+</div>
+
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Name_Description"
@@ -1374,7 +1378,10 @@ const ItemMasterGernal = () => {
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
-                                                  className="btn"
+                                                 type="button"
+                                                 className="btn"
+                                                 onClick={fetchstorelocation}
+                                                
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1427,7 +1434,10 @@ const ItemMasterGernal = () => {
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
+                                                  type="button"
                                                   className="btn"
+                                                  onClick={fetchRoute}
+                                                  title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1485,7 +1495,10 @@ const ItemMasterGernal = () => {
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
-                                                  className="btn"
+                                                 type="button"
+                                                 className="btn"
+                                                 onClick={fetchParentFG}
+                                                 title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1567,7 +1580,10 @@ const ItemMasterGernal = () => {
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
+                                                  type="button"
                                                   className="btn"
+                                                  onClick={fetchSector}
+                                                  title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1580,7 +1596,6 @@ const ItemMasterGernal = () => {
                                                 className="col-sm-5 col-form-label"
                                               >
                                                 SAC Code:
-                                               
                                               </label>
                                               <div className="col-sm-7">
                                                 <input
@@ -1657,7 +1672,10 @@ const ItemMasterGernal = () => {
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
+                                                  type="button"
                                                   className="btn"
+                                                  onClick={fetchItemGroups}
+                                                  title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -1988,7 +2006,10 @@ const ItemMasterGernal = () => {
                                               </div>
                                               <div className="col-sm-1">
                                                 <button
-                                                  className="btn"
+                                                 type="button"
+                                                 className="btn"
+                                                 onClick={fetchItems}
+                                                 title="Refresh metal types"
                                                   style={{ fontSize: "10px" }}
                                                 >
                                                   <CachedIcon />
@@ -2428,73 +2449,73 @@ const ItemMasterGernal = () => {
                               </div>
 
                               {showNewCardMainGroup && (
-  <div
-    className="new-card-overlay"
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 1050,
-    }}
-  >
-    <div
-      className="new-card"
-      style={{
-        width: "50%",
-        maxHeight: "80%", // Restrict the height to enable vertical scrolling
-        overflowY: "auto", // Enable vertical scrolling
-        backgroundColor: "#fff",
-        borderRadius: "8px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        padding: "20px",
-      }}
-    >
-      <div className="card">
-        <div className="card-header">
-          <div className="row">
-            <div className="col-md-6 text-start">
-              <h5
-                className="card-title text-start"
-                style={{ color: "blue" }}
-              >
-                Item Unit Master
-              </h5>
-            </div>
-            <div className="col-md-6 text-end">
-              <button
-                className="btn-cl"
-                style={{
-                  margin: "5px",
-                  color: "gray",
-                  border: "none",
-                  padding: "10px",
-                }}
-                onClick={handleNewCardMainGroup}
-              >
-                X
-              </button>
-            </div>
-          </div>
-        </div>
-        <div
-          className="card-body"
-          style={{
-            maxHeight: "calc(80vh - 100px)", // Adjust height for header/footer
-            overflowY: "auto", // Enable scrolling for content
-          }}
-        >
-          <NewCardMainGroup />
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+                                <div
+                                  className="new-card-overlay"
+                                  style={{
+                                    position: "fixed",
+                                    top: 0,
+                                    left: 0,
+                                    width: "100%",
+                                    height: "100%",
+                                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    zIndex: 1050,
+                                  }}
+                                >
+                                  <div
+                                    className="new-card"
+                                    style={{
+                                      width: "50%",
+                                      maxHeight: "80%", // Restrict the height to enable vertical scrolling
+                                      overflowY: "auto", // Enable vertical scrolling
+                                      backgroundColor: "#fff",
+                                      borderRadius: "8px",
+                                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                      padding: "20px",
+                                    }}
+                                  >
+                                    <div className="card">
+                                      <div className="card-header">
+                                        <div className="row">
+                                          <div className="col-md-6 text-start">
+                                            <h5
+                                              className="card-title text-start"
+                                              style={{ color: "blue" }}
+                                            >
+                                              Main Group Master
+                                            </h5>
+                                          </div>
+                                          <div className="col-md-6 text-end">
+                                            <button
+                                              className="btn-cl"
+                                              style={{
+                                                margin: "5px",
+                                                color: "gray",
+                                                border: "none",
+                                                padding: "10px",
+                                              }}
+                                              onClick={handleNewCardMainGroup}
+                                            >
+                                              X
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div
+                                        className="card-body"
+                                        style={{
+                                          maxHeight: "calc(80vh - 100px)", // Adjust height for header/footer
+                                          overflowY: "auto", // Enable scrolling for content
+                                        }}
+                                      >
+                                        <NewCardMainGroup />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
                               {showNewCardUnit && (
                                 <div className="new-card-overlay">
@@ -2534,36 +2555,36 @@ const ItemMasterGernal = () => {
 
                               {showNewCardTdc && (
                                 // <div className="TdcCard">
-                                  <div className="new-card-overlay">
-                                    <div className="new-card">
-                                      <div className="card">
-                                        <div className="card-header">
-                                          <div className="row">
-                                            <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                Item TDC Master
-                                              </h5>
-                                            </div>
-                                            <div className="col-md-6 text-end">
-                                              <button
-                                                className="btn-cl justify-content-end"
-                                                style={{
-                                                  margin: "5px",
-                                                  color: "gray",
-                                                  border: "none",
-                                                  padding: "10px",
-                                                }}
-                                                onClick={handleNewButtonTDC}
-                                              >
-                                                X
-                                              </button>
-                                            </div>
+                                <div className="new-card-overlay">
+                                  <div className="new-card">
+                                    <div className="card">
+                                      <div className="card-header">
+                                        <div className="row">
+                                          <div className="col-md-6 text-start">
+                                            <h5 className="card-title text-start">
+                                              Item TDC Master
+                                            </h5>
+                                          </div>
+                                          <div className="col-md-6 text-end">
+                                            <button
+                                              className="btn-cl justify-content-end"
+                                              style={{
+                                                margin: "5px",
+                                                color: "gray",
+                                                border: "none",
+                                                padding: "10px",
+                                              }}
+                                              onClick={handleNewButtonTDC}
+                                            >
+                                              X
+                                            </button>
                                           </div>
                                         </div>
-                                        {/* <NewCardTdc /> */}
                                       </div>
+                                      {/* <NewCardTdc /> */}
                                     </div>
                                   </div>
+                                </div>
                                 // </div>
                               )}
                               {showNewCardItemgroup && (
@@ -2673,36 +2694,36 @@ const ItemMasterGernal = () => {
 
                               {showNewCardSector && (
                                 // <div className="SectorCard">
-                                  <div className="new-card-overlay">
-                                    <div className="new-card">
-                                      <div className="card">
-                                        <div className="card-header">
-                                          <div className="row">
-                                            <div className="col-md-6 text-start">
-                                              <h5 className="card-title text-start">
-                                                Sector Master
-                                              </h5>
-                                            </div>
-                                            <div className="col-md-6 text-end">
-                                              <button
-                                                className="btn-cl justify-content-end"
-                                                style={{
-                                                  margin: "5px",
-                                                  color: "gray",
-                                                  border: "none",
-                                                  padding: "10px",
-                                                }}
-                                                onClick={handleNewButtonSector}
-                                              >
-                                                X
-                                              </button>
-                                            </div>
+                                <div className="new-card-overlay">
+                                  <div className="new-card">
+                                    <div className="card">
+                                      <div className="card-header">
+                                        <div className="row">
+                                          <div className="col-md-6 text-start">
+                                            <h5 className="card-title text-start">
+                                              Sector Master
+                                            </h5>
+                                          </div>
+                                          <div className="col-md-6 text-end">
+                                            <button
+                                              className="btn-cl justify-content-end"
+                                              style={{
+                                                margin: "5px",
+                                                color: "gray",
+                                                border: "none",
+                                                padding: "10px",
+                                              }}
+                                              onClick={handleNewButtonSector}
+                                            >
+                                              X
+                                            </button>
                                           </div>
                                         </div>
-                                        <NewCardSector />
                                       </div>
+                                      <NewCardSector />
                                     </div>
                                   </div>
+                                </div>
                                 // </div>
                               )}
 
@@ -2896,7 +2917,7 @@ const ItemMasterGernal = () => {
                               aria-labelledby="pills-profile-tab"
                               tabIndex="0"
                             >
-                              <Data2 />
+                              <Data2 onDataChange={handleData2Change} />
                             </div>
                             <div
                               className="tab-pane fade"
@@ -2905,7 +2926,7 @@ const ItemMasterGernal = () => {
                               aria-labelledby="pills-contact-tab"
                               tabIndex="0"
                             >
-                              <Technical />
+                              <Technical  onDataChange={handleTechnicalDataChange} />
                             </div>
                             <div
                               className="tab-pane fade"
@@ -2914,7 +2935,7 @@ const ItemMasterGernal = () => {
                               aria-labelledby="pills-about-tab"
                               tabIndex="0"
                             >
-                              <Npd />
+                              <Npd onDataChange={handleNpdDataChange}/>
                             </div>
                           </div>
                         </div>

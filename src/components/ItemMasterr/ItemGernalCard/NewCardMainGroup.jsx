@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -6,162 +6,196 @@ import {
   saveMainGroup,
   getMainGroups,
   deleteMainGroup,
-  updateMainGroup
+  updateMainGroup,
 } from "../../../Service/Api";
 
 const NewCardMainGroup = () => {
-  const [editId, setEditId] = useState(null); // Track which item is being edited
-
+  const [editId, setEditId] = useState(null);
+  const [mainGroups, setMainGroups] = useState([]);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
-    name: "", // Initialize formData with "name" field
+    prefix: "",
+    subgroup_code: "",
+    subgroup_name: "",
+    inventory: "YES",
   });
 
-  const [errors, setErrors] = useState({});
-  const [MainGroup, setMainGroup] = useState([]);
-
   useEffect(() => {
-    fetchMainGroups(); // Fetch main groups on component load
+    fetchMainGroups();
   }, []);
 
-  // Validate form before submitting
-  const validateForm = () => {
-    let isValid = true;
-    let errors = {};
-
-    if (!formData.name || formData.name.trim() === "") {
-      errors.name = "Name is required";
-      isValid = false;
-    }
-
-    setErrors(errors);
-    return isValid;
-  };
-
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value, // Dynamically set formData values
-    });
-  };
-
-  // Handle save (create/update) main group
-  const handleSave = async (e) => {
-    e.preventDefault();
-  
-    if (!validateForm()) {
-      return;
-    }
-  
-    try {
-      if (editId) {
-        // If we have an ID, it's an update request
-        await updateMainGroup(editId, formData);
-        toast.success("Main Group updated successfully!");
-      } else {
-        // If no ID, it's a create request
-        await saveMainGroup(formData);
-        toast.success("Main Group saved successfully!");
-      }
-  
-      setFormData({ name: "" }); // Clear form after saving
-      setEditId(null); // Reset edit mode
-      fetchMainGroups(); // Refresh the list
-    } catch (error) {
-      console.error("Error saving/updating main group:", error);
-      toast.error("Failed to save/update Main Group.");
-    }
-  };
-  
-
-  // Fetch main groups from API
   const fetchMainGroups = async () => {
     try {
-      const response = await getMainGroups(); // Get data from API
-      setMainGroup(response); // Set main group data in state
+      const data = await getMainGroups();
+      setMainGroups(data);
     } catch (error) {
       console.error("Error fetching main groups:", error);
     }
   };
 
-  // Handle delete main group
-  const handleDelete = async (id) => {
-    try {
-      await deleteMainGroup(id); // Delete main group by ID
-      toast.success("Main Group deleted successfully!");
+  const validateForm = () => {
+    let valid = true;
+    let validationErrors = {};
 
-      fetchMainGroups(); // Refresh the list after deletion
+    if (!formData.prefix.trim()) {
+      validationErrors.prefix = "Prefix is required";
+      valid = false;
+    }
+    if (!formData.subgroup_code.trim()) {
+      validationErrors.subgroup_code = "Subgroup Code is required";
+      valid = false;
+    }
+    if (!formData.subgroup_name.trim()) {
+      validationErrors.subgroup_name = "Subgroup Name is required";
+      valid = false;
+    }
+
+    setErrors(validationErrors);
+    return valid;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    try {
+      if (editId) {
+        await updateMainGroup(editId, formData);
+        toast.success("Main Group updated successfully");
+      } else {
+        await saveMainGroup(formData);
+        toast.success("Main Group created successfully");
+      }
+
+      setFormData({
+        prefix: "",
+        subgroup_code: "",
+        subgroup_name: "",
+        inventory: "YES",
+      });
+      setEditId(null);
+      fetchMainGroups();
+      setErrors({});
     } catch (error) {
-      console.error("Error deleting main group:", error);
-      toast.error("Failed to delete Main Group.");
+      if (error.response) {
+        setErrors(error.response.data || {});
+        Object.values(error.response.data).forEach((msg) =>
+          toast.error(msg[0])
+        );
+      } else {
+        toast.error("Something went wrong");
+        console.error(error);
+      }
     }
   };
 
-
   const handleEdit = (item) => {
-    setEditId(item.id); // Store the ID of the item being edited
-    setFormData({ name: item.name }); // Populate form with the selected item's data
+    setEditId(item.id);
+    setFormData({
+      prefix: item.prefix,
+      subgroup_code: item.subgroup_code,
+      subgroup_name: item.subgroup_name,
+      inventory: item.inventory,
+    });
   };
 
-  
-  return (
-    <div className="container">
-      {/* Main Group Form */}
-      <form onSubmit={handleSave}>
-        <div className="row">
-          <div className="col-md-2 mt-4">
-            <label htmlFor="name">Name :</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className={`form-control ${errors.name ? "is-invalid" : ""}`}
-            />
-            {errors.name && (
-              <div className="invalid-feedback">{errors.name}</div>
-            )}
-          </div>
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
 
-          <div className="col-md-2 mt-4">
-            <button type="submit" className="btn mt-4">
-              Save
+    try {
+      await deleteMainGroup(id);
+      toast.success("Main Group deleted");
+      fetchMainGroups();
+    } catch (error) {
+      toast.error("Failed to delete");
+      console.error(error);
+    }
+  };
+
+  return (
+    <div className="container mt-4">
+      <h5>Main Group Master</h5>
+      <form onSubmit={handleSubmit}>
+        <div className="row">
+          {["prefix", "subgroup_code", "subgroup_name"].map((field) => (
+            <div className="col-md-2 text-start" key={field}>
+              <label>{field.replace("_", " ").toUpperCase()}</label>
+              <input
+                type="text"
+                name={field}
+                className={`form-control ${
+                  errors[field] ? "is-invalid" : ""
+                }`}
+                value={formData[field]}
+                onChange={handleChange}
+              />
+              {errors[field] && (
+                <div className="invalid-feedback">{errors[field]}</div>
+              )}
+            </div>
+          ))}
+          <div className="col-md-2">
+            <label>Inventory</label>
+            <select
+              name="inventory"
+              className="form-select"
+              value={formData.inventory}
+              onChange={handleChange}
+            >
+              <option value="YES">YES</option>
+              <option value="NO">NO</option>
+            </select>
+          </div>
+          <div className="col-md-2 d-flex align-items-end">
+            <button type="submit" className="btn">
+              {editId ? "Update" : "Save"}
             </button>
           </div>
         </div>
       </form>
 
-      {/* Main Group Table */}
-      <table className="table mt-4">
+      <table className="table table-bordered table-sm mt-4">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Prefix</th>
+            <th>Subgroup Code</th>
+            <th>Subgroup Name</th>
+            <th>Inventory</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {MainGroup.map((item) => (
+          {mainGroups.map((item) => (
             <tr key={item.id}>
-              <td>{item.name}</td>
+              <td>{item.prefix}</td>
+              <td>{item.subgroup_code}</td>
+              <td>{item.subgroup_name}</td>
+              <td>{item.inventory}</td>
               <td>
-              <FaEdit
-    className="text-primary mx-2"
-    style={{ cursor: "pointer" }}
-    onClick={() => handleEdit(item)}
-  />
-                <FaTrash
-                  className="text-danger mx-2"
+                <FaEdit
+                  className="text-primary me-2"
+                  onClick={() => handleEdit(item)}
                   style={{ cursor: "pointer" }}
+                />
+                <FaTrash
+                  className="text-danger"
                   onClick={() => handleDelete(item.id)}
+                  style={{ cursor: "pointer" }}
                 />
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
       <ToastContainer />
     </div>
   );

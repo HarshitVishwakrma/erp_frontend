@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState,useEffect } from "react";
 import { FaPlus, FaTrash, FaEdit, FaSave } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  fetchSpecifications,
-  addSpecification,
-  updateSpecification,
-  deleteSpecification,
-} from "../../../Service/Api.jsx";
+
 import "./Technical.css";
 
-const Technical = () => {
+const Technical = ({ onDataChange }) => {
   const [specifications, setSpecifications] = useState([]);
   const [newSpec, setNewSpec] = useState("");
   const [newParam, setNewParam] = useState("");
@@ -18,66 +13,52 @@ const Technical = () => {
   const [editSpec, setEditSpec] = useState("");
   const [editParam, setEditParam] = useState("");
 
-  useEffect(() => {
-    const getSpecifications = async () => {
-      try {
-        const data = await fetchSpecifications();
-        setSpecifications(data);
-      } catch (error) {
-        toast.error("Failed to fetch specifications");
-      }
+   // Update parent component whenever specifications change
+   useEffect(() => {
+    if (onDataChange) {
+      onDataChange(specifications)
+    }
+  }, [specifications, onDataChange])
+
+
+  const handleSave = () => {
+    if (!newSpec.trim()) {
+      toast.error("Specification is required!");
+      return;
+    }
+  
+    const newEntry = {
+      id: Date.now(), // unique ID
+      Specification: newSpec,
+      Parameter: newParam,
     };
-    getSpecifications();
-  }, []);
-
-  const handleSave = async () => {
-    if (!newSpec || !newParam) {
-      toast.error("All fields are required");
-      return;
-    }
-
-    try {
-      const savedSpec = await addSpecification(newSpec, newParam);
-      setSpecifications([...specifications, savedSpec]);
-      setNewSpec("");
-      setNewParam("");
-      toast.success("Specification added successfully");
-    } catch (error) {
-      toast.error("Failed to add specification");
-    }
+  
+    setSpecifications([...specifications, newEntry]);
+    toast.success("Specification added!");
+    setNewSpec("");
+    setNewParam("");
   };
+  
 
-  const handleEdit = async (id) => {
-    if (!editSpec || !editParam) {
-      toast.error("All fields are required");
-      return;
-    }
 
-    try {
-      const updatedSpec = await updateSpecification(id, editSpec, editParam);
-      const updatedSpecs = specifications.map((spec) =>
-        spec.id === id ? updatedSpec : spec
-      );
-      setSpecifications(updatedSpecs);
-      setEditId(null);
-      setEditSpec("");
-      setEditParam("");
-      toast.success("Specification updated successfully");
-    } catch (error) {
-      toast.error("Failed to update specification");
-    }
+ 
+  const handleEdit = (id) => {
+    const updatedSpecs = specifications.map((spec) =>
+      spec.id === id ? { ...spec, Specification: editSpec, Parameter: editParam } : spec
+    );
+  
+    setSpecifications(updatedSpecs);
+    toast.success("Specification updated!");
+    setEditId(null);
+    setEditSpec("");
+    setEditParam("");
   };
-
-  const handleDelete = async (id) => {
-    try {
-      await deleteSpecification(id);
-      setSpecifications(specifications.filter((spec) => spec.id !== id));
-      toast.success("Specification deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete specification");
-    }
+  const handleDelete = (id) => {
+    const updatedSpecs = specifications.filter((spec) => spec.id !== id);
+    setSpecifications(updatedSpecs);
+    toast.success("Specification deleted!");
   };
-
+    
   const handleClear = () => {
     setNewSpec("");
     setNewParam("");
@@ -312,42 +293,7 @@ const Technical = () => {
           </div>
         </div>
       </div>
-      <div className="container">
-        <div className="row text-start">
-          <div className="col-md-1 text-start">
-            <label className="form-check-label" for="flexCheckDefault">
-              Active:
-            </label>
-          </div>
-          <div className="col-md-1 text-start">
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value=""
-                id="flexCheckDefault"
-              />
-              <label className="form-check-label" for="flexCheckDefault">
-                Sales
-              </label>
-            </div>
-          </div>
-
-          <div className="col-md-1 text-start">
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value=""
-                id="flexCheckDefault"
-              />
-              <label className="form-check-label" for="flexCheckDefault">
-                Purchase
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 };

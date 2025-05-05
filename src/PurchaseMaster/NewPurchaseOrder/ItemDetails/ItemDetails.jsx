@@ -32,10 +32,11 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
     const loadItems = async () => {
       if (currentItemId) {
         try {
-          const data = await fetchItemDetails(currentItemId);
-          console.log("Fetched Data:", data);
-          if (data && data.ItemDetails) {
-            setItemDetails(data.ItemDetails);
+          const response = await fetchItemDetails(currentItemId);
+          console.log("Fetched Data:", response);
+    
+          if (response && response.data) {
+            setItemDetails([response.data]); // wrap in array to match expected structure
           } else {
             toast.error("No item details found.");
           }
@@ -49,6 +50,7 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
         }
       }
     };
+    
     loadItems();
   }, [currentItemId]);
   
@@ -419,7 +421,7 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
                       <td>{item.Particular}</td>
                       <td>{item.Mill_Name}</td>
                       <td>{item.DeliveryDt}</td>
-                      <td>{/* Schedule Line */}</td>
+                      <td>Schedule Line</td>
                       <td>
                         <button
                           className="btn"

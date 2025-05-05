@@ -1,11 +1,10 @@
 import CachedIcon from "@mui/icons-material/Cached";
 import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { saveItemMasterData } from "../../../Service/Api.jsx";
 import NewCardQtyPack from "../ItemGernalCard/NewCardQtyPack.jsx";
 import { getQtyPacks } from "../../../Service/Api.jsx";
-const Data2 = () => {
+const Data2 = ({onDataChange}) => {
   const [showNewCardQtypack, setShowNewCardQtypack] = useState(false);
 
   const handleNewButtonQtypack = (e) => {
@@ -61,19 +60,17 @@ const Data2 = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [isCleared, setIsCleared] = useState(false);
+
   const [qtyPacks, setQtyPacks] = useState([]);
 
-  const validate = () => {
-    const newErrors = {};
-    Object.keys(formData).forEach((key) => {
-      if (!formData[key]) {
-        newErrors[key] = "This field is required";
+
+
+    // Pass data to parent component whenever it changes
+    useEffect(() => {
+      if (onDataChange) {
+        onDataChange(formData)
       }
-    });
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    }, [formData, onDataChange])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,75 +86,7 @@ const Data2 = () => {
     }
   };
 
-  const handleSavedata = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
 
-    try {
-      console.log("Sending data:", formData); // Check if data is correct
-      const response = await saveItemMasterData(formData);
-      console.log("Response:", response); // Check API response
-      toast.success("Data saved successfully!");
-      setIsCleared(false);
-    } catch (error) {
-      console.error("Error saving data:", error);
-      toast.error("Failed to save data. Check console for errors.");
-    }
-  };
-
-  const handleCleardata = () => {
-    if (!isCleared) {
-      setFormData({
-        Max_GRN_Qty: "",
-        Scrap_Rate: "",
-        Machine: "",
-        Item_Shelf_Life: "",
-        Item_Wip_Wt: "",
-        Min_Level: "",
-        Inventry_Service: "",
-        CPC_Code: "",
-        Auxiliary_Factor: "",
-        Department: "",
-        Mechanical_Std: "",
-        Tool_Layout_No: "",
-        Is_Service: "",
-        Sales_Conversion_Factor: "",
-        GRN_Conversion_Factor: "",
-        Packing_Cost: "",
-        Production_Lead_Time: "",
-        Buyer: "",
-        Qty_Packing: "",
-        Item_Category: "",
-        Machine_Weight: "",
-        Buffer_Qty: "",
-        MOQ: "",
-        Max_Level: "",
-        BOM_Type: "",
-        Product_Category: "",
-        Over_Head_Rate: "",
-        Valuation_Method: "",
-        Dimensional_Std_Reference: "",
-        Raw_Material_Grade: "",
-        RM_Tolerance: "",
-        FG_Std_Cavity: "",
-        Design_Cost: "",
-        Transport_Cost: "",
-        Purchase_Lead_Time: "",
-        Business_Head: "",
-        Project_Name: "",
-        Eoonomical_Batch_Size: "",
-        Re_Order_Level: "",
-        Pre_Shift_Qty: "",
-        Scrap_Item: "",
-        Scrap_Qty: "",
-        Purchase_GL: "",
-        Business_Associate: "",
-      });
-      setErrors({});
-      setIsCleared(true);
-      console.log("Form cleared");
-    }
-  };
 
   useEffect(() => {
     fetchQtyPacks();
@@ -629,8 +558,10 @@ const Data2 = () => {
                   </div>
                   <div className="col-sm-1">
                     <button
-                      className="btn"
                       type="button"
+                      className="btn"
+                      onClick={fetchQtyPacks}
+                      title="Refresh metal types"
                       style={{ fontSize: "10px" }}
                     >
                       <CachedIcon />
@@ -1288,17 +1219,7 @@ const Data2 = () => {
               </div>
             </div>
           </div>
-          <div className="row mb-3 text-end">
-            <div className="col-sm-12">
-              <button type="button" className="btn" onClick={handleSavedata}>
-                Save Data
-              </button>
-
-              <button type="button" className="btn" onClick={handleCleardata}>
-                Clear Data
-              </button>
-            </div>
-          </div>
+          
         </form>
       </div>
       {showNewCardQtypack && (
