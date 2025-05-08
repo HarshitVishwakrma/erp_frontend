@@ -278,6 +278,15 @@ export const SaveNewGateInward = async (data) => {
   }
 };
 
+export const searchCustomerByNumber = async (query) => {
+  try {
+    const response = await axios.get(`${Base_Url}search-item/?query=${query}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching customer data:", error);
+    throw error;
+  }
+};
 
 // GET: Fetch GRN Details
 export const getGrnDetails = async () => {

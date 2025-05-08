@@ -81,7 +81,7 @@ import {
     };
   
     const handleDelete1 = async (id) => {
-      if (window.confirm("Are you sure?")) {
+      
         try {
           await deleteOperation(id);
           fetchOperations();
@@ -90,7 +90,7 @@ import {
           console.error("Error deleting operation:", error);
           toast.error("Failed to edit Operation.");
         }
-      }
+      
     };
 
 

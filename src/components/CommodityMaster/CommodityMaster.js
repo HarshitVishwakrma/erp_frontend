@@ -59,7 +59,7 @@ const CommodityMaster = () => {
                             type="text"
                             className="form-control"
                             id="commodityName"
-                            placeholder=""
+                            
                           />
                         </div>
                         <div className="col-md-1 col-sm-3 mb-3 mb-sm-0">
@@ -74,7 +74,7 @@ const CommodityMaster = () => {
                             type="text"
                             className="form-control"
                             id="tariffNo"
-                            placeholder=""
+                            
                           />
                         </div>
                         <div className="col-md-1 col-sm-12 text-sm-start text-md-start">

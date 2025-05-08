@@ -113,11 +113,11 @@ const DeliveryChallan = () => {
 
   // Handle delete action
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this challan?")) {
+   
       await deleteDeliveryChallan(id);
       toast.success("Challan deleted successfully!");
       loadChallans();
-    }
+    
   };
 
   // Second save

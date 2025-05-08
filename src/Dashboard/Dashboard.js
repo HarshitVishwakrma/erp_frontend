@@ -102,8 +102,37 @@ const Dashboard = () => {
             <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
             <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
 
-                            {/* Unique Visitor Line Chart */}
-                <div className="row">
+             
+
+                <div className="row mt-3">
+                  {metrics.map((metric, index) => (
+                    <div className="col-md-3" key={index}>
+                      <Card className="shadow-sm rounded border-0 h-100">
+                        <CardBody className="d-flex flex-column">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span className="text-muted text-uppercase small">{metric.title}</span>
+                            <div className={`bg-${metric.color} bg-opacity-10 p-2 rounded-circle`}>
+                              <metric.icon size={18} className={`text-${metric.color}`} />
+                            </div>
+                          </div>
+                          <div className="d-flex align-items-baseline">
+                            <h3 className="mb-0 me-2">{metric.value}</h3>
+                            {metric.change && (
+                              <span className={`small ${metric.direction === "up" ? "text-success" : "text-danger"}`}>
+                                {metric.change}
+                              </span>
+                            )}
+                          </div>
+                          {metric.progress && <Progress value={metric.progress} className="mt-2" />}
+                          {metric.change && <span className="text-muted small mt-2">Since last month</span>}
+                        </CardBody>
+                      </Card>
+                    </div>
+                  ))}
+                </div>
+
+               {/* Unique Visitor Line Chart */}
+               <div className="row mt-3">
                   <div className="col-md-12">
                     <Card className="shadow-sm rounded border-0 h-100">
                       <CardBody>
@@ -142,35 +171,8 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className="row mt-3 g-4">
-                  {metrics.map((metric, index) => (
-                    <div className="col-md-3" key={index}>
-                      <Card className="shadow-sm rounded border-0 h-100">
-                        <CardBody className="d-flex flex-column">
-                          <div className="d-flex justify-content-between align-items-center mb-2">
-                            <span className="text-muted text-uppercase small">{metric.title}</span>
-                            <div className={`bg-${metric.color} bg-opacity-10 p-2 rounded-circle`}>
-                              <metric.icon size={18} className={`text-${metric.color}`} />
-                            </div>
-                          </div>
-                          <div className="d-flex align-items-baseline">
-                            <h3 className="mb-0 me-2">{metric.value}</h3>
-                            {metric.change && (
-                              <span className={`small ${metric.direction === "up" ? "text-success" : "text-danger"}`}>
-                                {metric.change}
-                              </span>
-                            )}
-                          </div>
-                          {metric.progress && <Progress value={metric.progress} className="mt-2" />}
-                          {metric.change && <span className="text-muted small mt-2">Since last month</span>}
-                        </CardBody>
-                      </Card>
-                    </div>
-                  ))}
-                </div>
-
                 {/* Charts Row */}
-                <div className="row mt-5">
+                <div className="row mt-3">
                   {/* Sales Overview Bar Chart */}
                   <div className="col-md-6">
                     <Card className="shadow-sm rounded border-0 h-100">
@@ -220,7 +222,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Mixed Chart */}
-                <div className="row mt-5">
+                <div className="row mt-3">
                   <div className="col-md-6">
                     <Card className="shadow-sm rounded border-0 h-100">
                       <CardBody>

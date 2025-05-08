@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { FaTrash } from "react-icons/fa";
-import { deleteItem, fetchItemFields, fetchItemDetails } from "../../../Service/PurchaseApi";
-import { toast, ToastContainer } from "react-toastify";
-import { getUnitCode } from "../../../Service/Api";
-import "./ItemDetails.css";
+"use client"
 
-const ItemDetails = ({ updateFormData, supplierCode }) => {
-  const [itemDetails, setItemDetails] = useState([]); // Store item details
-  const [searchResults, setSearchResults] = useState([]); 
-  const [showDropdown, setShowDropdown] = useState(false); 
+import { useState, useEffect } from "react"
+import { fetchItemFields, fetchItemDetails } from "../../../Service/PurchaseApi"
+import { toast, ToastContainer } from "react-toastify"
+import { getUnitCode } from "../../../Service/Api"
+import "./ItemDetails.css"
+
+const ItemDetails = ({ updateFormData, supplierCode, existingItems = [], isEditMode = false }) => {
+  const [itemDetails, setItemDetails] = useState([])
+  const [searchResults, setSearchResults] = useState([])
+  const [showDropdown, setShowDropdown] = useState(false)
   const [currentItem, setCurrentItem] = useState({
     Item: "",
     ItemDescription: "",
@@ -22,95 +23,100 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
     Particular: "",
     Mill_Name: "",
     DeliveryDt: "",
-  });
-  
-  const [unitCodes, setUnitCodes] = useState([]);
-  const [currentItemId, setCurrentItemId] = useState(null); // Store current item ID dynamically
+  })
+
+  const [unitCodes, setUnitCodes] = useState([])
+  const [currentItemId, setCurrentItemId] = useState(null)
+
+  // Load existing items when in edit mode
+  useEffect(() => {
+    if (isEditMode && existingItems && existingItems.length > 0) {
+      setItemDetails(existingItems)
+      updateFormData("Item_Detail_Enter", existingItems)
+    }
+  }, [isEditMode, existingItems, updateFormData])
 
   useEffect(() => {
-    console.log("Current Item ID:", currentItemId);
+    console.log("Current Item ID:", currentItemId)
     const loadItems = async () => {
       if (currentItemId) {
         try {
-          const response = await fetchItemDetails(currentItemId);
-          console.log("Fetched Data:", response);
-    
+          const response = await fetchItemDetails(currentItemId)
+          console.log("Fetched Data:", response)
+
           if (response && response.data) {
-            setItemDetails([response.data]); // wrap in array to match expected structure
+            setItemDetails([response.data]) // wrap in array to match expected structure
           } else {
-            toast.error("No item details found.");
+            toast.error("No item details found.")
           }
         } catch (error) {
           if (error.response && error.response.status === 404) {
-            toast.error("Item not found. Please check the ID.");
+            toast.error("Item not found. Please check the ID.")
           } else {
-            toast.error("Error fetching item details.");
+            toast.error("Error fetching item details.")
           }
-          console.error("Error fetching item details:", error);
+          console.error("Error fetching item details:", error)
         }
       }
-    };
-    
-    loadItems();
-  }, [currentItemId]);
-  
+    }
+
+    loadItems()
+  }, [currentItemId])
+
   // Fetch unit codes on mount
   useEffect(() => {
     const fetchUnitCodes = async () => {
       try {
-        const data = await getUnitCode();
-        setUnitCodes(data);
+        const data = await getUnitCode()
+        setUnitCodes(data)
       } catch (error) {
-        console.error("Error fetching unit codes:", error);
+        console.error("Error fetching unit codes:", error)
       }
-    };
-    fetchUnitCodes();
-  }, []);
+    }
+    fetchUnitCodes()
+  }, [])
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setCurrentItem((prev) => ({
       ...prev,
-      [name]:
-        name === "Rate" || name === "Qty" || name === "Disc"
-          ? Number(value) || 0
-          : value,
-    }));
-  };
+      [name]: name === "Rate" || name === "Qty" || name === "Disc" ? Number(value) || 0 : value,
+    }))
+  }
 
   useEffect(() => {
     setCurrentItem((prev) => ({
       ...prev,
       Number: supplierCode || "",
-    }));
-  }, [supplierCode]);
+    }))
+  }, [supplierCode])
 
   const handleSearch = async (e) => {
-    const value = e.target.value;
-    setCurrentItem({ ...currentItem, Item: value });
+    const value = e.target.value
+    setCurrentItem({ ...currentItem, Item: value })
 
     if (!value.trim()) {
-      setSearchResults([]);
-      setShowDropdown(false);
-    
-      return;
+      setSearchResults([])
+      setShowDropdown(false)
+
+      return
     }
 
     try {
-      const data = await fetchItemFields(value);
+      const data = await fetchItemFields(value)
       if (Array.isArray(data) && data.length > 0) {
-        setSearchResults(data);
-        setShowDropdown(true);
+        setSearchResults(data)
+        setShowDropdown(true)
       } else {
-        setSearchResults([]);
-        setShowDropdown(false);
+        setSearchResults([])
+        setShowDropdown(false)
       }
     } catch (error) {
-      console.error("Error fetching item details:", error);
-      setSearchResults([]);
-      setShowDropdown(false);
+      console.error("Error fetching item details:", error)
+      setSearchResults([])
+      setShowDropdown(false)
     }
-  };
+  }
 
   const handleSelectItem = (item) => {
     setCurrentItem({
@@ -121,25 +127,23 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
       ItemSize: item.Item_Size || "",
       Rate: item.Rate || "",
       HSN_SAC_Code: item.HSN_SAC_Code || "",
-    });
-    setShowDropdown(false);
-  };
+    })
+    setShowDropdown(false)
+  }
 
   const handleSelectChange = (e) => {
-    setCurrentItem({ ...currentItem, Unit: e.target.value });
-  };
-
+    setCurrentItem({ ...currentItem, Unit: e.target.value })
+  }
 
   useEffect(() => {
     if (currentItemId) {
-      const item = itemDetails.find(item => item.id === currentItemId);
+      const item = itemDetails.find((item) => item.id === currentItemId)
       if (item) {
-        setCurrentItem(item);
+        setCurrentItem(item)
       }
     }
-  }, [currentItemId, itemDetails]);
+  }, [currentItemId, itemDetails])
 
-  
   // Add item and update item details dynamically
   const addItem = () => {
     if (currentItem.Item && currentItem.ItemDescription) {
@@ -159,13 +163,13 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
             Qty: currentItem.Qty,
           },
         ],
-      };
-      const updatedItems = [...itemDetails, newItem];
-      setItemDetails(updatedItems);
-      updateFormData("Item_Detail_Enter", updatedItems);
+      }
+      const updatedItems = [...itemDetails, newItem]
+      setItemDetails(updatedItems)
+      updateFormData("Item_Detail_Enter", updatedItems)
 
       // Dynamically update the current item ID after adding an item
-      setCurrentItemId(newItem.id);
+      setCurrentItemId(newItem.id)
 
       setCurrentItem({
         Item: "",
@@ -173,7 +177,7 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
         ItemSize: "",
         Rate: "",
         HSN_SAC_Code: "",
-        Number: "",
+        Number: supplierCode || "",
         Disc: "",
         Qty: "",
         Unit: "",
@@ -187,24 +191,19 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
             Qty: "",
           },
         ],
-      });
+      })
     } else {
-      toast.error("Item and Item Description are required.");
+      toast.error("Item and Item Description are required.")
     }
-  };
+  }
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      try {
-        await deleteItem(id);
-        setItemDetails((prevItems) =>
-          prevItems.filter((item) => item.id !== id)
-        );
-      } catch (error) {
-        toast.error("Failed to delete item. Please try again.");
-      }
-    }
-  };
+  // Function to remove an item
+  const removeItem = (index) => {
+    const updatedItems = [...itemDetails]
+    updatedItems.splice(index, 1)
+    setItemDetails(updatedItems)
+    updateFormData("Item_Detail_Enter", updatedItems)
+  }
 
   return (
     <div className="container-fluid">
@@ -403,8 +402,7 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
                     <th>Particular</th>
                     <th>Make / Mill Name</th>
                     <th>Delivery Date</th>
-                    <th>Schedule Line</th>
-                    <th>Delete</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -421,13 +419,9 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
                       <td>{item.Particular}</td>
                       <td>{item.Mill_Name}</td>
                       <td>{item.DeliveryDt}</td>
-                      <td>Schedule Line</td>
                       <td>
-                        <button
-                          className="btn"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <FaTrash />
+                        <button type="button" className="btn btn-danger btn-sm" onClick={() => removeItem(index)}>
+                          Remove
                         </button>
                       </td>
                     </tr>
@@ -439,7 +433,7 @@ const ItemDetails = ({ updateFormData, supplierCode }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ItemDetails;
+export default ItemDetails

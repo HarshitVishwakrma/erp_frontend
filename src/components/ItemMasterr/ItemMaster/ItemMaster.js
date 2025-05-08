@@ -151,8 +151,8 @@ const ItemMaster = () => {
                         </select>
                       </div>
                       <div className="col-md-4 d-flex align-items-end justify-content-end">
-                        <button className="btn btn-success m-1" onClick={handleSearch}>Search</button>
-                        <button className="btn btn-outline-secondary m-1" onClick={handleViewAll}>All Items</button>
+                        <button className="btn m-1" onClick={handleSearch}>Search</button>
+                        <button className="btn m-1" onClick={handleViewAll}>All Items</button>
                       </div>
                     </div>
                   </div>

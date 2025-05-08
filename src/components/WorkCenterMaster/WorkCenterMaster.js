@@ -115,14 +115,14 @@ const WorkCenterMaster = () => {
 
   // Handle Delete
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this work center?")) {
+  
       try {
         await deleteWorkCenter(id);
         fetchData();
       } catch (error) {
         console.error("Delete error:", error);
       }
-    }
+    
   };
 
   if (loading) return <p>Loading...</p>;

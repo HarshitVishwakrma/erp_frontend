@@ -203,45 +203,65 @@ const SupplierCustomerMaster = () => {
         setIsLoading(true)
         try {
           const data = await getSupplierDataById(id)
-          if (data && !data.status) {
-            // Set form data
-            setFormData({
-              ...data,
-              // Convert date strings to proper format for date inputs
-              Insurance_Policy_Expiry_Date: data.Insurance_Policy_Expiry_Date
-                ? new Date(data.Insurance_Policy_Expiry_Date).toISOString().split("T")[0]
-                : "",
-              QMSC_Date: data.QMSC_Date ? new Date(data.QMSC_Date).toISOString().split("T")[0] : "",
-            })
 
-            // Set GST No2 visibility
-            setShowGSTNo2(data.GST_No === "Registered")
+          // Check if data is valid before proceeding
+          if (!data) {
+            console.error("No data received from API")
+            toast.error("Failed to load supplier data: No data received")
+            navigate("/Vender-List")
+            return
+          }
 
-            // Set bank details and buyer contacts
-            if (data.bank_details && Array.isArray(data.bank_details)) {
-              const bankDetailsWithIds = data.bank_details.map((detail, index) => ({
-                ...detail,
-                id: index + 1, // Add temporary IDs for UI operations
-              }))
-              setBankDetails(bankDetailsWithIds)
-              localStorage.setItem("bankDetails", JSON.stringify(bankDetailsWithIds))
-            }
+          // Check if data is an error response
+          if (data.status === false || data.error) {
+            console.error("Error in API response:", data)
+            toast.error(`Failed to load supplier data: ${data.message || "Unknown error"}`)
+            navigate("/Vender-List")
+            return
+          }
 
-            if (data.buyer_contacts && Array.isArray(data.buyer_contacts)) {
-              const contactsWithIds = data.buyer_contacts.map((contact, index) => ({
-                ...contact,
-                id: index + 1, // Add temporary IDs for UI operations
-              }))
-              setBuyerContacts(contactsWithIds)
-              localStorage.setItem("buyerContacts", JSON.stringify(contactsWithIds))
-            }
+          // Set form data
+          setFormData({
+            ...data,
+            // Convert date strings to proper format for date inputs
+            Insurance_Policy_Expiry_Date: data.Insurance_Policy_Expiry_Date
+              ? new Date(data.Insurance_Policy_Expiry_Date).toISOString().split("T")[0]
+              : "",
+            QMSC_Date: data.QMSC_Date ? new Date(data.QMSC_Date).toISOString().split("T")[0] : "",
+          })
+
+          // Set GST No2 visibility
+          setShowGSTNo2(data.GST_No === "Registered")
+
+          // Set bank details and buyer contacts with defensive programming
+          if (data.bank_details && Array.isArray(data.bank_details)) {
+            const bankDetailsWithIds = data.bank_details.map((detail, index) => ({
+              ...detail,
+              id: index + 1, // Add temporary IDs for UI operations
+            }))
+            setBankDetails(bankDetailsWithIds)
+            localStorage.setItem("bankDetails", JSON.stringify(bankDetailsWithIds))
           } else {
-            toast.error("Failed to load supplier data")
-            navigate("/Vender-List") // Redirect back to list on error
+            // Initialize with empty array if no bank details or not an array
+            setBankDetails([])
+            localStorage.setItem("bankDetails", JSON.stringify([]))
+          }
+
+          if (data.buyer_contacts && Array.isArray(data.buyer_contacts)) {
+            const contactsWithIds = data.buyer_contacts.map((contact, index) => ({
+              ...contact,
+              id: index + 1, // Add temporary IDs for UI operations
+            }))
+            setBuyerContacts(contactsWithIds)
+            localStorage.setItem("buyerContacts", JSON.stringify(contactsWithIds))
+          } else {
+            // Initialize with empty array if no buyer contacts or not an array
+            setBuyerContacts([])
+            localStorage.setItem("buyerContacts", JSON.stringify([]))
           }
         } catch (error) {
           console.error("Error loading supplier data:", error)
-          toast.error("Error loading supplier data")
+          toast.error(`Error loading supplier data: ${error.message || "Unknown error"}`)
           navigate("/Vender-List") // Redirect back to list on error
         } finally {
           setIsLoading(false)
@@ -405,23 +425,27 @@ const SupplierCustomerMaster = () => {
 
     if (validate()) {
       try {
+        // Ensure bankDetails and buyerContacts are arrays before mapping
+        const safeBank = Array.isArray(bankDetails) ? bankDetails : []
+        const safeContacts = Array.isArray(buyerContacts) ? buyerContacts : []
+
         // Prepare the data with bank details and buyer contacts
         const dataToSubmit = {
           ...formData,
-          bank_details: bankDetails.map((detail) => ({
-            Account_Holder_name: detail.Account_Holder_name,
-            Bank_Name: detail.Bank_Name,
-            Branch_Name: detail.Branch_Name,
-            Bank_Account: detail.Bank_Account,
-            IFSC_Code: detail.IFSC_Code,
+          bank_details: safeBank.map((detail) => ({
+            Account_Holder_name: detail.Account_Holder_name || "",
+            Bank_Name: detail.Bank_Name || "",
+            Branch_Name: detail.Branch_Name || "",
+            Bank_Account: detail.Bank_Account || "",
+            IFSC_Code: detail.IFSC_Code || "",
           })),
-          buyer_contacts: buyerContacts.map((contact) => ({
-            Person_Name: contact.Person_Name,
-            Contact_No: contact.Contact_No,
-            Email: contact.Email,
-            Department: contact.Department,
-            Designation: contact.Designation,
-            Birth_Date: contact.Birth_Date,
+          buyer_contacts: safeContacts.map((contact) => ({
+            Person_Name: contact.Person_Name || "",
+            Contact_No: contact.Contact_No || "",
+            Email: contact.Email || "",
+            Department: contact.Department || "",
+            Designation: contact.Designation || "",
+            Birth_Date: contact.Birth_Date || "",
           })),
         }
 
@@ -434,7 +458,7 @@ const SupplierCustomerMaster = () => {
           response = await SuplliersaveData(dataToSubmit)
         }
 
-        if (response.status === false) {
+        if (response && response.status === false) {
           console.error("Failed to submit form:", response.message)
           toast.error(`Failed to submit form: ${response.message}`)
         } else {
@@ -452,7 +476,7 @@ const SupplierCustomerMaster = () => {
         }
       } catch (error) {
         console.error("Unexpected error occurred during submission:", error.message)
-        toast.error(`Unexpected error occurred: ${error.message}`)
+        toast.error(`Unexpected error occurred: ${error.message || "Unknown error"}`)
       } finally {
         setIsSubmitting(false)
       }
@@ -2097,4 +2121,15 @@ const SupplierCustomerMaster = () => {
     </div>
   )
 }
+
+// In the BankDetail component
+// const BankDetail = ({ bankDetails = [], setBankDetails = () => {} }) => {
+//   // Rest of the component code...
+// }
+
+// In the BuyerContactDetail component
+// const BuyerContactDetail = ({ buyerContacts = [], setBuyerContacts = () => {} }) => {
+//   // Rest of the component code...
+// }
+
 export default SupplierCustomerMaster

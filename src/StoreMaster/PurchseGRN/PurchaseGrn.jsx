@@ -596,7 +596,7 @@ const handleSearch = async (e) => {
                           aria-controls="pills-Gernal-Detail"
                           aria-selected="true"
                         >
-                          Gernal Detail
+                          General Detail
                         </button>
                       </li>
                       <li className="nav-item" role="presentation">

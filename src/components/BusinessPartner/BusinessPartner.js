@@ -5,12 +5,13 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import NavBar from "../../NavBar/NavBar";
 import SideNav from "../../SideNav/SideNav";
 import "./BusinessPartner.css";
-import axios from "axios";
+import { getSupplierData } from "../../Service/Api.jsx";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import { useNavigate } from "react-router-dom";
-import { fetchCountries ,fetchStateData, fetchStateDetails} from '../../Service/Api.jsx';
+
+import { fetchCountries ,fetchStateData, fetchStateDetails,saveBusiness  } from '../../Service/Api.jsx';
 import {ToastContainer, toast } from "react-toastify";
+
 const BusinessPartner = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
 
@@ -104,15 +105,35 @@ const BusinessPartner = () => {
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [supplierList, setSupplierList] = useState([]);
-  const navigate = useNavigate();
+  const [, setSupplierList] = useState([]);
+  const [dropdownList, setDropdownList] = useState([]);
+  
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (searchTerm.trim() !== "") {
+        const data = await getSupplierData(searchTerm);
+        setDropdownList(data);
+      } else {
+        setDropdownList([]);
+      }
+    };
+    fetchData();
+  }, [searchTerm]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
     setErrors({ ...errors, [e.target.id]: "" });
     const { name, value } = e.target;
 
+    if (value.length >= 1) {
+      fetchDropdownSuggestions(value);
+    } else {
+      setDropdownList([]);
+    }
     // Update the form data
     setFormData({
       ...formData,
@@ -153,70 +174,58 @@ const BusinessPartner = () => {
     setSuccessMessage("");
   };
 
-  const validateGSTNo = () => {
-    // Regex pattern for Indian GST number
-    const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-    if (!gstRegex.test(formData.gst_no)) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        gst_no: "GST number is incorrect.",
-      }));
-      return false;
-    }
-    return true;
-  };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (validateGSTNo()) {
-      // Proceed with form submission (e.g., API call)
-      toast.success("Form submitted successfully");
-    } else {
-      toast.error("Form has errors");
-    }
-
+  
     const newErrors = {};
     const requiredFields = ["cust_supp_name", "add_code", "partner_name"];
-
+  
     requiredFields.forEach((field) => {
       if (!formData[field] || formData[field].trim() === "") {
         newErrors[field] = "This field is required";
       }
     });
-
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      toast.error("Please fill all required fields");
       return;
     }
-
+  
+    
+  
     try {
-      await axios.post("api/master/Business_Partner/", formData);
-      setSuccessMessage("Data saved successfully!");
-      console.log("Data saved:", formData);
-      setShowModal(true);
-      // handleClear();
-      setTimeout(() => {
-        setShowModal(false);
-        navigate("/dashboard"); // Navigate to /dashboard after showing the modal
-      }, 2000);
+      const response = await saveBusiness(formData);
+      toast.success("Form submitted successfully");
+      console.log("Saved data:", response);
+     
     } catch (error) {
-      setApiError("Failed to save the data.");
-      console.error(
-        "Error details:",
-        error.response ? error.response.data : error.message
-      );
+      console.error("Save error:", error.response?.data || error.message);
+      toast.error("Failed to save the data");
     }
   };
 
+ 
+  
+  const fetchDropdownSuggestions = async (searchTerm) => {
+    const results = await getSupplierData(searchTerm);
+    setDropdownList(results);
+  };
+
+
+  const handleSelectSupplier = (supplier) => {
+    setSelectedSupplier(supplier);
+    setDropdownList([]); // Hide dropdown
+    setSearchTerm(supplier.Name); // Fill selected name
+  };
+
+  
   const handleSearch = async () => {
-    try {
-      const response = await axios.get(`api/master/Supplier_Name/?search=${formData.cust_supp_name}`);
-      setSupplierList(response.data);
-    } catch (error) {
-      console.error('Error fetching supplier data:', error);
-    }
+    const results = await getSupplierData(formData.cust_supp_name);
+    setSupplierList(results);
   };
+  
 
 
   return (
@@ -254,35 +263,46 @@ const BusinessPartner = () => {
                       <form onSubmit={handleSubmit} autoComplete="off">
                         <div className="row mt-4">
                           <div className="col-md-6">
-                            <div className="row mb-3">
-                              <label
-                                htmlFor="cust_supp_name"
-                                className="col-sm-3 col-form-label"
-                              >
-                                Cust / Supp Name:<span className="text-danger">*</span>
-                              </label>
-                              <div className="col-sm-6">
-                                <input
-                                  type="text"
-                                  placeholder="Please enter name"
-                                  name="cust_supp_name"
-                                  className="form-control"
-                                  id="cust_supp_name"
-                                  value={formData.cust_supp_name}
-                                  onChange={handleChange}
-                                />
-                                {errors.cust_supp_name && (
-                                  <div className="text-danger">
-                                    {errors.cust_supp_name}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="col-md-2">
-                                <button type="button" className="btn" onClick={handleSearch}>
-                                  Search
-                                </button>
-                              </div>
-                            </div>
+                          <div className="row mb-3 position-relative">
+  <label htmlFor="cust_supp_name" className="col-sm-3 col-form-label">
+    Cust / Supp Name: <span className="text-danger">*</span>
+  </label>
+  <div className="col-sm-6">
+  <input
+          type="text"
+          className="form-control"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Enter supplier name"
+        />
+        {dropdownList.length > 0 && (
+          <ul
+            className="list-group position-absolute w-100"
+            style={{ maxHeight: "200px", overflowY: "auto", zIndex: 1000 }}
+          >
+            {dropdownList.map((supplier) => (
+              <li
+                key={supplier.id}
+                className="list-group-item list-group-item-action"
+                onClick={() => handleSelectSupplier(supplier)}
+                style={{ cursor: "pointer" }}
+              >
+                {supplier.Name}
+              </li>
+            ))}
+          </ul>
+        )}
+    {errors.cust_supp_name && (
+      <div className="text-danger">{errors.cust_supp_name}</div>
+    )}
+  </div>
+  <div className="col-md-2">
+    <button type="button" className="btn btn-primary" onClick={handleSearch}>
+      Search
+    </button>
+  </div>
+</div>
+
                             <div className="row mb-3">
                               <label
                                 htmlFor="add_code"
@@ -733,38 +753,38 @@ const BusinessPartner = () => {
                           </div>
                         )}
                       </form>
-                      <table className="table table-bordered table-striped mt-4">
-                        <thead>
-                          <tr>
-                            <th>Code No</th>
-                            <th>Name</th>
-                            <th>Address</th>
-                            <th>State Code</th>
-                            <th>Country</th>
-                            <th>Contact No</th>
-                            <th>Email</th>
-                            <th>GST Tax Code</th>
-                            <th>PAN No</th>
-                            <th>Distance</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {supplierList.map((supplier) => (
-                            <tr key={supplier.id}>
-                              <td>{supplier.Code_No}</td>
-                              <td>{supplier.Name}</td>
-                              <td>{supplier.Address_Line_1}</td>
-                              <td>{supplier.State_Code}</td>
-                              <td>{supplier.Country}</td>
-                              <td>{supplier.Contact_No}</td>
-                              <td>{supplier.Email_Id}</td>
-                              <td>{supplier.GST_Tax_Code}</td>
-                              <td>{supplier.PAN_NO}</td>
-                              <td>{supplier.Distance}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      {selectedSupplier && (
+        <table className="table table-bordered table-striped mt-4">
+          <thead>
+            <tr>
+              <th>Code No</th>
+              <th>Name</th>
+              <th>Address</th>
+              <th>State Code</th>
+              <th>Country</th>
+              <th>Contact No</th>
+              <th>Email</th>
+              <th>GST Tax Code</th>
+              <th>PAN No</th>
+              <th>Distance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{selectedSupplier.number}</td>
+              <td>{selectedSupplier.Name}</td>
+              <td>{selectedSupplier.Address_Line_1}</td>
+              <td>{selectedSupplier.State_Code}</td>
+              <td>{selectedSupplier.Country}</td>
+              <td>{selectedSupplier.Contact_No}</td>
+              <td>{selectedSupplier.Email_Id}</td>
+              <td>{selectedSupplier.GST_Tax_Code}</td>
+              <td>{selectedSupplier.PAN_NO}</td>
+              <td>{selectedSupplier.Distance}</td>
+            </tr>
+          </tbody>
+        </table>
+      )}
                       <Modal
                         show={showModal}
                         onHide={() => setShowModal(false)}

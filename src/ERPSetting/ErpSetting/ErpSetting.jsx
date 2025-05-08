@@ -59,14 +59,14 @@ const ErpSetting = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+   
       try {
         await deleteUser(id);
         setUsers(users.filter((user) => user.id !== id));
       } catch (error) {
         console.error("Failed to delete user:", error);
       }
-    }
+    
   };
 
   if (loading) {

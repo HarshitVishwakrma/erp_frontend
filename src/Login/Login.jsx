@@ -4,6 +4,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "./Login.css";
 import { loginUser ,getFinancialYears} from "../Service/Erpsetting.jsx"; 
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -49,10 +51,10 @@ const Login = () => {
         // Redirect to dashboard or another page
         navigate("/dashboard");
       } else {
-        alert(data.message || "Login failed");
+        toast.error(data.message || "Login failed");
       }
     } catch (error) {
-      alert(error || "An error occurred during login");
+      toast.error(error || "An error occurred during login");
     } finally {
       setIsLoading(false);
     }
@@ -62,6 +64,7 @@ const Login = () => {
 
   return (
     <div className="home-login">
+      <ToastContainer/>
     <div className="container">
       <div className="row justify-content-center">
         <div className="col-md-4">

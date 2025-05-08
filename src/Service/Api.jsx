@@ -16,6 +16,8 @@ const UPLOAD_URL = `${BASE_URL}upload/`;
 
 // const BASE_URL1 = "http://3.7.91.234:8000";
 const BASE_URL1 = "api";
+
+
 export async function postRequest(endpoint, data) {
   try {
     const response = await fetch(`${BASE_URL1}${endpoint}`, {
@@ -38,6 +40,26 @@ export async function postRequest(endpoint, data) {
   }
 }
 
+export const saveBusiness = async (data) => {
+ 
+  try {
+    const response = await fetch(`${BASE_URL1}/master/Business_Partner/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw new Error(`Failed to post data: ${error.message}`);
+  }
+};
 
 // GST Master
 const getAuthConfig = () => {
@@ -278,6 +300,28 @@ export const getSupplierDataById = async (id) => {
   } catch (error) {
     console.error("Error fetching supplier data:", error);
     return { status: false, message: error.message };
+  }
+};
+export const getSupplierData = async (searchTerm) => {
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await axios.get(`${BASE_URL}api/SupplierData/`, {
+      params: { search: searchTerm },
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching supplier data:", error);
+    return [];
   }
 };
 
@@ -801,6 +845,23 @@ export const saveCycleTimeData = async (data) => {
   }
 };
 
+export const fetchCycleTimeList = async () => {
+  const response = await axios.get(`${BASE_URL}Cycle_Time_Master/`);
+  return response.data;
+};
+
+
+export const updateCycleTimeData = async (id, data) => {
+  const response = await axios.put(`${BASE_URL}Cycle_Time_Master/${id}/`, data);
+  return response.data;
+};
+
+export const deleteCycleTimeData = async (id) => {
+  const response = await axios.delete(`${BASE_URL}Cycle_Time_Master/${id}/`);
+  return response.data;
+};
+
+
 // Work Center add new
 export const saveWorkCenter = async (data) => {
   try {
@@ -1089,7 +1150,7 @@ export const fetchContractors = async () => {
 
 export const addContractor = async (data) => {
   try {
-    const response = await axios.post(`${BASE_URL}Contractor_Api/`, data);
+    const response = await axios.post(`${BASE_URL}Contractor_Master/`, data);
     return response;
   } catch (error) {
     console.error("Error occurred while saving data:", {
@@ -1107,6 +1168,24 @@ export const addContractor = async (data) => {
 
     throw error;
   }
+};
+
+export const fetchContractorMaster = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}Contractor_Master/`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+export const deleteContractor = async (id) => {
+  const response = await axios.delete(`${BASE_URL}Contractor_Master/${id}/`);
+  return response.data;
+};
+
+export const updateContractor = async (id, updatedData) => {
+  const response = await axios.put(`${BASE_URL}Contractor_Master/${id}/`, updatedData);
+  return response.data;
 };
 
 // Unit Conversion
@@ -1140,6 +1219,8 @@ export const fetchUnitConversionData = async () => {
     throw error;
   }
 };
+
+
 
 // Item Master NPD
 
@@ -2511,7 +2592,7 @@ export const fetchItemById = async (id) => {
       throw new Error("Authentication token not found. Please login again.");
     }
 
-    const response = await fetch(`${BASE_URL}api/item/summary/${id}/`, {
+    const response = await fetch(`${BASE_URL}api/item-table/${id}/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

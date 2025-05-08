@@ -285,90 +285,116 @@ export const getNextPoNumber = async (year) => {
   }
 };
 
+
 export const registerPurchaseOrder = async (data) => {
   try {
-    console.log("Sending payload:", data); // Log the payload being sent
-    const response = await axios.post(`${BASE_URL}RegisterPO_All_Series/`, data);
-    console.log("API Response:", response); // Log the response from the API
-    return response.data; // Return the response data
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please log in again.");
+    }
+
+    console.log("Sending payload:", data);
+
+    const response = await axios.post(
+      `${BASE_URL}RegisterPO_All_Series/`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("API Response:", response);
+    return response.data;
   } catch (error) {
-    console.error("API Error:", error); // Log the error
-  
-    throw error; // Rethrow the error for further handling
-  }
-};
-
-
-// export const fetchPurchaseOrders = async () => {
-//   try {
-//     const response = await axios.get(`${BASE_URL}RegisterPO_All_Series/`);
-//     return response.data; // Return the fetched data
-//   } catch (error) {
-//     console.error('Error fetching purchase orders:', error);
-//     throw error;
-//   }
-// };
-
-// Delete a purchase order by ID
-export const deletePurchaseOrder = async (id) => {
-  try {
-    const response = await axios.delete(`${BASE_URL}RegisterPO_All_Series/${id}/`);
-    return response.data; // Return the response data after deletion
-  } catch (error) {
-    console.error('Error deleting purchase order:', error);
+    console.error("API Error:", error?.response?.data || error.message);
     throw error;
   }
 };
 
+
 export const updatePurchaseOrder = async (id, data) => {
   try {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
     const response = await fetch(`${BASE_URL}RegisterPO_All_Series/${id}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
-    })
+    });
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json()
+
+    return await response.json();
   } catch (error) {
-    console.error("Error updating purchase order:", error)
-    throw error
+    console.error("Error updating purchase order:", error);
+    throw error;
   }
-}
+};
+
 
 export const fetchPurchaseOrderById = async (id) => {
   try {
-    const response = await fetch(`${BASE_URL}RegisterPO_All_Series/`)
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}RegisterPO_All_Series/${id}/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json()
-    const order = data.find((order) => order.id === Number.parseInt(id))
-    if (!order) {
-      throw new Error("Purchase order not found")
-    }
-    return order
+
+    const order = await response.json();
+    return order;
   } catch (error) {
-    console.error("Error fetching purchase order:", error)
-    throw error
+    console.error("Error fetching purchase order:", error);
+    throw error;
   }
-}
+};
 
 export const fetchPurchaseOrders = async () => {
   try {
-    const response = await fetch(`${BASE_URL}RegisterPO_All_Series/`)
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please log in again.");
     }
-    return await response.json()
+
+    const response = await fetch(`${BASE_URL}PurchaseOrderList/`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching purchase orders:", error)
-    throw error
+    console.error("Error fetching purchase orders:", error);
+    throw error;
   }
-}
+};
 
 
 

@@ -89,7 +89,7 @@ const NewCardItemGroup = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
+   
       try {
         await deleteItemGroup(id);
         toast.success("Item group deleted successfully!");
@@ -98,7 +98,7 @@ const NewCardItemGroup = () => {
         toast.error("Failed to delete item group.");
         console.error("Error deleting item group:", error);
       }
-    }
+    
   };
 
   const handleEdit = (group) => {

@@ -3,15 +3,15 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap/dist/js/bootstrap.bundle.min"
 import NavBar from "../../../NavBar/NavBar.js"
 import SideNav from "../../../SideNav/SideNav.js"
-import { FaEdit, FaTrash } from "react-icons/fa"
-import { Link, useNavigate } from "react-router-dom"
+import { FaEdit } from "react-icons/fa"
+import { Link } from "react-router-dom"
 import "./PoList.css"
-import { fetchPurchaseOrders, deletePurchaseOrder } from "../../../Service/PurchaseApi.jsx"
+import { fetchPurchaseOrders} from "../../../Service/PurchaseApi.jsx"
 
 const PoList = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false)
   const [purchaseOrders, setPurchaseOrders] = useState([])
-  const navigate = useNavigate()
+ 
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState)
@@ -38,25 +38,7 @@ const PoList = () => {
     getPurchaseOrders()
   }, [])
 
-  const handleDelete = async (id) => {
-    try {
-      await deletePurchaseOrder(id)
-      setPurchaseOrders((prevOrders) => prevOrders.filter((order) => order.id !== id))
-    } catch (error) {
-      console.error("Error deleting purchase order:", error)
-    }
-  }
-
-
-  const handleView = (order) => {
-    console.log("Viewing order:", order)
-    navigate(`/POpdf/${order.id}`)
-  }
-
-  const handleEdit = (order) => {
-    console.log("Editing order:", order)
-    navigate(`/EditPo/${order.id}`)
-  }
+  
 
   
 
@@ -206,14 +188,10 @@ const PoList = () => {
                           <th scope="col">Code No</th>
                           <th scope="col">Supplier/Vendor Name</th>
                           <th scope="col">User</th>
-                          <th scope="col">Info</th>
-                          <th scope="col">Auth Status</th>
-                          <th scope="col">Po Status</th>
-                          <th scope="col">Email</th>
-                          <th scope="col">Doc</th>
-                          <th scope="col">Edit</th>
                           <th scope="col">View</th>
-                          <th scope="col">Delete</th>
+                          <th scope="col">Edit</th>
+                          
+                         
                         </tr>
                       </thead>
                       <tbody>
@@ -221,33 +199,35 @@ const PoList = () => {
                           <tr key={order.id}>
                             <td>{index + 1}</td>
                             <td>{order.PoDate ? new Date(order.PoDate).getFullYear() : "N/A"}</td>
-                            <td>{order.Plant || "Produlink"}</td>
+                            <td>{order.Plant}</td>
                             <td>{order.PoNo}</td>
                             <td>{order.PoDate}</td>
-                            <td>{order.PoType || "Close"}</td>
-                            <td>{order.EnquiryNo}</td>
-                            <td>{order.ContactPerson}</td>
-                            <td>{order.User || "N/A"}</td>
-                            <td>{order.PoNote || "N/A"}</td>
-                            <td>{order.ApprovedBy || "N/A"}</td>
-                            <td>{order.PoStatus || "N/A"}</td>
-                            <td>{order.Email || "N/A"}</td>
-                            <td>{order.Doc || "N/A"}</td>
-                            <td>
-                              <button type="button" className="btn" onClick={() => handleEdit(order)}>
-                                <FaEdit />
-                              </button>
-                            </td>
-                            <td>
-                              <button type="button" className="btn btn-primary mr-2" onClick={() => handleView(order)}>
-                                View
-                              </button>
-                            </td>
-                            <td>
-                              <button type="button" className="btn" onClick={() => handleDelete(order.id)}>
-                                <FaTrash />
-                              </button>
-                            </td>
+                            <td>{order.Type}</td>
+                            <td>{order.CodeNo}</td>
+                            <td>{order.Supplier}</td>
+                            <td>{order.User}</td>
+                              <td>
+                                      <a
+  href={`http://3.7.91.234:8000${order.View}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="btn btn-sm btn-primary"
+>
+  View
+</a>
+
+        </td>
+        <td>
+        <Link
+  to={`/new-purchase-order/${order.id}`}
+  className="btn"
+>
+  <FaEdit />
+</Link>
+        </td>
+
+
+                            
                           </tr>
                         ))}
                       </tbody>

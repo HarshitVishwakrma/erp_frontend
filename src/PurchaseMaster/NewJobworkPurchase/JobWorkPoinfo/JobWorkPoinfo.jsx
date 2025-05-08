@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from "react";
 import "./JobWorkPoinfo.css";
-import { FaPlus, FaSync, FaEdit, FaTrash } from "react-icons/fa";
+import {  FaEdit, FaTrash } from "react-icons/fa";
 import { saveJwPoInfo , fetchNextJobWorkNumber } from "../../../Service/PurchaseApi";
 import { toast, ToastContainer } from "react-toastify"; // Importing toaster
 
@@ -54,8 +54,7 @@ const JobWorkPoinfo = () => {
     fetchPoNumber();
   }, [year]);
 
-  const handleAddClick = () => setShowCard(true);
-  const handleRefreshClick = () => console.log("Data refreshed");
+
   const handleCloseCard = () => setShowCard(false);
 
   const handleChange = (e) => {
@@ -355,7 +354,7 @@ const JobWorkPoinfo = () => {
                   </label>
                 </div>
               </div>
-              <div className="col-md-6">
+              <div className="col-md-8">
                 <div className="form-group mb-3">
                 <select
                 id="freight"
@@ -371,7 +370,7 @@ const JobWorkPoinfo = () => {
               {errors.freight && <div className="invalid-feedback">{errors.freight}</div>}
                 </div>
               </div>
-              <div className="col-md-1">
+              {/* <div className="col-md-1">
                 <button
                   type="button"
                   className="jobbtn"
@@ -388,7 +387,7 @@ const JobWorkPoinfo = () => {
                 >
                   <FaSync />
                 </button>
-              </div>
+              </div> */}
             </div>
             <div className="row text-start">
               <div className="col-md-4">
@@ -466,7 +465,7 @@ const JobWorkPoinfo = () => {
               tabIndex="-1"
               role="dialog"
             >
-              <div className="modal-dialog" role="document">
+              <div className="modal-dialog" role="document" style={{marginTop:"250px"}}>
                 <div className="modal-content">
                   <div className="modal-header">
                     <div className="row">

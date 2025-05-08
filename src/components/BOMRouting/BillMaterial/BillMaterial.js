@@ -268,12 +268,16 @@ const BillMaterial = () => {
   
 
   const handleDelete1 = async (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
+    try {
       await deleteScrapData(id);
+      toast.success("Item deleted successfully");
       loadItems();
+    } catch (error) {
+      toast.error("Failed to delete item");
+      console.error(error);
     }
   };
-
+  
   return (
     <div className="BillMaterial">
       <div className="container-fluid">

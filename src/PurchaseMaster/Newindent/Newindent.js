@@ -6,6 +6,8 @@ import NavBar from "../../NavBar/NavBar";
 import SideNav from "../../SideNav/SideNav";
 import { FaPlus } from "react-icons/fa";
 import { FaTrash } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import { getNextIndentNo , postIndent} from "../../Service/PurchaseApi";
 const Newindent = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -142,7 +144,7 @@ const Newindent = () => {
   
     try {
       await postIndent(payload);
-      alert("Indent saved successfully");
+      toast.success("Indent saved successfully");
   
       // Reset form
       setFormData({
@@ -158,7 +160,7 @@ const Newindent = () => {
         New_Indent: [],
       });
     } catch (err) {
-      alert("Failed to save indent. Check console for details.");
+      toast.error("Failed to save indent. Check console for details.");
     }
   };
 
@@ -169,6 +171,7 @@ const Newindent = () => {
 
   return (
     <div className="NewindentMaster">
+      <ToastContainer/>
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">

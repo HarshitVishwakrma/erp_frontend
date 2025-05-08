@@ -130,11 +130,11 @@ const MaterialIssueGernal = () => {
 
   // Handle delete button click
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
+   
       await deleteMaterialGernal(id);
       toast.success("Material deleted successfully!");
       loadMaterials();
-    }
+    
   };
 
   return (

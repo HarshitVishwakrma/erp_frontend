@@ -100,7 +100,7 @@ const MachineGroup = () => {
                 </div>
                 <div className="col-sm-2">
                   <button
-                    className="btnnmn"
+                    className="btn"
                     type="button"
                     onClick={handleSave1}
                     disabled={isSubmitting}
@@ -137,12 +137,12 @@ const MachineGroup = () => {
                         <td>{row.Shift}</td>
                         <td>{row.AvailHours}</td>
                         <td>
-                          <button className="btn-mcah">
+                          <button className="btn">
                             <i className="fas fa-edit"></i>
                           </button>
                         </td>
                         <td>
-                          <button className="btn-mcah">
+                          <button className="btn">
                             <i className="fas fa-trash"></i>
                           </button>
                         </td>

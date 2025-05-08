@@ -33,7 +33,7 @@ const CustomerItem = () => {
 
   const handleFileUpload = async () => {
     if (!selectedFile) {
-      alert("Please select a file before submitting.");
+      toast.error("Please select a file before submitting.");
       return;
     }
 
@@ -104,11 +104,11 @@ const CustomerItem = () => {
                           </button>
                         </div>
                       </div>
-                      <div className="row text-start">
+                      {/* <div className="row text-start">
                         <div className="col-sm-2">
                           <button className="cusmainniche">Upload</button>
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                   <div className="row text-start" style={{ marginTop: "5px" }}>

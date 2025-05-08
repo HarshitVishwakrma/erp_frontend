@@ -149,7 +149,7 @@ const VendorScrapInward = () => {
                           aria-controls="pills-Gernal-Detail"
                           aria-selected="true"
                         >
-                          Gernal Detail
+                        General Detail
                         </button>
                       </li>
                     </ul>

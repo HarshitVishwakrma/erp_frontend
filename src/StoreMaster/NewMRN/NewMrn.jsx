@@ -183,7 +183,7 @@ const NewMrn = () => {
 
   // Delete table row
   const handleDelete = (index) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
+    
       const updatedTable = [...NewMRNTable]
       updatedTable.splice(index, 1)
       setNewMRNTable(updatedTable)
@@ -205,7 +205,7 @@ const NewMrn = () => {
           Remark_1: "",
         }))
       }
-    }
+    
   }
   
 

@@ -1,10 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { toast, ToastContainer } from "react-toastify"
+import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
-const BuyerContactDetail = ({ buyerContacts, setBuyerContacts }) => {
+// Add default values for props to handle cases where they might be undefined
+const BuyerContactDetail = ({ buyerContacts = [], setBuyerContacts = () => {} }) => {
   const [formData, setFormData] = useState({
     Person_Name: "",
     Contact_No: "",
@@ -66,9 +67,12 @@ const BuyerContactDetail = ({ buyerContacts, setBuyerContacts }) => {
   const handleAddBuyerContact = () => {
     if (!validateForm()) return
 
+    // Ensure buyerContacts is an array before proceeding
+    const currentContacts = Array.isArray(buyerContacts) ? buyerContacts : []
+
     if (formData.id) {
       // Update existing contact
-      const updatedContacts = buyerContacts.map((contact) => (contact.id === formData.id ? { ...formData } : contact))
+      const updatedContacts = currentContacts.map((contact) => (contact.id === formData.id ? { ...formData } : contact))
       setBuyerContacts(updatedContacts)
       toast.success("Contact updated successfully")
     } else {
@@ -77,7 +81,7 @@ const BuyerContactDetail = ({ buyerContacts, setBuyerContacts }) => {
         ...formData,
         id: Date.now(), // Use timestamp as temporary ID
       }
-      setBuyerContacts([...buyerContacts, newContact])
+      setBuyerContacts([...currentContacts, newContact])
       toast.success("Contact added successfully")
     }
 
@@ -94,12 +98,13 @@ const BuyerContactDetail = ({ buyerContacts, setBuyerContacts }) => {
   }
 
   const handleDeleteBuyerContact = (id) => {
-    if (window.confirm("Are you sure you want to delete this contact?")) {
-      const filteredContacts = buyerContacts.filter((contact) => contact.id !== id)
-      setBuyerContacts(filteredContacts)
-      toast.success("Contact deleted successfully")
-    }
+    // Ensure buyerContacts is an array before proceeding
+    const currentContacts = Array.isArray(buyerContacts) ? buyerContacts : []
+    const filteredContacts = currentContacts.filter((contact) => contact.id !== id)
+    setBuyerContacts(filteredContacts)
+    toast.success("Contact deleted successfully")
   }
+  
 
   const handleEditBuyerContact = (contact) => {
     setFormData({
@@ -107,6 +112,9 @@ const BuyerContactDetail = ({ buyerContacts, setBuyerContacts }) => {
     })
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
+
+  // Ensure buyerContacts is an array for rendering
+  const safeContacts = Array.isArray(buyerContacts) ? buyerContacts : []
 
   return (
     <div className="Buyer">
@@ -275,8 +283,8 @@ const BuyerContactDetail = ({ buyerContacts, setBuyerContacts }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {buyerContacts && buyerContacts.length > 0 ? (
-                      buyerContacts.map((contact) => (
+                    {safeContacts.length > 0 ? (
+                      safeContacts.map((contact) => (
                         <tr key={contact.id}>
                           <td>{contact.Person_Name}</td>
                           <td>{contact.Contact_No}</td>

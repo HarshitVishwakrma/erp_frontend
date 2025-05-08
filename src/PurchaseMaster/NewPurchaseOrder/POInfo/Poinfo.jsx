@@ -4,7 +4,7 @@ import { FaPlus, FaSync, FaEdit, FaTrash } from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
 import { fetchNextCode } from "../../../Service/PurchaseApi";
 
-const Poinfo = ({ updateFormData, paymentTermsFromSupplier }) => {
+const Poinfo = ({ updateFormData, paymentTermsFromSupplier ,poInfoData = {}, isEditMode = false}) => {
   const [paymentTerms, setPaymentTerms] = useState(paymentTermsFromSupplier || "");
   const [currentTime, setCurrentTime] = useState("");
   const [showCard, setShowCard] = useState(false);
@@ -46,6 +46,50 @@ const Poinfo = ({ updateFormData, paymentTermsFromSupplier }) => {
     GstTaxes: "",
   });
 
+    // Load existing PO info data when in edit mode
+    useEffect(() => {
+      if (isEditMode && poInfoData) {
+        setFormData({
+          field: poInfoData.field || "",
+          PoNo: poInfoData.PoNo || "",
+          EnquiryNo: poInfoData.EnquiryNo || "",
+          QuotNo: poInfoData.QuotNo || "",
+          PaymentTerms: poInfoData.PaymentTerms || "",
+          DeliveryDate: poInfoData.DeliveryDate || "",
+          AMC_PO: poInfoData.AMC_PO || "",
+          ModeOfShipment: poInfoData.ModeOfShipment || "",
+          PreparedBy: poInfoData.PreparedBy || "",
+          PoNote: poInfoData.PoNote || "",
+          PoSpecification: poInfoData.PoSpecification || "",
+          PoDate: poInfoData.PoDate || "",
+          EnquiryDate: poInfoData.EnquiryDate || "",
+          QuotDate: poInfoData.QuotDate || "",
+          PaymentRemark: poInfoData.PaymentRemark || "",
+          DeliveryType: poInfoData.DeliveryType || "",
+          DeliveryNote: poInfoData.DeliveryNote || "",
+          IndentNo: poInfoData.IndentNo || "",
+          ApprovedBy: poInfoData.ApprovedBy || "",
+          InspectionTerms: poInfoData.InspectionTerms || "",
+          PF_Charges: poInfoData.PF_Charges || "",
+          Time: poInfoData.Time || "",
+          PoFor: poInfoData.PoFor || "",
+          Freight: poInfoData.Freight || "",
+          PoRateType: poInfoData.PoRateType || "",
+          ContactPerson: poInfoData.ContactPerson || "",
+          PoValidityDate: poInfoData.PoValidityDate || "",
+          PoEffectiveDate: poInfoData.PoEffectiveDate || "",
+          TransportName: poInfoData.TransportName || "",
+          PoValidity_WarrantyTerm: poInfoData.PoValidity_WarrantyTerm || "",
+          GstTaxes: poInfoData.GstTaxes || "",
+        })
+  
+        setSelectedSeries(poInfoData.Series || "select")
+        setPoNo(poInfoData.PoNo || "")
+        setPaymentTerms(poInfoData.PaymentTerms || "")
+      }
+    }, [isEditMode, poInfoData])
+
+    
   useEffect(() => {
     // Get the current date and time
     const now = new Date();

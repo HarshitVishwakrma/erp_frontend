@@ -431,7 +431,7 @@ const JobworkInwardChallan = () => {
                           aria-controls="pills-Gernal-Detail"
                           aria-selected="true"
                         >
-                          Gernal Details
+                     General Detail
                         </button>
                       </li>
                     </ul>

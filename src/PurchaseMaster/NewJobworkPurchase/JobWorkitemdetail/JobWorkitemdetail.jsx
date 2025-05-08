@@ -72,7 +72,7 @@ const JobWorkitemdetail = () => {
 
  // In JobWorkitemdetail.jsx
  const handleDelete = async (id) => {
-  if (window.confirm("Are you sure you want to delete this item?")) {
+ 
     try {
       const result = await deleteItemjob(id);
       if (result) {
@@ -84,7 +84,7 @@ const JobWorkitemdetail = () => {
     } catch (error) {
       toast.error("Failed to delete item.");
     }
-  }
+  
 };
 
 
