@@ -149,6 +149,28 @@ export const createProductionEntry = async (productionData) => {
   }
 }
 
+
+// Get a specific production entry by ID
+export const getProductionId = async (id) => {
+  try {
+    const response = await axios.get(`${BASE_URL}api/production-entries/${id}/`)
+    return response.data
+  } catch (error) {
+    console.error("Error fetching production entry:", error)
+    throw error
+  }
+}
+
+export const updateProduction = async (id, data) => {
+  try {
+    const response = await axios.put(`${BASE_URL}api/production-entries/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating production entry:", error);
+    throw error;
+  }
+};
+
 export const fetchHelpers = async () => {
   try {
     const response = await fetch(`${BASE_URL}Production_Helper/`);
@@ -288,7 +310,7 @@ export const fetchShifts = async () => {
 
 export const fetchProductionEntries = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}api/production-entries/`);
+    const response = await axios.get(`${BASE_URL}ProductionEntryList/`);
     return response.data; // Return the fetched data
   } catch (error) {
     console.error("Error fetching production entries:", error);
@@ -358,16 +380,39 @@ export const getNextDPNo = async (year) => {
 };
 
 
-// Submit Production Entry
+
+// Submit a new production entry
 export const submitProductionEntry = async (data) => {
   try {
-    const response = await axios.post(`${BASE_URL}api/production-entriesAss/`, data);
+    const response = await axios.post(`${BASE_URL}api/production-entriesAss/`, data)
+    return response.data
+  } catch (error) {
+    console.error("Error submitting production entry:", error)
+    throw error
+  }
+}
+
+// Get a specific production entry by ID
+export const getProductionEntryById = async (id) => {
+  try {
+    const response = await axios.get(`${BASE_URL}api/production-entriesAss/${id}/`)
+    return response.data
+  } catch (error) {
+    console.error("Error fetching production entry:", error)
+    throw error
+  }
+}
+
+export const updateProductionEntryy = async (id, data) => {
+  try {
+    const response = await axios.put(`${BASE_URL}api/production-entriesAss/${id}/`, data);
     return response.data;
   } catch (error) {
-    console.error("Error submitting production entry:", error);
+    console.error("Error updating production entry:", error);
     throw error;
   }
 };
+
 
 
 export const getReworkReasons = async () => {
@@ -410,28 +455,7 @@ export const addRejectReason = async (data) => {
 };
 
 
-// Submit Scrap Rejection Entry
-export const getNextNoteNo = async (year) => {
-  try {
-    const response = await axios.get(`${BASE_URL}GetNextNoteNo/?year=${year}`);
-    return response.data.next_note_no;
-  } catch (error) {
-    console.error("Error fetching next note number:", error);
-    return null;
-  }
-};
 
-export const submitScrapRejectionEntry = async (data) => {
-  try {
-    const response = await axios.post(`${BASE_URL}api/FGScrapDetails/`, data, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error submitting scrap rejection entry:", error);
-    throw error;
-  }
-};
 
 
 export const getProductDetails = async (filters = {}) => {
@@ -460,20 +484,148 @@ export const getScrapLineRejectionNote = async (year) => {
   try {
     const response = await axios.get(`${BASE_URL}GetNextNote/?year=${year}`);
     return response.data.next_ScrapRejectionNo; // Ensure this matches API response
-  } catch (error) {
+  } catch (error
+
+  ) {
     console.error("Error fetching next scrap rejection note:", error);
     return null;
   }
 };
 
-export const submitScrapRejectionNote = async (data) => {
+
+
+
+export const getAssemblyReport = async () => {
   try {
-    const response = await axios.post(`${BASE_URL}api/ScrapLineRejectionNote/`, data, {
-      headers: { "Content-Type": "application/json" },
+    const response = await axios.get(`${BASE_URL}ProductionEntryAssemblyList/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching reject reasons:", error);
+    return [];
+  }
+};
+
+
+// Utility to get headers with Authorization token
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    throw new Error("Authentication token not found. Please login again.");
+  }
+
+  return {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
+// 📄 Get Scrap Line Rejection Report
+export const getScrapLineRejectionReport = async (params) => {
+  try {
+    const response = await axios.get(`${BASE_URL}ScrapLineRejectionReport/`, {
+      ...getAuthHeaders(),
+      params,
     });
     return response.data;
   } catch (error) {
+    console.error("Error fetching Scrap Line Rejection Report:", error);
+    return [];
+  }
+};
+
+// 🔍 Fetch scrap rejection detail by ID
+export const fetchScrapRejectionDetail = async (rejectionId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}api/ScrapLineRejectionNote/${rejectionId}/`, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching scrap rejection data:", error);
+    throw error;
+  }
+};
+
+// 🔄 Update existing scrap rejection note
+export const updateScrapRejectionNote = async (id, data) => {
+  try {
+    const response = await axios.put(`${BASE_URL}api/ScrapLineRejectionNote/${id}/`, data, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error updating scrap rejection note:", error);
+    throw error;
+  }
+};
+
+// 🆕 Submit new scrap rejection note
+export const submitScrapRejectionNote = async (data) => {
+  try {
+   const response = await axios.post(`${BASE_URL}api/ScrapLineRejectionNote/`, data, getAuthHeaders());
+
+    return response.data;
+  } catch (error) {
     console.error("Error submitting scrap rejection entry:", error);
+    throw error;
+  }
+};
+
+
+
+export const getFgScrapLineRejectionReport = async (params) => {
+  try {
+    const response = await axios.get(`${BASE_URL}FGScrapRejectionReport/`, {
+      ...getAuthHeaders(),
+      params,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching Scrap Line Rejection Report:", error);
+    return [];
+  }
+};
+
+
+// Submit Scrap Rejection Entry
+export const getNextNoteNo = async (year) => {
+  try {
+    const response = await axios.get(`${BASE_URL}GetNextNoteNo/?year=${year}`);
+    return response.data.next_note_no;
+  } catch (error) {
+    console.error("Error fetching next note number:", error);
+    return null;
+  }
+};
+
+export const submitScrapRejectionEntry = async (data) => {
+  try {
+    const response = await axios.post(`${BASE_URL}api/FGScrapDetails/`,data, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting scrap rejection entry:", error);
+    throw error;
+  }
+};
+
+
+// 🔍 Fetch scrap rejection detail by ID
+export const fetchFGScrapRejectionDetail = async (rejectionId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}api/FGScrapDetails/${rejectionId}/`, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching scrap rejection data:", error);
+    throw error;
+  }
+};
+
+// 🔄 Update existing scrap rejection note
+export const updateFGScrapRejectionNote = async (id, data) => {
+  try {
+    const response = await axios.put(`${BASE_URL}api/FGScrapDetails/${id}/`, data, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error updating scrap rejection note:", error);
     throw error;
   }
 };

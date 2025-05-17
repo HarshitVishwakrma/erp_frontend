@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap/dist/js/bootstrap.bundle.min"
 import NavBar from "../../../NavBar/NavBar.js"
 import SideNav from "../../../SideNav/SideNav.js"
-import { Link } from "react-router-dom"
+import { Link, useParams, useNavigate } from "react-router-dom"
 import { FaTrash, FaEye } from "react-icons/fa"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -15,9 +15,13 @@ import {
   SaveNewGateInward,
   searchMRNItem,
   searchCustomerByNumber,
+  getgateInwardById,
 } from "../../../Service/StoreApi.jsx"
 
 const NewGateInward = () => {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [isEditMode, setIsEditMode] = useState(false)
   const [sideNavOpen, setSideNavOpen] = useState(false)
 
   const toggleSideNav = () => {
@@ -75,16 +79,69 @@ const NewGateInward = () => {
   // PO list states
   const [poList, setPoList] = useState([])
 
+  // Load data if in edit mode
+  useEffect(() => {
+    if (id) {
+      setIsEditMode(true)
+      fetchGateInwardDetails(id)
+    } else {
+      // If not in edit mode, initialize with default values
+      if (formData.Series === "GateInward") {
+        getNewGateInward(shortYear).then((nextGE_No) => {
+          setFormData((prev) => ({ ...prev, GE_No: nextGE_No || "" }))
+        })
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, shortYear])
+
+  const fetchGateInwardDetails = async (id) => {
+    try {
+      const data = await getgateInwardById(id)
+      if (data) {
+        // Format dates for form inputs
+        const formattedData = {
+          ...data,
+          GE_Date: data.GE_Date ? formatDateForInput(data.GE_Date) : "",
+          ChallanDate: data.ChallanDate ? formatDateForInput(data.ChallanDate) : "",
+          Invoicedate: data.Invoicedate ? formatDateForInput(data.Invoicedate) : "",
+          EWayBillDate: data.EWayBillDate ? formatDateForInput(data.EWayBillDate) : "",
+          ItemDetails: data.ItemDetails || [],
+        }
+        setFormData(formattedData)
+
+        // If there's a customer, trigger search to populate PO list
+        if (data.Supp_Cust) {
+          handleCustomerSearch(data.Supp_Cust)
+        }
+
+        // Set selected PO if available
+        if (data.Select) {
+          setSelectedPoNo(data.Select)
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching gate inward details:", error)
+      toast.error("Failed to load gate inward details")
+    }
+  }
+
+  // Helper function to format date for input fields
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return ""
+    const date = new Date(dateString)
+    return date.toISOString().split("T")[0]
+  }
 
   // Function to handle dropdown change
   const handleSeriesChange = async (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
-    if (value === "GateInward") {
+    if (value === "GateInward" && !isEditMode) {
       const nextGE_No = await getNewGateInward(shortYear)
       setFormData((prev) => ({ ...prev, GE_No: nextGE_No || "" }))
-    } else {
+    } else if (!isEditMode) {
       setFormData((prev) => ({ ...prev, GE_No: "" }))
     }
   }
@@ -153,7 +210,6 @@ const NewGateInward = () => {
     setPoList(uniquePoNumbers)
   }
 
-
   const [selectedPoNo, setSelectedPoNo] = useState("")
   const handlePoSelectChange = (e) => {
     const selected = e.target.value
@@ -167,20 +223,31 @@ const NewGateInward = () => {
     try {
       console.log("Submitting Data:", formData) // Log formData before submission
 
-      const response = await SaveNewGateInward(formData)
+      // Add id to formData if in edit mode
+      const dataToSubmit = isEditMode ? { ...formData, id } : formData
+
+      const response = await SaveNewGateInward(dataToSubmit)
       console.log("API Response:", response) // Log API response
 
       if (response) {
-        toast.success("Entry saved successfully!")
+        toast.success(isEditMode ? "Entry updated successfully!" : "Entry saved successfully!")
 
-        const nextGE_No = await getNewGateInward(shortYear)
-        console.log("Next GE_No:", nextGE_No) // Log new GE_No
+        if (!isEditMode) {
+          // Only reset form if creating a new entry
+          const nextGE_No = await getNewGateInward(shortYear)
+          console.log("Next GE_No:", nextGE_No) // Log new GE_No
 
-        setFormData((prev) => ({
-          ...prev,
-          GE_No: nextGE_No || "",
-          ItemDetails: [],
-        }))
+          setFormData((prev) => ({
+            ...prev,
+            GE_No: nextGE_No || "",
+            ItemDetails: [],
+          }))
+        } else {
+          // Navigate back to list after successful edit
+          setTimeout(() => {
+            navigate("/Gate-Inward-Entry")
+          }, 2000)
+        }
       }
     } catch (error) {
       console.error("API Error:", error) // Log API errors
@@ -259,7 +326,9 @@ const NewGateInward = () => {
                 <div className="NewGateInward-header mb-4 text-start mt-5">
                   <div className="row align-items-center">
                     <div className="col-md-3">
-                      <h5 className="header-title text-start">New Gate Entry - Inward</h5>
+                      <h5 className="header-title text-start">
+                        {isEditMode ? "Edit Gate Entry - Inward" : "New Gate Entry - Inward"}
+                      </h5>
                     </div>
 
                     <div className="col-md-9 text-end">
@@ -342,6 +411,7 @@ const NewGateInward = () => {
                                   onChange={handleSeriesChange}
                                   required
                                   style={{ marginTop: "-4px" }}
+                                  disabled={isEditMode}
                                 >
                                   <option value="">Select Series</option>
                                   <option value="GateInward">Gate Inward</option>
@@ -433,7 +503,6 @@ const NewGateInward = () => {
                                         )}
                                       </div>
                                     </div>
-                                    
                                   </div>
 
                                   <div className="row mb-3">
@@ -521,45 +590,43 @@ const NewGateInward = () => {
 
                               <div className="col-md-4">
                                 <div className="container-fluid mt-4">
-                                <div className="row mb-3">
-  <div className="col-md-4">
-    <label htmlFor="Select">Select Series:</label>
-  </div>
-  <div className="col-md-7 d-flex align-items-center">
-  <select
-  id="Select"
-  name="Select"
-  className="form-control"
-  value={selectedPoNo}
-  onChange={handlePoSelectChange}
->
-  <option value="">Select Series</option>
-  {poList.map((po, index) => (
-    <option key={index} value={po.PoNo}>
-      {po.PoNo}
-    </option>
-  ))}
-</select>
+                                  <div className="row mb-3">
+                                    <div className="col-md-4">
+                                      <label htmlFor="Select">Select Series:</label>
+                                    </div>
+                                    <div className="col-md-7 d-flex align-items-center">
+                                      <select
+                                        id="Select"
+                                        name="Select"
+                                        className="form-control"
+                                        value={selectedPoNo}
+                                        onChange={handlePoSelectChange}
+                                      >
+                                        <option value="">Select Series</option>
+                                        {poList.map((po, index) => (
+                                          <option key={index} value={po.PoNo}>
+                                            {po.PoNo}
+                                          </option>
+                                        ))}
+                                      </select>
 
-<div className="col-md-1 mt-1 ms-2">
-  <div
-    style={{ cursor: "pointer" }}
-    onClick={() => {
-      const selectedPo = poList.find((po) => po.PoNo === selectedPoNo)
-      if (selectedPo?.pdf_link) {
-        window.open(selectedPo.pdf_link, "_blank")
-      } else {
-        toast.warn("No PDF available for the selected PO.")
-      }
-    }}
-  >
-    <FaEye />
-  </div>
-</div>
-
-  </div>
-</div>
-
+                                      <div className="col-md-1 mt-1 ms-2">
+                                        <div
+                                          style={{ cursor: "pointer" }}
+                                          onClick={() => {
+                                            const selectedPo = poList.find((po) => po.PoNo === selectedPoNo)
+                                            if (selectedPo?.pdf_link) {
+                                              window.open(selectedPo.pdf_link, "_blank")
+                                            } else {
+                                              toast.warn("No PDF available for the selected PO.")
+                                            }
+                                          }}
+                                        >
+                                          <FaEye />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
 
                                   <div className="row mb-3">
                                     <div className="col-md-4">
@@ -826,7 +893,6 @@ const NewGateInward = () => {
                                     <th>Qty (Kg)</th>
                                     <th>Unit Code</th>
                                     <th>Remark</th>
-
                                     <th>Delete</th>
                                   </tr>
                                 </thead>
@@ -838,12 +904,10 @@ const NewGateInward = () => {
                                       <td>{item.Description}</td>
                                       <td>{item.Qty_NOS}</td>
                                       <td>{item.QTY_KG}</td>
-
                                       <td>{item.Unit_Code}</td>
-
                                       <td>{item.Remark}</td>
                                       <td>
-                                        <button className="btn" onClick={() => deleteItem(index)}>
+                                        <button type="button" className="btn" onClick={() => deleteItem(index)}>
                                           <FaTrash />
                                         </button>
                                       </td>
@@ -860,10 +924,14 @@ const NewGateInward = () => {
                   <div className="row mb-3 text-end">
                     <div className="col-md-12">
                       <button className="pobtn" type="submit">
-                        Save Gate Entry
+                        {isEditMode ? "Update Gate Entry" : "Save Gate Entry"}
                       </button>
-                      <button className="btn btn-secondary mx-2" type="reset">
-                        Clear
+                      <button
+                        className="btn btn-secondary mx-2"
+                        type="button"
+                        onClick={() => navigate("/Gate-Inward-Entry")}
+                      >
+                        Cancel
                       </button>
                     </div>
                   </div>

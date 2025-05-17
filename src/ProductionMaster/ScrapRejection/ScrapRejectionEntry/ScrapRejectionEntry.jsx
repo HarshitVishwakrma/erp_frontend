@@ -1,36 +1,83 @@
-import React, { useState, useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min";
-import NavBar from "../../../NavBar/NavBar.js";
-import SideNav from "../../../SideNav/SideNav.js";
-import "./ScrapRejectionEntry.css";
+"use client"
+
+import { useState, useEffect } from "react"
+import "bootstrap/dist/css/bootstrap.min.css"
+import "bootstrap/dist/js/bootstrap.bundle.min"
+import NavBar from "../../../NavBar/NavBar.js"
+import SideNav from "../../../SideNav/SideNav.js"
+import "./ScrapRejectionEntry.css"
 import {
   getNextNoteNo,
   submitScrapRejectionEntry,
-} from "../../../Service/Production.jsx";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer } from "react-bootstrap";
-import { FaTrash } from "react-icons/fa";
+  fetchFGScrapRejectionDetail,
+  updateFGScrapRejectionNote,
+} from "../../../Service/Production.jsx"
+import { toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { ToastContainer } from "react-bootstrap"
+import { FaTrash } from "react-icons/fa"
+import { Link } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 
 const ScrapRejectionEntry = () => {
-  const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [sideNavOpen, setSideNavOpen] = useState(false)
 
   const toggleSideNav = () => {
-    setSideNavOpen((prevState) => !prevState);
-  };
+    setSideNavOpen((prevState) => !prevState)
+  }
 
   useEffect(() => {
     if (sideNavOpen) {
-      document.body.classList.add("side-nav-open");
+      document.body.classList.add("side-nav-open")
     } else {
-      document.body.classList.remove("side-nav-open");
+      document.body.classList.remove("side-nav-open")
     }
-  }, [sideNavOpen]);
+  }, [sideNavOpen])
 
-  const [noteNo, setNoteNo] = useState("");
+  // Get the ID from URL params
+  const { id } = useParams()
+  const navigate = useNavigate()
+
+  // Fetch data if ID is present (edit mode)
+  useEffect(() => {
+    const fetchRejectionData = async () => {
+      if (id) {
+        try {
+          const data = await fetchFGScrapRejectionDetail(id)
+          if (data) {
+            setNoteNo(data.NoteNo)
+            setFormData({
+              Plant: data.Plant || "",
+              Series: data.Series || "",
+              NoteType: data.NoteType || "",
+              NoteNo: data.NoteNo || "",
+              NoteDate: data.NoteDate || "",
+              ItemCode: data.ItemCode || "",
+              PartCode: data.PartCode || "",
+              Stock: "",
+              Rework: "",
+              Reject: "",
+              ScrapReason: "",
+              ReworkScrapRemark: "",
+              RejectScrapRemark: "",
+              ScrapItemCode: data.ScrapItemCode || "",
+              ScrapWt: "",
+              scrap_items: data.scrap_items || [],
+            })
+          }
+        } catch (error) {
+          console.error("Error fetching rejection data:", error)
+          toast.error("Failed to load rejection data")
+        }
+      }
+    }
+
+    fetchRejectionData()
+  }, [id])
+
+  const [noteNo, setNoteNo] = useState("")
   const [formData, setFormData] = useState({
-    Plant:"",
+    Plant: "",
     Series: "",
     NoteType: "",
     NoteNo: "",
@@ -46,55 +93,50 @@ const ScrapRejectionEntry = () => {
     ScrapItemCode: "",
     ScrapWt: "",
     scrap_items: [],
-  });
+  })
   const handleSeriesChange = async (e) => {
-    const selectedSeries = e.target.value;
+    const selectedSeries = e.target.value
     setFormData((prevData) => ({
       ...prevData,
       Series: selectedSeries,
-    }));
-  
+    }))
+
     if (selectedSeries === "FG Scrap Rejection Note") {
-      const shortYear = localStorage.getItem("Shortyear"); // Get year from localStorage
+      const shortYear = localStorage.getItem("Shortyear") // Get year from localStorage
       if (shortYear) {
         try {
-          const nextNoteNo = await getNextNoteNo(shortYear);
+          const nextNoteNo = await getNextNoteNo(shortYear)
           if (nextNoteNo) {
-            setNoteNo(nextNoteNo); // Set the note number state
+            setNoteNo(nextNoteNo) // Set the note number state
             setFormData((prevData) => ({
               ...prevData,
               NoteNo: nextNoteNo,
-            }));
+            }))
           }
         } catch (error) {
-          console.error("Error fetching next note number:", error);
+          console.error("Error fetching next note number:", error)
         }
       }
     } else {
       // Reset NoteNo if a different series is selected
-      setNoteNo("");
+      setNoteNo("")
       setFormData((prevData) => ({
         ...prevData,
         NoteNo: "",
-      }));
+      }))
     }
-  };
-  
-  
-  
+  }
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
   const handleAdd = () => {
     if (!formData.ItemCode || !formData.PartCode || !formData.Reject || !formData.ScrapReason || !formData.ScrapWt) {
-      toast.error("Please fill all required fields!");
-      return;
+      toast.error("Please fill all required fields!")
+      return
     }
-  
+
     const newItem = {
       ItemDescription: formData.ItemCode,
       HeatCode: formData.PartCode,
@@ -102,9 +144,9 @@ const ScrapRejectionEntry = () => {
       Reason: formData.ReworkScrapRemark,
       RejectQty: formData.Reject,
       Reason2: formData.RejectScrapRemark,
-      ScrapWt: formData.ScrapWt
-    };
-  
+      ScrapWt: formData.ScrapWt,
+    }
+
     setFormData((prevData) => ({
       ...prevData,
       scrap_items: [...prevData.scrap_items, newItem],
@@ -115,58 +157,42 @@ const ScrapRejectionEntry = () => {
       ScrapReason: "",
       RejectScrapRemark: "",
       ScrapWt: "",
-    }));
-  };
-  
-  
+    }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      const payload = { ...formData };
-      console.log("Submitting Data:", payload); // Debugging
-  
-      const response = await submitScrapRejectionEntry(payload);
-      console.log("API Response:", response); // Debug API response
-  
-      toast.success("Entry saved successfully!", { position: "top-right", autoClose: 2000 });
-  
-      // Reset form after submission
-      setFormData({
-        Plant: "",
-        Series: "",
-        NoteType: "",
-        NoteNo: "",
-        NoteDate: "",
-        ItemCode: "",
-        PartCode: "",
-        Stock: "",
-        Rework: "",
-        Reject: "",
-        ScrapReason: "",
-        ReworkScrapRemark: "",
-        RejectScrapRemark: "",
-        ScrapItemCode: "",
-        ScrapWt: "",
-        scrap_items: [],
-      });
-  
-      setNoteNo(""); // Reset Note No
+      const payload = { ...formData }
+      console.log("Submitting Data:", payload)
+
+      let response
+      if (id) {
+        // Update existing entry
+        response = await updateFGScrapRejectionNote(id, payload)
+        toast.success("Entry updated successfully!", { position: "top-right", autoClose: 2000 })
+      } else {
+        // Create new entry
+        response = await submitScrapRejectionEntry(payload)
+        toast.success("Entry saved successfully!", { position: "top-right", autoClose: 2000 })
+      }
+
+      console.log("API Response:", response)
+
+      
     } catch (error) {
-      console.error("API Error:", error); // Debugging error
-      toast.error("Failed to save entry.", { position: "top-right", autoClose: 2000 });
+      console.error("API Error:", error)
+      toast.error("Failed to save entry.", { position: "top-right", autoClose: 2000 })
     }
-  };
-  
-  
+  }
 
   const handleRemove = (index) => {
     setFormData((prevData) => ({
       ...prevData,
       scrap_items: prevData.scrap_items.filter((_, i) => i !== index),
-    }));
-  };
-  
+    }))
+  }
+
   return (
     <div className="ScrapRejectionEntryMaster">
       <ToastContainer />
@@ -175,10 +201,7 @@ const ScrapRejectionEntry = () => {
           <div className="col-md-12">
             <div className="Main-NavBar">
               <NavBar toggleSideNav={toggleSideNav} />
-              <SideNav
-                sideNavOpen={sideNavOpen}
-                toggleSideNav={toggleSideNav}
-              />
+              <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="ScrapRejectionEntry mt-4">
                   <form onSubmit={handleSubmit}>
@@ -186,25 +209,30 @@ const ScrapRejectionEntry = () => {
                       <div className="row align-items-center">
                         <div className="col-md-3">
                           <h5 className="header-title text-start">
-                            FG Scrap/ Rejection Note
+                            {id ? "Edit FG Scrap/Rejection Note" : "FG Scrap/Rejection Note"}
                           </h5>
                         </div>
-                        <div className="col-md-9">
+                        <div className="col-md-7">
                           <div className="row align-items-center">
                             <div className="col-md-2">
-                            <select
-  id="seriesSelect"
-  className="form-select"
-  name="Plant"
-  value={formData.Plant}
-  onChange={handleInputChange}
->
-  <option value="">Select Plant</option>
-  <option value="Produlink">Produlink</option>
-  <option value="FactoryA">Factory A</option>
-</select>
+                              <select
+                                id="seriesSelect"
+                                className="form-select"
+                                name="Plant"
+                                value={formData.Plant}
+                                onChange={handleInputChange}
+                              >
+                                <option value="">Select Plant</option>
+                                <option value="Produlink">Produlink</option>
+                                <option value="FactoryA">Factory A</option>
+                              </select>
                             </div>
                           </div>
+                        </div>
+                        <div className="col-md-2 text-end">
+                          <Link to="/FGScrapRejectionReport" type="button" className="btn">
+                            FG Scrap Rejection Report
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -216,16 +244,15 @@ const ScrapRejectionEntry = () => {
                             Series
                           </label>
                           <select
-  className="form-select"
-  id="series"
-  name="Series"
-  value={formData.Series}
-  onChange={handleSeriesChange}
->
-  <option value="">Select</option>
-  <option value="FG Scrap Rejection Note">FG Scrap Rejection Note</option>
-</select>
-
+                            className="form-select"
+                            id="series"
+                            name="Series"
+                            value={formData.Series}
+                            onChange={handleSeriesChange}
+                          >
+                            <option value="">Select</option>
+                            <option value="FG Scrap Rejection Note">FG Scrap Rejection Note</option>
+                          </select>
                         </div>
                         <div className="col-md-2">
                           <label htmlFor="NoteType" className="form-label">
@@ -363,11 +390,9 @@ const ScrapRejectionEntry = () => {
                       </div>
 
                       <div className="row g-3 text-start">
-                        
-
                         <div className="col-md-2">
                           <label htmlFor="ReworkScrapRemark" className="form-label">
-                          Rework Scrap Remark
+                            Rework Scrap Remark
                           </label>
                           <textarea
                             className="form-control"
@@ -379,15 +404,15 @@ const ScrapRejectionEntry = () => {
                         </div>
                         <div className="col-md-2">
                           <label htmlFor="RejectScrapRemark" className="form-label">
-                           Reject Scrap Remark
+                            Reject Scrap Remark
                           </label>
                           <textarea
-  className="form-control"
-  id="rejectScrapRemark"
-  name="RejectScrapRemark"  // Corrected
-  value={formData.RejectScrapRemark}
-  onChange={handleInputChange}
-/>
+                            className="form-control"
+                            id="rejectScrapRemark"
+                            name="RejectScrapRemark" // Corrected
+                            value={formData.RejectScrapRemark}
+                            onChange={handleInputChange}
+                          />
                         </div>
 
                         <div className="col-md-2">
@@ -409,21 +434,16 @@ const ScrapRejectionEntry = () => {
                             Scrap WT
                           </label>
                           <textarea
-  className="form-control"
-  id="scrapWt"
-  name="ScrapWt"
-  value={formData.ScrapWt}
-  onChange={handleInputChange}
-></textarea>
-
+                            className="form-control"
+                            id="scrapWt"
+                            name="ScrapWt"
+                            value={formData.ScrapWt}
+                            onChange={handleInputChange}
+                          ></textarea>
                         </div>
 
-                        <div className="col-md-2 text-end" style={{marginTop:"49px"}}>
-                          <button
-                            className="btn btn-primary"
-                            type="button"
-                            onClick={handleAdd}
-                          >
+                        <div className="col-md-2 text-end" style={{ marginTop: "49px" }}>
+                          <button className="btn btn-primary" type="button" onClick={handleAdd}>
                             ADD
                           </button>
                         </div>
@@ -448,23 +468,24 @@ const ScrapRejectionEntry = () => {
                           </tr>
                         </thead>
                         <tbody>
-  {formData.scrap_items.map((item, index) => (
-    <tr key={index}>
-      <td>{index + 1}</td>
-      <td>{item.ItemDescription}</td>
-      <td>{item.HeatCode}</td>
-      <td>{item.ReworkQty}</td>
-      <td>{item.Reason}</td>
-      <td>{item.RejectQty}</td>
-      <td>{item.Reason2}</td>
-      <td>{item.ScrapWt}</td>
-      <td>
-        <button className="btn" onClick={() => handleRemove(index)}><FaTrash/></button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+                          {formData.scrap_items.map((item, index) => (
+                            <tr key={index}>
+                              <td>{index + 1}</td>
+                              <td>{item.ItemDescription}</td>
+                              <td>{item.HeatCode}</td>
+                              <td>{item.ReworkQty}</td>
+                              <td>{item.Reason}</td>
+                              <td>{item.RejectQty}</td>
+                              <td>{item.Reason2}</td>
+                              <td>{item.ScrapWt}</td>
+                              <td>
+                                <button className="btn" onClick={() => handleRemove(index)}>
+                                  <FaTrash />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
                       </table>
                     </div>
 
@@ -472,16 +493,19 @@ const ScrapRejectionEntry = () => {
                       <div className="text-end col-auto d-flex gap-2">
                         {/* Save Entry Button */}
                         <button type="submit" className="btn btn-primary">
-                          Save Entry
+                          {id ? "Update Entry" : "Save Entry"}
                         </button>
 
                         {/* Clear Button */}
+                        <button type="button" className="btn btn-secondary">
+                          Clear
+                        </button>
                         <button
                           type="button"
                           className="btn btn-secondary"
-                         
+                          onClick={() => navigate("/FGScrapRejectionReport")}
                         >
-                          Clear
+                          Cancel
                         </button>
                       </div>
                     </div>
@@ -493,7 +517,7 @@ const ScrapRejectionEntry = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ScrapRejectionEntry;
+export default ScrapRejectionEntry

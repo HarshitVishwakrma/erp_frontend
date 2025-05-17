@@ -5,6 +5,8 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import { Link } from "react-router-dom";
 import "./GateInwardEntry.css";
+import { getgateInward } from "../../Service/StoreApi.jsx";
+import { FaEdit } from "react-icons/fa";
 
 const GateInwardEntry = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -20,6 +22,19 @@ const GateInwardEntry = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10;
+
+  const [gateInwardData, setGateInwardData] = useState([]);
+
+  useEffect(() => {
+    fetchGateInward();
+  }, []);
+
+  const fetchGateInward = async () => {
+    const data = await getgateInward();
+    setGateInwardData(data);
+  };
 
   return (
     <div className="NewStoreGateInward1">
@@ -176,17 +191,87 @@ const GateInwardEntry = () => {
                               <th>Challan Date</th>
                               <th>Invoice No</th>
                               <th>Invoice Date</th>
-                              <th>Ref Doc Date</th>
-                              <th>Cancel</th>
+                              
                               <th>User</th>
-                              <th>Delete</th>
+                              
                               <th>Edit</th>
                               <th>View</th>
                             </tr>
                           </thead>
-                          <tbody>{/* Table rows will go here */}</tbody>
+                          <tbody>
+     {gateInwardData
+  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  .map((item, index) => (
+        <tr key={item.id}>
+         <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+
+          <td>{new Date(item.GE_Date).getFullYear()}</td>
+          <td>{item.Plant}</td>
+          <td>{item.GE_No}</td>
+          <td>{item.GE_Date}</td>
+          <td>{item.GE_Time}</td>
+          <td>{item.Type}</td>
+          <td>{item.Supp_Cust}</td>
+          <td>{item.ChallanNo}</td>
+          <td>{item.ChallanDate}</td>
+          <td>{item.InVoiceNo}</td>
+          <td>{item.Invoicedate}</td>
+         
+          <td>{item.User || "-"}</td>
+         
+          <td>
+            
+                                                <Link
+                                                  to={`/New-Gate-Entry/${item.id}`}
+                                                  className="btn btn-sm btn-warning"
+                                                >
+                                                  <FaEdit />
+                                                </Link>
+                                           
+          </td>
+        
+              <td>
+                                                <a
+                                                  href={`http://3.7.91.234:8000${item.View}`}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="btn btn-sm btn-primary"
+                                                >
+                                                  View
+                                                </a>
+                                              </td>
+                                            
+        </tr>
+      ))}
+    </tbody>
                         </table>
                       </div>
+                      <div className="d-flex justify-content-between align-items-center mt-3">
+  <button
+    className="btn btn-outline-secondary"
+    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+    disabled={currentPage === 1}
+  >
+    Previous
+  </button>
+
+  <span>Page {currentPage} of {Math.ceil(gateInwardData.length / itemsPerPage)}</span>
+
+  <button
+    className="btn btn-outline-secondary"
+    onClick={() =>
+      setCurrentPage(prev =>
+        prev < Math.ceil(gateInwardData.length / itemsPerPage)
+          ? prev + 1
+          : prev
+      )
+    }
+    disabled={currentPage === Math.ceil(gateInwardData.length / itemsPerPage)}
+  >
+    Next
+  </button>
+</div>
+
                     </div>
                   </div>
                 </div>

@@ -506,6 +506,7 @@ function App() {
           element={<JobWorkPurchseOrderList />}
         />
         <Route path="/supplier-wise-list" element={<SupplierWiseList />} />
+         <Route path="/ProductionEntryAss" element={<ProductionEntryAss />} />
         <Route path="/purchase-report" element={<PurchaseReport />} />
         <Route path="/PurchaseQueryMaster" element={<PurchaseQueryMaster />} />
         <Route
@@ -514,10 +515,12 @@ function App() {
         />
         <Route path="/item-master-gernal/:id" element={<ItemMasterGernal />} />
         <Route path="/new-purchase-order/:id" element={<NewPurchaseOrder />} />
+        <Route path="/New-Gate-Entry/:id" element={<NewGateInward />} />
+        <Route path="/ProductionEntryAss/:id" element={<ProductionEntryAss />} />
 
-
-
-
+  <Route path="/ProductionEntry/:id" element={<ProductionEntry />} />
+<Route path="/ScrapRejection/:id" element={<ScrapRejection />} />
+ <Route path="/ScrapRejectionEntry/:id" element={<ScrapRejectionEntry />} />
 
 
         {/* ///////////////////////////////////////Store//////////////////////////////////////// */}
@@ -689,6 +692,10 @@ function App() {
         <Route path="/BreakdownAnalysis" element={<BreakdownAnalysis />} />
         <Route path="/MachineDefaultidle" element={<MachineDefaultidle />} />
         <Route path="/ProductionEntryList" element={<ProductionEntryList />} />
+
+
+
+
         {/* //////////////////////////////     Sales       /////////////////////////// */}
         <Route path="GSTsales1" element={<GSTsales1 />} />
         <Route path="JobWorkSales" element={<JobWorkSales />} />

@@ -69,6 +69,14 @@ const BillMaterial = () => {
     setCardVisibleBomitem(!cardVisibleBomitem);
   };
 
+
+  const [cardVisiblePlus, setCardVisiblePlus] = useState(false);
+
+  const toggleCardPlus = () => {
+    setCardVisiblePlus(!cardVisiblePlus);
+  };
+
+
   // Purchase Card
   const [data, setData] = useState([]);
   const [formData, setFormData] = useState({
@@ -614,7 +622,8 @@ const BillMaterial = () => {
                                           />
                                         </div>
                                         <div className="col-auto">
-                                          <button className="btn">
+                                          <button className="btn"
+                                           onClick={toggleCardPlus}>
                                             <FaPlus />
                                           </button>
                                         </div>
@@ -857,6 +866,106 @@ const BillMaterial = () => {
                                 </div>
                               )}
                             </div>
+                              {cardVisiblePlus && (
+                    <div className="ProductionDeptCard mt-5">
+                      <div className="card">
+                        <div className="card-header d-flex justify-content-between">
+                          <h5 style={{ color: "blue" }}>
+                            BOM : Item Part Master
+                          </h5>
+                          <button
+                            className="Closebom"
+                            onClick={toggleCardPlus}
+                          >
+                            X
+                          </button>
+                        </div>
+
+                        <div className="card-body">
+                          
+                            <div className="row mb-3 text-start">
+                              <div className="col-md-5">
+                                <label
+                                  htmlFor="Operator"
+                                  className="form-label"
+                                >
+                                  Operation:
+                                  <span className="text-danger">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  className={`form-control ${
+                                    errors.Operator ? "is-invalid" : ""
+                                  }`}
+                                  id="Operator"
+                                  name="Operator"
+                                  value={formData.Operator}
+                                  onChange={handleInputChange}
+                                  placeholder="Enter department name"
+                                />
+                                {errors.Operator && (
+                                  <div className="invalid-feedback">
+                                    {errors.Operator}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="col-md-5">
+                                <label
+                                  htmlFor="PartCode"
+                                  className="form-label"
+                                >
+                                  Part Code:
+                                </label>
+                                <input
+                                  type="text"
+                                  className={`form-control ${
+                                    errors.PartCode ? "is-invalid" : ""
+                                  }`}
+                                  id="PartCode"
+                                  name="PartCode"
+                                  value={formData.PartCode}
+                                  onChange={handleInputChange}
+                                  placeholder="Enter short name"
+                                />
+                                {errors.PartCode && (
+                                  <div className="invalid-feedback">
+                                    {errors.PartCode}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="col-md-2">
+                                <button
+                                  type="submit"
+                                  className="bomButton"
+                                  style={{ marginTop: "31px" }}
+                                >
+                                  {isEditing ? "Update" : "Save"}
+                                </button>
+                              </div>
+                            </div>
+                       
+                          <div className="row">
+                            <div className="col-12">
+                              <table className="table table-bordered table-striped">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">Sr. No.</th>
+                                    <th scope="col">Part Code</th>
+                                    <th scope="col">Min Level</th>
+                                    <th scope="col">Max Level</th>
+
+                                    <th scope="col">Edit</th>
+                                    <th scope="col">Delete</th>
+                                  </tr>
+                                </thead>
+                               
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                           </div>
                         </div>
                       </div>

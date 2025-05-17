@@ -268,15 +268,64 @@ export const getNewGateInward = async (year) => {
   }
 };
 
+
+export const getgateInwardById = async (id) => {
+  try {
+    const token = localStorage.getItem("accessToken")
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.")
+    }
+
+    const response = await axios.get(`${Base_Url}api/general-details/${id}/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    return response.data
+  } catch (error) {
+    console.error("Error fetching gate inward details:", error)
+    return null
+  }
+}
+
+// Update the SaveNewGateInward function to handle both create and update
 export const SaveNewGateInward = async (data) => {
   try {
-    const response = await axios.post(`${Base_Url}api/general-details/`, data);
-    return response.data;
+    const token = localStorage.getItem("accessToken")
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.")
+    }
+
+    let response
+
+    // If data has an id, it's an update operation
+    if (data.id) {
+      response = await axios.put(`${Base_Url}api/general-details/${data.id}/`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+    } else {
+      // Otherwise it's a create operation
+      response = await axios.post(`${Base_Url}api/general-details/`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+    }
+
+    return response.data
   } catch (error) {
-    console.error("Error submitting MRN entry:", error);
-    return null;
+    console.error("Error submitting gate entry:", error)
+    return null
   }
-};
+}
 
 export const searchCustomerByNumber = async (query) => {
   try {
@@ -380,5 +429,20 @@ export const postNewMaterialIssue = async (payload) => {
     throw error;
   }
 };
+
+
+
+export const getgateInward = async () => {
+  try {
+    const response = await axios.get(`${Base_Url}api/gate-inward/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching GRN details:", error);
+    throw error;
+  }
+};
+
+
+
 
 

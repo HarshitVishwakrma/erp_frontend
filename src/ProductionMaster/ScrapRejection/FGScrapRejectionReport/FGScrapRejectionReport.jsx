@@ -4,25 +4,131 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./FGScrapRejectionReport.css";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { getFgScrapLineRejectionReport } from "../../../Service/Production.jsx";
 
 const FGScrapRejectionReport = () => {
-  const [sideNavOpen, setSideNavOpen] = useState(false);
-
-  const toggleSideNav = () => {
-    setSideNavOpen((prevState) => !prevState);
-  };
-
-  useEffect(() => {
-    if (sideNavOpen) {
-      document.body.classList.add("side-nav-open");
-    } else {
-      document.body.classList.remove("side-nav-open");
-    }
-  }, [sideNavOpen]);
+  const [sideNavOpen, setSideNavOpen] = useState(false)
+   const [reportData, setReportData] = useState([])
+   const [filteredData, setFilteredData] = useState([])
+   const [currentPage, setCurrentPage] = useState(1)
+   const recordsPerPage = 10
+   const [isLoading, setIsLoading] = useState(false)
+ 
+   // Search filters
+   const [filters, setFilters] = useState({
+     plant: "",
+     dateFrom: "",
+     dateTo: "",
+    
+     series: "",
+     itemName: "",
+     customerName: "",
+     
+   })
+ 
+   const toggleSideNav = () => {
+     setSideNavOpen((prevState) => !prevState)
+   }
+ 
+   useEffect(() => {
+     if (sideNavOpen) {
+       document.body.classList.add("side-nav-open")
+     } else {
+       document.body.classList.remove("side-nav-open")
+     }
+   }, [sideNavOpen])
+ 
+   useEffect(() => {
+     fetchData()
+   }, [])
+ 
+   const fetchData = async () => {
+     setIsLoading(true)
+     try {
+       const data = await getFgScrapLineRejectionReport()
+       setReportData(data)
+       setFilteredData(data)
+     } catch (error) {
+       console.error("Error fetching data:", error)
+     } finally {
+       setIsLoading(false)
+     }
+   }
+ 
+   // Handle filter changes
+   const handleFilterChange = (e) => {
+     const { name, value } = e.target
+     setFilters((prev) => ({
+       ...prev,
+       [name]: value,
+     }))
+   }
+ 
+   // Apply filters
+   const applyFilters = () => {
+     setIsLoading(true)
+ 
+     // Create params object for API call
+     const params = {}
+     if (filters.plant) params.plant = filters.plant
+     if (filters.dateFrom) params.date_from = filters.dateFrom
+     if (filters.dateTo) params.date_to = filters.dateTo
+   
+     if (filters.series) params.series = filters.series
+     if (filters.itemName) params.scrap_rejection_item = filters.itemName
+     if (filters.customerName) params.cust_supp_name = filters.customerName
+  
+ 
+     // Call API with filters
+     getFgScrapLineRejectionReport(params)
+       .then((data) => {
+         setFilteredData(data)
+         setCurrentPage(1) // Reset to first page when filtering
+       })
+       .catch((error) => {
+         console.error("Error applying filters:", error)
+       })
+       .finally(() => {
+         setIsLoading(false)
+       })
+   }
+ 
+   // Reset filters
+   const resetFilters = () => {
+     setFilters({
+       plant: "",
+       dateFrom: "",
+       dateTo: "",
+      
+       series: "",
+       itemName: "",
+       customerName: "",
+      
+     })
+     setFilteredData(reportData)
+     setCurrentPage(1)
+   }
+ 
+ 
+ 
+   const indexOfLastRecord = currentPage * recordsPerPage
+   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage
+   const currentRecords = filteredData.slice(indexOfFirstRecord, indexOfLastRecord)
+   const totalPages = Math.ceil(filteredData.length / recordsPerPage)
+ 
+   const handlePrevPage = () => {
+     if (currentPage > 1) setCurrentPage(currentPage - 1)
+   }
+ 
+   const handleNextPage = () => {
+     if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+   }
 
   return (
     <div className="FGScrapRejectionMaster">
+     
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -33,312 +139,232 @@ const FGScrapRejectionReport = () => {
                 toggleSideNav={toggleSideNav}
               />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-                <div className="FGScrapRejection mt-5">
-                  <div className="FGScrapRejection-header mb-4 text-start">
+                <div className="ScrapRejection mt-5">
+                  <div className="ScrapRejection-header mb-4 text-start">
                     <div className="row align-items-center">
                       <div className="col-md-4">
                         <h5 className="header-title">
-                          Scrap / Rejection Report{" "}
+                          FG Scrap Rejection Master
                         </h5>
                       </div>
+                      <div className="col-md-8 text-end">
+                        <button type="button" className="btn" to="/AddQuater">
+                          Rejection Report
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn"
+                          to="/Companysetup"
+                        >
+                          Export To Excel
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="FGScrapRejection-content">
-                    <div className="tabs">
-                      <ul className="nav nav-tabs">
-                        <li className="nav-item">
-                          <a
-                            className="nav-link active"
-                            href="#prod-details"
-                            data-bs-toggle="tab"
+
+                  <div className="ScrapRejection-Main">
+                    <div className="container-fluid">
+                      <div className="row g-3 text-start">
+                        {/* Plant */}
+                        <div className="col-sm-6 col-md-2 col-lg-1">
+                          <label>Plant:</label>
+                          <select
+                            className="form-select"
+                            name="plant"
+                            value={filters.plant}
+                            onChange={handleFilterChange}
                           >
-                            Scrap Note
-                          </a>
-                        </li>
-                        <li className="nav-item">
-                          <a
-                            className="nav-link"
-                            href="#consumption-details"
-                            data-bs-toggle="tab"
-                          >
-                            Rejection Note
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="tab-content" style={{ border: "none" }}>
-                      <div
-                        className="tab-pane fade show active"
-                        id="prod-details"
-                      >
-                        <div className="FGScrapRejection-first">
-                         
-                            <div className="container-fluid">
-                              <div className="row g-3 text-start">
-                                {/* Plant */}
-                                <div className="col-sm-6 col-md-1 col-lg-1">
-                                  <label>Plant:</label>
-                                  <select className="form-select">
-                                    <option>All</option>
-                                  </select>
-                                </div>
-
-                                {/* From Date */}
-                                <div className="col-sm-6 col-md-2 col-lg-1">
-                                  <label>From:</label>
-                                  <input type="date" className="form-control" />
-                                </div>
-
-                                {/* To Date */}
-                                <div className="col-sm-6 col-md-2 col-lg-1">
-                                  <label>To Date:</label>
-                                  <input type="date" className="form-control" />
-                                </div>
-
-                               
-
-                                {/* Item Name */}
-                                <div className="col-sm-6 col-md-1 col-lg-1">
-                                  <label>Item Name:</label>
-                                  <input type="text" className="form-control" />
-                                </div>
-
-                                {/* Customer Name */}
-                                <div className="col-sm-6 col-md-1 col-lg-2">
-                                  <label>Customer Name:</label>
-                                  <input type="text" className="form-control" />
-                                </div>
-
-                             
-
-                                <div className="col-sm-2 col-md-2 col-lg-1 mt-4">
-                                  <label></label>
-                                  <button
-                                    type="button"
-                                    className="btn btn-primary w-100"
-                                  >
-                                    Search
-                                  </button>
-                                </div>
-                                <div className="col-sm-2 col-md-2 col-lg-2 mt-4">
-                                  <label></label>
-                                  <button
-                                    type="button"
-                                    className="btn btn-primary w-100"
-                                  >
-                                    Export Excel
-                                  </button>
-                                </div>
-                                <div className="col-sm-2 col-md-2 col-lg-3 mt-4">
-                                  <label></label>
-                                  <button
-                                    type="button"
-                                    className="btn btn-primary w-100"
-                                  >
-                                    Scrap Value(Rework to Scrap)
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                        
-
-                          <div className="table-responsive">
-                            <table className="table table-bordered table-striped">
-                              <thead>
-                                <tr>
-                                  <th scope="col">Sr.</th>
-                                  <th scope="col">Year</th>
-                                  
-                                  <th scope="col">Scrap No</th>
-                                  <th scope="col">Scrap Date</th>
-                                  <th scope="col">Customer Name</th>
-                                  <th scope="col">Item No</th>
-                                  <th scope="col">Item Code</th>
-                                  <th scope="col">Item Desc</th>
-                                  <th scope="col">Part Code</th>
-                                  <th scope="col">Rework Qty</th>
-                                  <th scope="col">Reject Qty</th>
-                                  <th scope="col">Scrap Code</th>
-                                  <th scope="col">Scrap Wt</th>
-                                  <th scope="col">User</th>
-                                  
-                                  <th scope="col">Doc / Del / Edit</th>
-                                  <th scope="col">View</th>
-                                  
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {/* Example data row */}
-                                <tr>
-                                  <td>1</td>
-                                  <td>January</td>
-                                  <td>01/01/2024</td>
-                                  <td>31/01/2024</td>
-                                  <td>1</td>
-                                  <td>2024</td>
-                                  <td>1</td>
-                                  <td>January</td>
-                                  <td>01/01/2024</td>
-                                  <td>31/01/2024</td>
-                                  <td>1</td>
-                                  <td>2024</td>
-                                  <td>2024</td>
-                                  <td>2024</td>
-                                  
-                                  
-                                  <td>
-                                    <button className="btn btn-link">
-                                      <FaEdit />
-                                    </button>
-                                  </td>
-                                  <td>
-                                    <button className="btn btn-link text-danger">
-                                      <FaTrash />
-                                    </button>
-                                  </td>
-                                </tr>
-                                {/* More rows can be added here */}
-                              </tbody>
-                            </table>
-                          </div>
+                            <option value="">Select All</option>
+                            <option value="Produlink">Produlink</option>
+                            <option value="FactoryA">Factory A</option>
+                          </select>
                         </div>
-                      </div>
 
-                      <div className="tab-pane fade" id="consumption-details">
-                        <div className="FGScrapRejection-second">
-                        <div className="container-fluid">
-                              <div className="row g-3 text-start">
-                                {/* Plant */}
-                                <div className="col-sm-6 col-md-1 col-lg-1">
-                                  <label>Plant:</label>
-                                  <select className="form-select">
-                                    <option>All</option>
-                                  </select>
-                                </div>
+                        {/* From Date */}
+                        <div className="col-sm-6 col-md-2 col-lg-1">
+                          <label>From:</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            name="dateFrom"
+                            value={filters.dateFrom}
+                            onChange={handleFilterChange}
+                          />
+                        </div>
 
-                                {/* From Date */}
-                                <div className="col-sm-6 col-md-2 col-lg-1">
-                                  <label>From:</label>
-                                  <input type="date" className="form-control" />
-                                </div>
+                        {/* To Date */}
+                        <div className="col-sm-6 col-md-2 col-lg-1">
+                          <label>To Date:</label>
+                          <input
+                            type="date"
+                            className="form-control"
+                            name="dateTo"
+                            value={filters.dateTo}
+                            onChange={handleFilterChange}
+                          />
+                        </div>
 
-                                {/* To Date */}
-                                <div className="col-sm-6 col-md-2 col-lg-1">
-                                  <label>To Date:</label>
-                                  <input type="date" className="form-control" />
-                                </div>
 
-                               
+                        {/* Series */}
+                        <div className="col-sm-6 col-md-2 col-lg-1">
+                          <label>Series:</label>
+                          <select
+                            className="form-select"
+                            name="series"
+                            value={filters.series}
+                            onChange={handleFilterChange}
+                          >
+                            <option value="">Select All</option>
+                            <option value="Line R">Line R</option>
+                          </select>
+                        </div>
 
-                                {/* Item Name */}
-                                <div className="col-sm-6 col-md-1 col-lg-1">
-                                  <label>Item Code:</label>
-                                  <input type="text" className="form-control" />
-                                </div>
+                        {/* Item Name */}
+                        <div className="col-sm-6 col-md-1 col-lg-1">
+                          <label>Item Name:</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="itemName"
+                            value={filters.itemName}
+                            onChange={handleFilterChange}
+                          />
+                        </div>
 
-                                {/* Customer Name */}
-                                <div className="col-sm-6 col-md-1 col-lg-2">
-                                  <label>Customer:</label>
-                                  <input type="text" className="form-control" />
-                                </div>
+                        {/* Customer Name */}
+                        <div className="col-sm-6 col-md-1 col-lg-2">
+                          <label>Customer Name:</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="customerName"
+                            value={filters.customerName}
+                            onChange={handleFilterChange}
+                          />
+                        </div>
 
-                             
 
-                                <div className="col-sm-2 col-md-2 col-lg-1 mt-4">
-                                  <label></label>
-                                  <button
-                                    type="button"
-                                    className="btn btn-primary w-100"
-                                  >
-                                    Search
-                                  </button>
-                                </div>
-                                <div className="col-sm-2 col-md-2 col-lg-2 mt-4">
-                                  <label></label>
-                                  <button
-                                    type="button"
-                                    className="btn btn-primary w-100"
-                                  >
-                                    Rejection Report
-                                  </button>
-                                </div>
-                                <div className="col-sm-2 col-md-2 col-lg-3 mt-4">
-                                  <label></label>
-                                  <button
-                                    type="button"
-                                    className="btn btn-primary w-100"
-                                  >
-                                    Print Rejection Report
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                        
+                        <div className="col-sm-2 col-md-2 col-lg-1 mt-4">
+                          <label></label>
+                          <button type="button" className="btn btn-primary w-100" onClick={applyFilters}>
+                            Search
+                          </button>
+                        </div>
 
-                          <div className="table-responsive">
-                            <table className="table table-bordered table-striped">
-                              <thead>
-                                <tr>
-                                  <th scope="col">Sr.</th>
-                                  <th scope="col">Year</th>
-                                  
-                                  <th scope="col">Rej. No</th>
-                                  <th scope="col">Rej. Date</th>
-                                  <th scope="col">Customer Name</th>
-                                  <th scope="col">Item No</th>
-                                  <th scope="col">Item Code</th>
-                                  <th scope="col">Item Desc</th>
-                                  <th scope="col">Part Code</th>
-                                  <th scope="col">Rework Qty</th>
-                                  <th scope="col">Reject Qty</th>
-                                  <th scope="col">Scrap Code</th>
-                                  <th scope="col">Scrap Wt</th>
-                                  <th scope="col">User</th>
-                                  
-                                  <th scope="col">Doc / Del / Edit</th>
-                                  <th scope="col">View</th>
-                                  
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {/* Example data row */}
-                                <tr>
-                                  <td>1</td>
-                                  <td>January</td>
-                                  <td>01/01/2024</td>
-                                  <td>31/01/2024</td>
-                                  <td>1</td>
-                                  <td>2024</td>
-                                  <td>1</td>
-                                  <td>January</td>
-                                  <td>01/01/2024</td>
-                                  <td>31/01/2024</td>
-                                  <td>1</td>
-                                  <td>2024</td>
-                                  <td>2024</td>
-                                  <td>2024</td>
-                                  
-                                  
-                                  <td>
-                                    <button className="btn btn-link">
-                                      <FaEdit />
-                                    </button>
-                                  </td>
-                                  <td>
-                                    <button className="btn btn-link text-danger">
-                                      <FaTrash />
-                                    </button>
-                                  </td>
-                                </tr>
-                                {/* More rows can be added here */}
-                              </tbody>
-                            </table>
-                          </div>
+                        <div className="col-sm-2 col-md-2 col-lg-1 mt-4">
+                          <label></label>
+                          <button type="button" className="btn btn-secondary w-100" onClick={resetFilters}>
+                            Reset
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
+ {isLoading ? (
+                      <div className="d-flex justify-content-center my-5">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="table-responsive">
+                        <table className="table table-bordered table-striped mt-3">
+                          <thead>
+                            <tr>
+                              <th>Sr.</th>
+                                <th>Plant</th>
+                              <th>Series</th>
+                              <th>Note Type</th>
+                              <th>Note No</th>
+                              <th>Note Date</th>
+                              <th>Item Code</th>
+                              <th>Part Code</th>
+                              <th>Stock</th>
+        <th>Rework</th>
+        <th>Reject</th>
+                             
+                              <th>Scrap Reason</th>
+                              <th>User</th>
+                              <th>Auth</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {currentRecords.length > 0 ? (
+                              currentRecords.map((entry, index) => (
+                                <tr key={entry.id || index}>
+                                  <td>{index + 1 + indexOfFirstRecord}</td>
+                                  <td>{entry.Plant}</td>
+                                  <td>{entry.Series}</td>
+                                  <td>{entry.NoteType}</td>
+                                  <td>{entry.NoteNo}</td>
+                                  <td>{entry.NoteDate}</td>
+                                  <td>{entry.ItemCode}</td>
+                                  <td>{entry.PartCode}</td>
+                                  <td>{entry.Stock}</td>
+                                  <td>{entry.Rework}</td>
+                                  <td>{entry.Reject}</td>
+                                  <td>{entry.ScrapReason}</td>
+
+                                  <td>{entry.user || "N/A"}</td>
+                                  <td>
+                                  {entry.Auth ? <i className="fas fa-check text-success"></i> : <i className="fas fa-times text-danger"></i>}
+                                </td>
+                                  <td>
+                                    <Link to={`/ScrapRejectionEntry/${entry.id}`} className="btn btn-sm btn-warning me-2">
+                                      <FaEdit />
+                                    </Link>
+                                    <a
+                                      href={`http://3.7.91.234:8000/Production/FGScrap/pdf/${entry.id}/`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn btn-sm btn-primary"
+                                    >
+                                      View
+                                    </a>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="11" className="text-center">
+                                  No data found.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+
+                      
+                      </div>
+                      
+                    )}
+
+                       {/* Pagination */}
+                        {filteredData.length > 0 && (
+                          <div className="d-flex justify-content-between mt-3">
+                            <button className="btn btn-secondary" onClick={handlePrevPage} disabled={currentPage === 1}>
+                              Previous
+                            </button>
+                            <button
+                              className="btn btn-secondary"
+                             
+                            >
+                             <span className="align-self-center">
+                             {currentPage}  
+                            </span>
+                            </button>
+                            
+                            <button
+                              className="btn btn-secondary"
+                              onClick={handleNextPage}
+                              disabled={currentPage === totalPages}
+                            >
+                              Next
+                            </button>
+                          </div>
+                        )}
                 </div>
               </main>
             </div>
@@ -346,6 +372,7 @@ const FGScrapRejectionReport = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 

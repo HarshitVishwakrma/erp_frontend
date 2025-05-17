@@ -3,7 +3,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
-import './ProductionReport.css';
+import "./ProductionReport.css";
+import { getAssemblyReport } from "../../Service/Production.jsx";
+import { FaEdit } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const ProductionReport = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -20,6 +23,37 @@ const ProductionReport = () => {
     }
   }, [sideNavOpen]);
 
+  const [assemblyData, setAssemblyData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // You can change this number based on your requirements
+  const [totalItems, setTotalItems] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getAssemblyReport();
+      console.log("Fetched Data:", data); // Check the structure of the data
+
+      if (Array.isArray(data)) {
+        setAssemblyData(data); // Directly set the array if data is an array
+        setTotalItems(data.length); // Set total items based on the array length
+      } else {
+        console.error("Data is not an array:", data);
+      }
+    };
+
+    fetchData();
+  }, [currentPage]);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = assemblyData.slice(indexOfFirstItem, indexOfLastItem);
+
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(totalItems / itemsPerPage); i++) {
+    pageNumbers.push(i);
+  }
   return (
     <div className="ProductionReportMaster">
       <div className="container-fluid">
@@ -36,7 +70,9 @@ const ProductionReport = () => {
                   <div className="ProductionReport-header mb-4 text-start">
                     <div className="row align-items-center">
                       <div className="col-md-4">
-                        <h5 className="header-title">Daily Production Report</h5>
+                        <h5 className="header-title">
+                          Production Entry Ass Report
+                        </h5>
                       </div>
                       <div className="col-md-8 text-end">
                         <button type="button" className="btn">
@@ -74,7 +110,7 @@ const ProductionReport = () => {
                           {/* Add more options as needed */}
                         </select>
                       </div>
-            
+
                       <div className="col-md-2">
                         <label>Shift</label>
                         <select className="form-select">
@@ -83,75 +119,106 @@ const ProductionReport = () => {
                         </select>
                       </div>
                       <div className="col-md-2 mt-4">
-                      
-                      <button className="btn btn-primary">Search</button>
-                      
-                   
+                        <button className="btn btn-primary">Search</button>
+                      </div>
                     </div>
-                    </div>
-                   
                   </div>
 
                   {/* Table Section */}
                   <div className="ProductionReport-Main">
-                  <div className="table-responsive">
-                    <table className="table table-bordered">
-                      <thead>
-                        <tr>
-                          <th>Sr.</th>
-                          <th>Year</th>
-                          <th>Prod No</th>
-                          <th>Prod Date</th>
-                          <th>Sup & Cont</th>
-                          <th>Machine</th>
-                          <th>Shift</th>
-                          <th>Item Desc</th>
-                          <th>Op</th>
-                          <th>Part Code</th>
-                          <th>QC</th>
-                          <th>Prod Qty</th>
-                          <th>Rework</th>
-                          <th>Reject</th>
-                          <th>Ok Qty</th>
-                          <th>G.W.</th>
-                          <th>Total Wt.</th>
-                          <th>H/C</th>
-                          <th>R. Time</th>
-                          <th>User</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* Example Row */}
-                        <tr>
-                          <td>1</td>
-                          <td>24-25</td>
-                          <td>DP2425253 47</td>
-                          <td>20/09/2024</td>
-                          <td>NEW Quality Control</td>
-                          <td>Visual1</td>
-                          <td>FIRST BHRS.</td>
-                          <td>FG1021</td>
-                          <td>CHECKING</td>
-                          <td>CFG1021</td>
-                          <td>6149</td>
-                          <td>0</td>
-                          <td>0</td>
-                          <td>6149</td>
-                          <td>0.13</td>
-                          <td>796.91</td>
-                          <td>4</td>
-                          <td>08:00</td>
-                          <td>Togre</td>
-                          <td>
-                            <button className="btn btn-sm btn-light">
-                              <i className="fas fa-eye"></i>
-                            </button>
-                          </td>
-                        </tr>
-                        {/* Additional rows can be added dynamically here */}
-                      </tbody>
-                    </table>
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Sr.</th>
+
+                            <th>Plant</th>
+                            <th>Prod No</th>
+                            <th>Prod Date</th>
+                            <th>Time</th>
+                            <th>Shift</th>
+                            <th>Contractor</th>
+                            <th>Operator</th>
+                            <th>FGItem</th>
+                            <th>ProdQty</th>
+                            <th>Rework</th>
+                            <th>Reject</th>
+
+                            <th>Edit</th>
+                            <th>View</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {currentItems.map((item, index) => (
+                            <tr key={index}>
+                              <td>{indexOfFirstItem + index + 1}</td>
+
+                              <td>{item.Plant}</td>
+                              <td>{item.Prod_no}</td>
+                              <td>{item.Date}</td>
+                              <td>{item.Time}</td>
+
+                              <td>{item.Shift}</td>
+                              <td>{item.Contractor}</td>
+                              <td>{item.Operator}</td>
+                              <td>{item.FGItem}</td>
+
+                              <td>{item.ProdQty}</td>
+                              <td>{item.ReworkQty}</td>
+                              <td>{item.RejectQty}</td>
+
+                              <td>
+                                <Link to={`/ProductionEntryAss/${item.id}`} className="btn btn-sm btn-warning">
+  <FaEdit />
+</Link>
+
+                              </td>
+
+                              <td>
+                                <a
+                                  href={`http://3.7.91.234:8000${item.View}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn-sm btn-primary"
+                                >
+                                  View
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Pagination Controls */}
+                    {/* Pagination Controls */}
+                    <div className="pagination">
+                      <button
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="btn btn-sm btn-light"
+                      >
+                        Previous
+                      </button>
+
+                      {pageNumbers.map((number) => (
+                        <button
+                          key={number}
+                          onClick={() => paginate(number)}
+                          className={`btn ${
+                            currentPage === number ? "btn" : "btn-light"
+                          }`}
+                        >
+                          {number}
+                        </button>
+                      ))}
+
+                      <button
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={currentPage === pageNumbers.length}
+                        className="btn btn-sm btn-light"
+                      >
+                        Next
+                      </button>
                     </div>
                   </div>
                 </div>

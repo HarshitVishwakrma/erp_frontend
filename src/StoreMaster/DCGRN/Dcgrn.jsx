@@ -408,7 +408,7 @@ const Dcgrn = () => {
                           aria-controls="pills-Gernal-Detail"
                           aria-selected="true"
                         >
-                          Genral Details
+                       General Detail
                         </button>
                       </li>
                     </ul>

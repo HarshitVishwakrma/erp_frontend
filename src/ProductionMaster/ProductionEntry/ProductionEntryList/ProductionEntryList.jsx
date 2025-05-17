@@ -5,6 +5,8 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./ProductionEntryList.css";
 import { fetchProductionEntries } from "../../../Service/Production.jsx";
+import { Link } from "react-router-dom";
+import { FaEdit } from "react-icons/fa";
 
 const ProductionEntryList = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -22,7 +24,6 @@ const ProductionEntryList = () => {
   }, [sideNavOpen]);
 
   const [productionEntries, setProductionEntries] = useState([]);
-  
 
   useEffect(() => {
     const loadProductionEntries = async () => {
@@ -32,18 +33,21 @@ const ProductionEntryList = () => {
     };
     loadProductionEntries();
   }, []);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
-  
+
   // Calculate indexes
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = productionEntries.slice(indexOfFirstRecord, indexOfLastRecord);
-  
+  const currentRecords = productionEntries.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
+
   // Ensure total pages are correct
   const totalPages = Math.ceil(productionEntries.length / recordsPerPage);
-  
+
   console.log("Current Page:", currentPage, "Total Pages:", totalPages);
 
   const handleNextPage = () => {
@@ -51,14 +55,13 @@ const ProductionEntryList = () => {
       setCurrentPage(currentPage + 1);
     }
   };
-  
+
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
-  
-  
+
   return (
     <div className="ProductionEntryMasterList">
       <div className="container-fluid">
@@ -76,7 +79,7 @@ const ProductionEntryList = () => {
                     <div className="row align-items-center">
                       <div className="col-md-4">
                         <h5 className="header-title">
-                          Daily Producytion Report
+                          Production Entry Report
                         </h5>
                       </div>
                       <div className="col-md-8 text-end">
@@ -153,66 +156,57 @@ const ProductionEntryList = () => {
                       <table className="table table-bordered table-striped">
                         <thead>
                           <tr>
-                            <th scope="col">Sr.</th>
-                            <th scope="col">Year</th>
-                            <th scope="col">Prod No</th>
-                            <th scope="col">Prod Date</th>
-                            <th scope="col">Sup & cont </th>
-                            <th scope="col">Machine</th>
-                            <th scope="col">Shift</th>
-                            <th scope="col">Item Desc</th>
-                            <th scope="col">op</th>
-                            <th scope="col">Part Code</th>
-                            <th scope="col">QC</th>
-                            <th scope="col">Prod Qty</th>
-                            <th scope="col">Rework</th>
-                            <th scope="col">Reject</th>
-                            <th scope="col">Ok Qty</th>
-                            <th scope="col">Gt.Wt</th>
-                            <th scope="col">Total.Wt</th>
-                            <th scope="col">M/C</th>
-                            <th scope="col">R.Time</th>
-                            <th scope="col">User</th>
-
-                            <th scope="col">View</th>
-                            <th scope="col">Act</th>
+                            <th>Sr.</th>
+                            <th>Mill Name</th>
+                            <th>Prod No</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Shift</th>
+                            <th>Contractor</th>
+                            <th>Operator</th>
+                            <th>Item</th>
+                            <th>Prod Qty</th>
+                            <th>Reject Qty</th>
+                            <th>Rework Qty</th>
+                            <th>Edit</th>
+                            <th>View</th>
                           </tr>
                         </thead>
-                        <tbody>
-                        {currentRecords.length > 0 ? (
-    currentRecords.map((entry, index) => (
-                              <tr key={entry.id}>
-                                <td>{index + 1}</td>
-                                <td>{entry.Year || "N/A"}</td>
 
-                                <td>{entry.Prod_no || "N/A"}</td>
-                                <td>{entry.Date || "N/A"}</td>
-                                <td>{`${entry.Supervisor || "N/A"} & ${
-                                  entry.contractor || "N/A"
-                                }`}</td>
-                                <td>{entry.unit_machine || "N/A"}</td>
-                                <td>{entry.shift || "N/A"}</td>
-                                <td>{entry.ItemDescription || "N/A"}</td>
-                                <td>{entry.operation || "N/A"}</td>
-                                <td>{entry.ItemCode || "N/A"}</td>
-                                <td>{entry.QC || "N/A"}</td>
-                                <td>{entry.prod_qty || "N/A"}</td>
-                                <td>{entry.rework_qty || "N/A"}</td>
-                                <td>{entry.reject_qty || "N/A"}</td>
-                                <td>{entry.ok_qty || "N/A"}</td>
-                                <td>{entry.gt_wt || "N/A"}</td>
-                                <td>{entry.total_wt || "N/A"}</td>
-                                <td>{entry.mc || "N/A"}</td>
-                                <td>{entry.r_time || "N/A"}</td>
-                                <td>{entry.r_time || "N/A"}</td>
-                                <td>{entry.user || "N/A"}</td>
+                        <tbody>
+                          {currentRecords.length > 0 ? (
+                            currentRecords.map((entry, index) => (
+                              <tr key={entry.id}>
+                                <td>{index + 1 + indexOfFirstRecord}</td>
+                                <td>{entry.mill_name}</td>
+                                <td>{entry.Prod_no}</td>
+                                <td>{entry.Date}</td>
+                                <td>{entry.Time}</td>
+                                <td>{entry.shift}</td>
+                                <td>{entry.contractor}</td>
+                                <td>{entry.operator}</td>
+                                <td>{entry.item}</td>
+                                <td>{entry.prod_qty}</td>
+                                <td>{entry.reject_qty}</td>
+                                <td>{entry.rework_qty}</td>
                                 <td>
-                                  <button className="btn btn-info">View</button>
+                                  <Link
+                                    to={`/ProductionEntry/${entry.id}`}
+                                    className="btn btn-sm btn-warning"
+                                  >
+                                    <FaEdit />
+                                  </Link>
                                 </td>
+
                                 <td>
-                                  <button className="btn btn-warning">
-                                    Edit
-                                  </button>
+                                  <a
+                                    href={`http://3.7.91.234:8000${entry.View}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn btn-sm btn-primary"
+                                  >
+                                    View
+                                  </a>
                                 </td>
                               </tr>
                             ))
@@ -227,29 +221,26 @@ const ProductionEntryList = () => {
                       </table>
                     </div>
 
-                     {/* Pagination Controls */}
-                     <div className="d-flex justify-content-end mt-3">
-  <nav>
-    <ul className="pagination">
-      <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-        <button className="page-link" onClick={handlePrevPage}>Previous</button>
-      </li>
-
-      {Array.from({ length: totalPages }, (_, i) => (
-        <li key={i} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
-          <button className="page-link" onClick={() => setCurrentPage(i + 1)}>
-            {i + 1}
-          </button>
-        </li>
-      ))}
-
-      <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-        <button className="page-link" onClick={handleNextPage}>Next</button>
-      </li>
-    </ul>
-  </nav>
-</div>
-
+                    {/* Pagination Controls */}
+                    <div className="d-flex justify-content-between mt-3">
+                      <button
+                        className="btn btn-secondary"
+                        onClick={handlePrevPage}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+                      <span className="align-self-center">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={handleNextPage}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 </div>
               </main>
