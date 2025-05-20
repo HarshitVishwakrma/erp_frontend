@@ -25,7 +25,7 @@ import NewCardParentFg from "../ItemGernalCard/NewCardParentFg.jsx";
 import { saveItemMaster } from "../../../Service/Api.jsx";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link ,useParams ,useNavigate} from "react-router-dom";
+import { Link ,useParams } from "react-router-dom";
 import {
   getItems,
   // getGrades,
@@ -44,7 +44,7 @@ import { fetchNextPartNo, getUnitCode , fetchItemById } from "../../../Service/A
 
 const ItemMasterGernal = () => {
   const { id } = useParams() // Get the item ID from URL if it exists
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
   const [isEditMode, setIsEditMode] = useState(false)
   const [sideNavOpen, setSideNavOpen] = useState(false)
   const [showNewCardMainGroup, setShowNewCardMainGroup] = useState(false)
@@ -402,8 +402,8 @@ const ItemMasterGernal = () => {
       toast.success(`Data ${isEditMode ? "updated" : "saved"} successfully!`)
       console.log(`Data ${isEditMode ? "updated" : "saved"} successfully:`, result)
 
-      // Navigate back to the item list after successful save/update
-      navigate("/item-master")
+      
+      
     } catch (error) {
       toast.error(`Failed to ${isEditMode ? "update" : "save"} data.`)
       console.error(`Error occurred while ${isEditMode ? "updating" : "saving"} data:`, {
@@ -411,6 +411,8 @@ const ItemMasterGernal = () => {
         stack: error.stack,
       })
     }
+    // Navigate back to the item list after successful save/update
+    // navigate("/item-master")
   }
 
   const handleClear = () => {
@@ -642,7 +644,8 @@ const ItemMasterGernal = () => {
 
   return (
     <div className="Itemmastergernalpage">
-      <ToastContainer />
+      <ToastContainer position="top-center" style={{ zIndex: 9999 }} />
+
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -652,7 +655,7 @@ const ItemMasterGernal = () => {
 
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="axcv mt-5">
-                  <ToastContainer />
+                 
                   <div className="top-but3-header mb-4 text-start">
                     <div className="row align-items-center">
                       <div className="col-md-2">
@@ -984,9 +987,9 @@ const ItemMasterGernal = () => {
                                             </div>
                                             <div className="row mb-3">
                                               <label htmlFor="Item_Size" className="col-sm-5 col-form-label">
-                                                Item Size:
+                                                Item Size:<span className="text-danger">*</span>
                                               </label>
-                                              <div className="col-sm-3">
+                                              <div className="col-sm-7">
                                                 <input
                                                   type="text"
                                                   id="Item_Size"
@@ -996,35 +999,13 @@ const ItemMasterGernal = () => {
                                                   value={formData.Item_Size}
                                                   onChange={handleInputChange}
                                                 />
-                                                {/* {errors.Item_Size && (
+                                                {errors.Item_Size && (
                                                   <div className="text-danger">
                                                     {errors.Item_Size}
                                                   </div>
-                                                )} */}
+                                                )}
                                               </div>
-                                              <div className="col-sm-4">
-                                                <select
-                                                  id="Item_Size"
-                                                  className="form-select"
-                                                  value={formData.Item_Size}
-                                                  onChange={handleInputChange}
-                                                  name="Item_Size"
-                                                >
-                                                  <option selected>Select ..</option>
-                                                  <option>BLOCK</option>
-                                                  <option>D/A</option>
-                                                  <option>@</option>
-                                                  <option>PLATE</option>
-                                                  <option>RCS</option>
-                                                  <option>RD</option>
-                                                  <option>SQ</option>
-                                                </select>
-                                                {/* {errors.Item_Size && (
-                                                  <div className="text-danger">
-                                                    {errors.Item_Size}
-                                                  </div>
-                                                )} */}
-                                              </div>
+                                        
                                             </div>
                                             <div className="row mb-3">
                                               <label htmlFor="Heat_Treatment" className="col-sm-5 col-form-label">

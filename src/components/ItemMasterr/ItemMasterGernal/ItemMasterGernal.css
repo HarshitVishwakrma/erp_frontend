@@ -582,14 +582,14 @@
     height: auto;
   }
 }
-.btn {
+/* .btn {
   background-color: rgba(235, 233, 233, 0.685);
   margin-left: -20px;
 }
 .btn:hover{
   background-color: black;
   color: white;
-}
+} */
 
 /* gernal */
 .gerneral {
