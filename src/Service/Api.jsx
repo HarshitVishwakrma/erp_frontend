@@ -2730,58 +2730,53 @@ export const fetchVendorProfile = async () => {
 // BOM
 export const fetchScrapData = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}FetchScrap/`);
-    return response.data;
+    const response = await axios.get(`${BASE_URL}FetchScrap/`)
+    return response.data
   } catch (error) {
-    console.error("Error fetching scrap data:", error);
-    return [];
+    console.error("Error fetching scrap data:", error)
+    return []
   }
-};
+}
 
-export const saveItemData = async (formData) => {
+export const searchItems = async (query) => {
   try {
-    const response = await axios.post(`${BASE_URL}api/items/`, formData, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
+    const response = await axios.get(`${BASE_URL}api/item-search/?q=${query}`)
+    return response.data
   } catch (error) {
-    console.error("Error saving item data:", error);
-    throw error;
+    console.error("Error searching items:", error)
+    return []
   }
-};
+}
 
-export const fetchScrapDataItem = async () => {
+export const saveBomItem = async (itemId, formData, editingId = null) => {
   try {
-    const response = await axios.get(`${BASE_URL}api/items/`);
-    console.log("API Response:", response.data); // ✅ Check if correct data is returned
-    return response.data;
+    if (editingId) {
+      // Update existing record
+      const response = await axios.put(`${BASE_URL}api/items/${itemId}/boms/${editingId}/`, formData)
+      return response.data
+    } else {
+      // Create new record
+      const response = await axios.post(`${BASE_URL}api/items/${itemId}/boms/`, formData)
+      return response.data
+    }
   } catch (error) {
-    console.error("Error fetching items:", error);
-    return [];
+    console.error("Error saving BOM data:", error)
+    throw error
   }
-};
+}
 
-
-export const updateScrapData = async (id, updatedData) => {
+export const deleteBomItem = async (itemId, bomId) => {
   try {
-    const response = await axios.put(`${BASE_URL}api/items/${id}/`, updatedData, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return response.data;
+    const response = await axios.delete(`${BASE_URL}api/items/${itemId}/boms/${bomId}/`)
+    return response.data
   } catch (error) {
-    console.error("Error updating item:", error);
-    throw error;
+    console.error("Error deleting BOM data:", error)
+    throw error
   }
-};
+}
 
-export const deleteScrapData = async (id) => {
-  try {
-    await axios.delete(`${BASE_URL}api/items/${id}/`);
-  } catch (error) {
-    console.error("Error deleting item:", error);
-    throw error;
-  }
-};
+
+
 
 
 export const getWorkCenters = async () => {
