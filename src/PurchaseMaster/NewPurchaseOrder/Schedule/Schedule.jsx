@@ -1,34 +1,35 @@
-import React, { useState, useEffect } from "react";
+"use client"
 
-import "./Schedule.css";
+import React, { useState, useEffect } from "react"
+
+import "./Schedule.css"
 
 const Schedule = ({ updateFormData, itemDetails = [] }) => {
-  const [scheduleLine, setScheduleLine] = useState([]);
-
-
+  const [scheduleLine, setScheduleLine] = useState([])
 
   // ✅ Update schedule when `itemDetails` changes
   useEffect(() => {
     if (itemDetails.length > 0) {
       setScheduleLine((prevSchedule) => {
         const updatedSchedule = itemDetails.map((item, index) => {
-          const existingItem = prevSchedule.find((prev) => prev.ItemCode === item.Item);
+          const existingItem = prevSchedule.find((prev) => prev.ItemCode === item.Item)
 
           return {
             id: index + 1,
             ItemCode: (item.Item || "").substring(0, 30).trim(),
             Description: item.ItemDescription || "",
             TotalQty: item.Qty || 0,
-            Dates: existingItem ? existingItem.Dates : Array(10).fill(""),
-            Quantities: existingItem ? existingItem.Quantities : Array(10).fill(""),
-          };
-        });
+            // Initialize dates and quantities arrays if they don't exist
+            Dates: existingItem?.Dates || Array(10).fill(""),
+            Quantities: existingItem?.Quantities || Array(10).fill(""),
+          }
+        })
 
-        updateFormData("Schedule_Line", updatedSchedule);
-        return updatedSchedule;
-      });
+        updateFormData("Schedule_Line", updatedSchedule)
+        return updatedSchedule
+      })
     }
-  }, [itemDetails, updateFormData]);
+  }, [itemDetails, updateFormData])
 
   // ✅ Handle date and quantity changes
   const handleInputChange = (rowIndex, field, value, dateIndex) => {
@@ -38,17 +39,15 @@ const Schedule = ({ updateFormData, itemDetails = [] }) => {
           return {
             ...row,
             [field]: row[field].map((val, i) => (i === dateIndex ? value : val)),
-          };
+          }
         }
-        return row;
-      });
+        return row
+      })
 
-      updateFormData("Schedule_Line", updatedSchedule);
-      return updatedSchedule;
-    });
-  };
-
-
+      updateFormData("Schedule_Line", updatedSchedule)
+      return updatedSchedule
+    })
+  }
 
   return (
     <div className="scheduleline">
@@ -88,9 +87,7 @@ const Schedule = ({ updateFormData, itemDetails = [] }) => {
                               type="date"
                               className="form-control"
                               value={row.Dates[index]}
-                              onChange={(e) =>
-                                handleInputChange(rowIndex, "Dates", e.target.value, index)
-                              }
+                              onChange={(e) => handleInputChange(rowIndex, "Dates", e.target.value, index)}
                             />
                           </td>
                           <td>
@@ -98,9 +95,7 @@ const Schedule = ({ updateFormData, itemDetails = [] }) => {
                               type="number"
                               className="form-control"
                               value={row.Quantities[index]}
-                              onChange={(e) =>
-                                handleInputChange(rowIndex, "Quantities", e.target.value, index)
-                              }
+                              onChange={(e) => handleInputChange(rowIndex, "Quantities", e.target.value, index)}
                             />
                           </td>
                         </React.Fragment>
@@ -115,11 +110,9 @@ const Schedule = ({ updateFormData, itemDetails = [] }) => {
             </tbody>
           </table>
         </div>
-
-        
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Schedule;
+export default Schedule

@@ -33,10 +33,7 @@ const NewCardItemGroup = () => {
       errors.main_group_name = "Main Group Name is required";
       isValid = false;
     }
-    if (!newGroup.prefix.trim()) {
-      errors.prefix = "Prefix is required";
-      isValid = false;
-    }
+  
     if (!newGroup.group_name.trim()) {
       errors.group_name = "Group Name is required";
       isValid = false;
@@ -148,9 +145,7 @@ const NewCardItemGroup = () => {
                     value={newGroup.prefix}
                     onChange={handleInputChange}
                   />
-                  {errors.prefix && (
-                    <div className="invalid-feedback">{errors.prefix}</div>
-                  )}
+                 
                 </div>
 
                 <div className="col-md-4 mb-3">

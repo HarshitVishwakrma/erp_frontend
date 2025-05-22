@@ -209,14 +209,15 @@ const ItemMaster = () => {
                                                                       
                                                                      
                                                                       <td>
-                                                                      <Link
-                                  href={`http://3.7.91.234:8000${item.View}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="btn"
-                                >
-                                  View
-                                </Link>
+                                                                     
+                                <a
+                                        href={`http://3.7.91.234:8000${item.View}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-sm btn-primary"
+                                      >
+                                        View
+                                      </a>
                                 
                                         </td>
                                         <td>

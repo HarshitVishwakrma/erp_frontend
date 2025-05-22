@@ -124,8 +124,10 @@ const UserConfiguration = () => {
                           className="form-select"
                         >
                           <option value="">Select</option>
-                          <option value="HR">HR</option>
-                          <option value="IT">IT</option>
+                          <option value="Store">Store</option>
+                          <option value="Purchase">Purchase</option>
+                           <option value="ALL Master">ALL Master</option>
+                          <option value="Production">Production</option>
                         </select>
                       </div>
                     </div>

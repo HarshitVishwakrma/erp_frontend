@@ -2,6 +2,7 @@
 
 import axios from "axios";
 
+
 // Define base URLs
 // const BASE_URL = "http://3.7.91.234:8000/All_Masters/";
 const BASE_URL = "api/All_Masters/";
@@ -1337,6 +1338,77 @@ export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2
   } catch (error) {
     console.error("Error submitting form:", error)
     return { status: false, message: error.message }
+  }
+}
+
+export const updateIItemData = async (id, data) => { 
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}api/item-table/${id}/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Network response was not ok");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating supplier data:", error);
+    return { status: false, message: error.message };
+  }
+};
+
+export const getItemDataById = async (id) => { 
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please login again.");
+    }
+
+    const response = await fetch(`${BASE_URL}api/item-table/${id}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Network response was not ok");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching supplier data:", error);
+    return { status: false, message: error.message };
+  }
+};
+
+
+export const fetchItemFields = async (query) => {
+  try {
+    const response = await fetch(`${BASE_URL}Fetch_Item_fields/?q=${query}`)
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error("Error fetching item fields:", error)
+    throw error
   }
 }
 

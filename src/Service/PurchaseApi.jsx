@@ -230,17 +230,7 @@ export const fetchSupplierData = async (searchTerm = '') => {
 
 
 //   fetch itme 
-export const fetchItemFields = async (searchTerm = '') => {
-    try {
-      const response = await axios.get(`${BASE_URL}Fetch_Item_fields/`, {
-        params: { search: searchTerm }
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching item fields:", error);
-      throw error;
-    }
-  };
+
 
 
 
@@ -550,6 +540,48 @@ export const addItemDetails = async (itemData) => {
     throw error;
   }
 };
+
+
+export const createTransaction = async (transactionData) => {
+  try {
+    const response = await fetch(`${BASE_URL}api/transaction/create/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(transactionData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    throw error;
+  }
+};
+
+// Function to fetch transaction by ID
+export const fetchTransactionById = async (id) => {
+  try {
+    const response = await fetch(`${BASE_URL}api/transaction/${id}/`);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching transaction:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+
 
 // Function to delete an item by ID
 export const deleteItem = async (id) => {
