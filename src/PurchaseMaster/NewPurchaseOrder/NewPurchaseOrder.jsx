@@ -395,8 +395,9 @@ const NewPurchaseOrder = () => {
                             onChange={(e) => setFormData((prev) => ({ ...prev, Type: e.target.value }))}
                             disabled={isEditMode}
                           >
-                            <option value="close">CLOSE</option>
-                            <option value="">Select</option>
+                            <option value="close">Close</option>
+
+                            <option value="Open">Open</option>
                           </select>
                         </div>
 

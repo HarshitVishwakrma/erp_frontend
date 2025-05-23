@@ -25,7 +25,7 @@ import NewCardParentFg from "../ItemGernalCard/NewCardParentFg.jsx";
 import { saveItemMaster } from "../../../Service/Api.jsx";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link ,useParams } from "react-router-dom";
+import { Link ,useParams ,useNavigate} from "react-router-dom";
 import {
   getItems,
   // getGrades,
@@ -44,7 +44,7 @@ import { fetchNextPartNo, getUnitCode , fetchItemById } from "../../../Service/A
 
 const ItemMasterGernal = () => {
   const { id } = useParams() // Get the item ID from URL if it exists
-  // const navigate = useNavigate()
+  const navigate = useNavigate()
   const [isEditMode, setIsEditMode] = useState(false)
   const [sideNavOpen, setSideNavOpen] = useState(false)
   const [showNewCardMainGroup, setShowNewCardMainGroup] = useState(false)
@@ -389,30 +389,31 @@ const ItemMasterGernal = () => {
       return
     }
 
-    try {
-      console.log(`Attempting to ${isEditMode ? "update" : "save"} data...`)
-      const result = await saveItemMaster(
-        formData,
-        technicalSpecifications,
-        npdDetails,
-        data2Fields,
-        isEditMode ? id : null,
-      )
+ try {
+  console.log(`Attempting to ${isEditMode ? "update" : "save"} data...`);
+  const result = await saveItemMaster(
+    formData,
+    technicalSpecifications,
+    npdDetails,
+    data2Fields,
+    isEditMode ? id : null,
+  );
 
-      toast.success(`Data ${isEditMode ? "updated" : "saved"} successfully!`)
-      console.log(`Data ${isEditMode ? "updated" : "saved"} successfully:`, result)
+  toast.success(`Data ${isEditMode ? "updated" : "saved"} successfully!`, {
+    onClose: () => navigate("/item-master"), // ⬅️ Navigate after toast closes
+    autoClose: 2000, // Optional: auto close in 2 seconds
+  });
+  console.log(`Data ${isEditMode ? "updated" : "saved"} successfully:`, result);
 
-      
-      
-    } catch (error) {
-      toast.error(`Failed to ${isEditMode ? "update" : "save"} data.`)
-      console.error(`Error occurred while ${isEditMode ? "updating" : "saving"} data:`, {
-        message: error.message,
-        stack: error.stack,
-      })
-    }
-    // Navigate back to the item list after successful save/update
-    // navigate("/item-master")
+
+} catch (error) {
+  toast.error(`Failed to ${isEditMode ? "update" : "save"} data.`);
+  console.error(`Error occurred while ${isEditMode ? "updating" : "saving"} data:`, {
+    message: error.message,
+    stack: error.stack,
+  });
+}
+
   }
 
   const handleClear = () => {
@@ -644,7 +645,7 @@ const ItemMasterGernal = () => {
 
   return (
     <div className="Itemmastergernalpage">
-      <ToastContainer position="top-center" style={{ zIndex: 9999 }} />
+     <ToastContainer position="top-right" />
 
       <div className="container-fluid">
         <div className="row">

@@ -1292,7 +1292,7 @@ export const saveItemMasterData = async (data) => {
 
 // Item Master Gernal
 
-export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2Fields) => {
+export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2Fields, itemId = null) => {
   try {
     const token = localStorage.getItem("accessToken")
 
@@ -1317,10 +1317,16 @@ export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2
       npd_details: npdDetails || [],
     }
 
-    console.log("Submitting data to API:", completeData)
+    console.log(`${itemId ? "Updating" : "Creating new"} item:`, completeData)
 
-    const response = await fetch(`${BASE_URL}api/item-table/`, {
-      method: "POST",
+    // If itemId exists, use PUT to update, otherwise use POST to create
+    const method = itemId ? "PUT" : "POST"
+    const url = itemId 
+      ? `${BASE_URL}api/item-table/${itemId}/` 
+      : `${BASE_URL}api/item-table/`
+
+    const response = await fetch(url, {
+      method: method,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -1334,9 +1340,15 @@ export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2
       throw new Error(errorData.detail || "Network response was not ok")
     }
 
-    return await response.json()
+    const result = await response.json()
+    // Return success message with operation type
+    return { 
+      status: true, 
+      message: `Item ${itemId ? "updated" : "created"} successfully!`,
+      data: result
+    }
   } catch (error) {
-    console.error("Error submitting form:", error)
+    console.error(`Error ${itemId ? "updating" : "submitting"} form:`, error)
     return { status: false, message: error.message }
   }
 }

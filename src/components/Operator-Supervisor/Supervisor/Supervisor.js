@@ -750,8 +750,9 @@ const Supervisor = () => {
                                   onChange={handleChange}
                                 >
                                   <option>Select..</option>
-                                  <option>Full-Time</option>
-                                  <option>Part-Time</option>
+                                  <option value="operator">Operator</option>
+                                  <option value="supervisor">Supervisor</option>
+                                   <option value="staff">Staff</option>
                                 </select>
                                 {errors.Type && (
                                   <div className="text-danger">
