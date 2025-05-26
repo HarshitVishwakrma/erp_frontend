@@ -648,7 +648,7 @@ const Supervisor = () => {
                                 htmlFor="Code"
                                 className="col-sm-4 col-form-label"
                               >
-                                Code:
+                                Code:<span className="text-danger">*</span>
                               </label>
                               <div className="col-sm-8">
                                 <input
@@ -658,11 +658,11 @@ const Supervisor = () => {
                                   value={formData.Code}
                                   onChange={handleChange}
                                 />
-                                {/* {errors.Code && (
+                                {errors.Code && (
                                   <div className="text-danger">
                                     {errors.Code}
                                   </div>
-                                )} */}
+                                )}
                               </div>
                             </div>
                             <div className="row mb-3">

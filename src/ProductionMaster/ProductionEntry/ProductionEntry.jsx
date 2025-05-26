@@ -987,7 +987,8 @@
                                             }
                                             style={{ cursor: "pointer" }}
                                           >
-                                            {`${supervisor.Name} (${supervisor.Code})`}
+                                           {`${supervisor.Name}${supervisor.Code ? ` (${supervisor.Code})` : ''}`}
+
                                           </li>
                                         )
                                       )
@@ -1153,7 +1154,8 @@
                                           }
                                           style={{ cursor: "pointer" }}
                                         >
-                                          {`${operator.Name} (${operator.Code})`}
+                                         {`${operator.Name}${operator.Code ? ` (${operator.Code})` : ''}`}
+
                                         </li>
                                       ))
                                     ) : (

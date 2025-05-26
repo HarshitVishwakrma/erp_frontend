@@ -14,7 +14,7 @@ import {
 } from "../../../Service/Production.jsx"
 import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { ToastContainer } from "react-bootstrap"
+import { ToastContainer } from "react-toastify"
 import { FaTrash } from "react-icons/fa"
 import { Link } from "react-router-dom"
 import { useParams, useNavigate } from "react-router-dom"
@@ -170,16 +170,19 @@ const ScrapRejectionEntry = () => {
       if (id) {
         // Update existing entry
         response = await updateFGScrapRejectionNote(id, payload)
-        toast.success("Entry updated successfully!", { position: "top-right", autoClose: 2000 })
+        toast.success("Data updated successfully!", { position: "top-right", autoClose: 2000 })
       } else {
         // Create new entry
         response = await submitScrapRejectionEntry(payload)
-        toast.success("Entry saved successfully!", { position: "top-right", autoClose: 2000 })
+        toast.success("Data saved successfully!", { position: "top-right", autoClose: 2000 })
       }
 
       console.log("API Response:", response)
 
-      
+      // Navigate to report page after showing toast
+      setTimeout(() => {
+        navigate("/FGScrapRejectionReport")
+      }, 2500) // Wait slightly longer than toast autoClose time
     } catch (error) {
       console.error("API Error:", error)
       toast.error("Failed to save entry.", { position: "top-right", autoClose: 2000 })
@@ -195,7 +198,17 @@ const ScrapRejectionEntry = () => {
 
   return (
     <div className="ScrapRejectionEntryMaster">
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -496,10 +509,6 @@ const ScrapRejectionEntry = () => {
                           {id ? "Update Entry" : "Save Entry"}
                         </button>
 
-                        {/* Clear Button */}
-                        <button type="button" className="btn btn-secondary">
-                          Clear
-                        </button>
                         <button
                           type="button"
                           className="btn btn-secondary"
