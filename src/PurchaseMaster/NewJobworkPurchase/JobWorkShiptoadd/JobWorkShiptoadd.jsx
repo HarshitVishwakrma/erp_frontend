@@ -1,58 +1,44 @@
-import React, { useState } from 'react';
-import './JobWorkShiptoadd.css';
-import { saveShipToAdd } from '../../../Service/PurchaseApi';
-import { toast, ToastContainer } from 'react-toastify'; // Import toaster
+"use client"
 
-const JobWorkShiptoadd = () => {
+import { useState, useEffect } from "react"
+import "./JobWorkShiptoadd.css"
+import { ToastContainer } from "react-toastify"
+
+const JobWorkShiptoadd = ({ data, updateData }) => {
   const [formData, setFormData] = useState({
     ShiptoAdd: "",
     ContactDetail: "",
     ProjectName: "",
     CRName: "",
-    SoNo: ""
-  });
+    SoNo: "",
+  })
+
+  // Sync with parent data
+  useEffect(() => {
+    if (data && Array.isArray(data) && data.length > 0) {
+      setFormData(data[0] || formData)
+    }
+  }, [data, formData])
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSave = async () => {
-    if (validate()) {
-      const result = await saveShipToAdd(formData);
-      if (result) {
-        toast.success("Data saved successfully!");
-        console.log(formData,"data save");
-        
-       
-      } else {
-        toast.error("Failed to save data.");
-        console.error("error");
-        
-        
-      }
-    } else {
-      toast.error("Please fill in all required fields.");
-    }
-  };
+    const { name, value } = e.target
+    const newFormData = { ...formData, [name]: value }
+    setFormData(newFormData)
+    updateData([newFormData]) // Update parent state as array
+    console.log("Ship to add data updated:", [newFormData]) // Debug log
+  }
 
   const handleClear = () => {
-    clearForm();
-  };
-
-  const clearForm = () => {
-    setFormData({
+    const clearedData = {
       ShiptoAdd: "",
       ContactDetail: "",
       ProjectName: "",
       CRName: "",
-      SoNo: ""
-    });
-  };
-
-  const validate = () => {
-    return Object.values(formData).every(value => value.trim() !== "");
-  };
+      SoNo: "",
+    }
+    setFormData(clearedData)
+    updateData([clearedData])
+  }
 
   return (
     <div className="jobworkshiptoadd">
@@ -89,9 +75,7 @@ const JobWorkShiptoadd = () => {
               </div>
               <div className="col-md-2">
                 <div className="form-group">
-                  <label htmlFor="shipToContact">
-                    Ship to Contact Details:
-                  </label>
+                  <label htmlFor="shipToContact">Ship to Contact Details:</label>
                 </div>
               </div>
               <div className="col-md-1">
@@ -159,19 +143,9 @@ const JobWorkShiptoadd = () => {
               </div>
             </div>
             <div className="row text-end">
-              <div className="col-md-11">
-                <button
-                  className="btn  "
-                  onClick={handleSave}
-                >
-                  Save
-                </button>
-              </div>
+              <div className="col-md-11"></div>
               <div className="col-md-1">
-                <button
-                  className="btn "
-                  onClick={handleClear}
-                >
+                <button className="btn " onClick={handleClear}>
                   Clear
                 </button>
               </div>
@@ -181,7 +155,7 @@ const JobWorkShiptoadd = () => {
       </div>
       <ToastContainer /> {/* Add this to display toast messages */}
     </div>
-  );
-};
+  )
+}
 
-export default JobWorkShiptoadd;
+export default JobWorkShiptoadd

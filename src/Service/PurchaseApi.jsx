@@ -68,108 +68,155 @@ export const createPOInfo = async (data) => {
   }
 };
 
-// JobWork Poinfo
 export const saveJwPoInfo = async (data) => {
-    try {
-        const response = await fetch(`${BASE_URL}register_purchase_order/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        });
-        const jsonResponse = await response.json();
-        console.log("Response from API:", jsonResponse); // Add this line to check the full response
-        return jsonResponse;
-    } catch (error) {
-        console.error('Error adding item:', error);
-        throw error;
+  try {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please log in again.");
     }
-};
 
-// Jobwork Item
-
-
-export const jobgetItems = async () => {
-  try {
-    const response = await fetch(`${BASE_URL}JwItem/`);
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching items:", error);
-  }
-};
-
-export const jobaddItem = async (item) => {
-  try {
-    const response = await fetch(`${BASE_URL}JwItem/`, {
-      method: 'POST',
+    const response = await fetch(`${BASE_URL}api/NewJobWorkPO/`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(item),
+      body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     return await response.json();
   } catch (error) {
-    console.error("Error adding item:", error);
+    console.error("Error saving PO info:", error);
+    throw error;
   }
 };
 
-export const jobupdateItem = async (id, item) => {
+
+// Fetch existing Job Work PO data by ID
+export const fetchJobWorkPOById = async (id) => {
   try {
-    const response = await fetch(`${BASE_URL}JwItem/${id}/`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(item),
-    });
-    return await response.json();
+    const token = localStorage.getItem("accessToken")
+    const headers = {
+      "Content-Type": "application/json",
+    }
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+
+    console.log("Fetching Job Work PO with ID:", id)
+
+    const response = await fetch(`${BASE_URL}api/NewJobWorkPO/${id}/`, {
+      method: "GET",
+      headers,
+    })
+
+    console.log("Fetch response status:", response.status)
+
+    if (!response.ok) {
+      let errorMessage = `HTTP error! status: ${response.status}`
+      try {
+        const errorData = await response.text()
+        console.log("Fetch error response body:", errorData)
+        errorMessage += ` - ${errorData}`
+      } catch (e) {
+        console.log("Could not parse fetch error response")
+      }
+      throw new Error(errorMessage)
+    }
+
+    const result = await response.json()
+    console.log("Fetched data:", result)
+    return result
   } catch (error) {
-    console.error("Error updating item:", error);
+    console.error("Error fetching job work PO by ID:", error)
+    throw error
   }
-};
+}
 
-export const deleteItemjob = async (id) => {
-    try {
-      const response = await fetch(`${BASE_URL}JwItem/${id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-  
-      // Assuming successful deletion, response might be empty
-      return await response.text(); // Or use `response.json()` if expecting JSON
-    } catch (error) {
-      console.error('Error deleting item: ', error);
-      throw error;
+// Update existing Job Work PO data
+export const updateJobWorkPO = async (id, data) => {
+  try {
+    const token = localStorage.getItem("accessToken")
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please log in again.")
     }
-  };
 
+    // Log the data being sent for debugging
+    console.log("Updating Job Work PO with ID:", id)
+    console.log("Data being sent:", JSON.stringify(data, null, 2))
 
-//   Ship To Add
-export const saveShipToAdd = async (data) => {
-    try {
-      const response = await fetch(`${BASE_URL}JwShipAdd/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+    const response = await fetch(`${BASE_URL}api/NewJobWorkPO/${id}/`, {
+      method: "PATCH", // Try PATCH instead of PUT
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+
+    // Log response details for debugging
+    console.log("Response status:", response.status)
+    console.log("Response headers:", response.headers)
+
+    if (!response.ok) {
+      // Try to get error details from response
+      let errorMessage = `HTTP error! status: ${response.status}`
+      try {
+        const errorData = await response.text()
+        console.log("Error response body:", errorData)
+        errorMessage += ` - ${errorData}`
+      } catch (e) {
+        console.log("Could not parse error response")
       }
-      return await response.json();
-    } catch (error) {
-      console.error("Error saving Ship To Add:", error);
-      return null;
+      throw new Error(errorMessage)
     }
-  };
+
+    const result = await response.json()
+    console.log("Update response:", result)
+    return result
+  } catch (error) {
+    console.error("Error updating job work PO:", error)
+    throw error
+  }
+}
+
+// Fetch Job Work PO List
+export const fetchJobWorkPOList = async () => {
+  try {
+    const token = localStorage.getItem("accessToken")
+
+    if (!token) {
+      throw new Error("Authentication token not found. Please log in again.")
+    }
+
+    const response = await fetch(`${BASE_URL}JobWorkPOList/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("Error fetching Job Work PO List:", error)
+    throw error
+  }
+}
+
+
+
 
 //   Quote Comparisionexport
 export const getQuotes = async () => {
@@ -227,6 +274,18 @@ export const fetchSupplierData = async (searchTerm = '') => {
   }
 };
 
+
+export const fetchSupplierjobWorkData = async (searchTerm = '') => {
+  try {
+    const response = await axios.get(`${BASE_URL}SuppilerJobWorkPoFetch/`, {
+      params: { search: searchTerm }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching supplier data:", error);
+    throw error;
+  }
+};
 
 
 //   fetch itme 
@@ -614,3 +673,5 @@ export const postIndent = async (data) => {
     throw error;
   }
 };
+
+

@@ -7,9 +7,10 @@ import SideNav from "../../SideNav/SideNav";
 import "./WorkCenterMaster.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { saveWorkCenterTypeGroupData ,getWorkCenters ,updateWorkCenter,deleteWorkCenter} from "../../Service/Api.jsx";
+import { getWorkCenters ,updateWorkCenter,deleteWorkCenter} from "../../Service/Api.jsx";
 import AddNewCard from "./AddNewCard/AddNewCard.jsx";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import WorkCenterType from "./WorkCenterType.jsx";
 const WorkCenterMaster = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
 
@@ -41,89 +42,78 @@ const WorkCenterMaster = () => {
     setShowNewCardWork(!showNewCardWork);
   };
 
-  // table add New button
 
- 
 
-  const [errors, setErrors] = useState({});
-
-  // card machine type open
-  const [typeGroup, setTypeGroup] = useState("");
-  const [prodWt, setProdWt] = useState("");
-
-  const handleSubmit2 = async (event) => {
-    event.preventDefault();
-
-    // Validation
-    const newErrors = {};
-    if (!typeGroup) newErrors.typeGroup = "This field is required";
-    if (!prodWt) newErrors.prodWt = "This field is required";
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    // Clear errors
-    setErrors({});
-
-    // Prepare data
-    const data = {
-      TypeGroup: typeGroup,
-      Prod_Wt: prodWt,
-    };
-
-    try {
-      await saveWorkCenterTypeGroupData(data);
-      toast.success("Data saved successfully");
-      console.log("Form data:", data);
-    } catch (error) {
-      toast.error("Failed to save data");
-    }
-  };
 
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
- 
+const [editId, setEditId] = useState(null);
+const [editData, setEditData] = useState({});
+
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      const result = await getWorkCenters();
-      setData(result);
-    } catch (err) {
-      setError("Failed to fetch data");
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchData = async () => {
+  try {
+    const result = await getWorkCenters();
+    setData(result);
+  } catch (err) {
+    setError("Failed to fetch data");
+    toast.error("Error fetching data!");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Handle Edit
-  const handleEdit = (item) => {
-    const newValue = prompt("Enter new Work Center Name:", item.WorkCenterName);
-    if (newValue) {
-      updateWorkCenter(item.id, { ...item, WorkCenterName: newValue })
-        .then(() => fetchData())
-        .catch((err) => console.error("Update error:", err));
-    }
-  };
+const handleEdit = (item) => {
+  setEditId(item.id);
+  setEditData({ ...item }); // preload row data
+};
+
 
   // Handle Delete
-  const handleDelete = async (id) => {
-  
-      try {
-        await deleteWorkCenter(id);
-        fetchData();
-      } catch (error) {
-        console.error("Delete error:", error);
-      }
-    
-  };
+const handleDelete = async (id) => {
+  try {
+    await deleteWorkCenter(id);
+    toast.success("Deleted successfully!");
+    fetchData();
+  } catch (error) {
+    console.error("Delete error:", error);
+    toast.error("Delete failed!");
+  }
+};
+
+
+const handleSave = async () => {
+  try {
+    await updateWorkCenter(editId, editData);
+    setEditId(null);
+    setEditData({});
+    toast.success("Updated successfully!");
+    fetchData();
+  } catch (err) {
+    console.error("Update error:", err);
+    toast.error("Update failed!");
+  }
+};
+
+
+const handleCancel = () => {
+  setEditId(null);
+  setEditData({});
+};
+
+
+
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  setEditData((prev) => ({ ...prev, [name]: value }));
+};
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -131,7 +121,8 @@ const WorkCenterMaster = () => {
   
   return (
     <div className="work-center">
-      <ToastContainer />
+     
+
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -184,92 +175,12 @@ const WorkCenterMaster = () => {
                       </div>
                     )}
                 {showNewCardWork && (
-  <div className="overlay-workcenter">
-    <div className="card-work">
-      <div className="card-header-work">
-        <h5 className="title">Machine Group Type</h5>
-        <button className="btn-close" onClick={handleNewButtonWork}>×</button>
-      </div>
-      <form onSubmit={handleSubmit2}>
-        <div className="card-body-work">
-          <h5 className="section-title">Work Center Type</h5>
-          <hr />
-          <div className="row mb-3">
-            <div className="col-md-4">
-              <label className="form-label">Enter Type Group:</label>
-              <input
-                type="text"
-                className="form-control"
-                id="inputType"
-                name="typeGroup"
-                value={typeGroup}
-                onChange={(e) => setTypeGroup(e.target.value)}
-                placeholder="Work Center Type"
-              />
-              {errors.typeGroup && (
-                <div className="text-danger">{errors.typeGroup}</div>
-              )}
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Prod WT:</label>
-              <select
-                className="form-select"
-                id="inputProdWt"
-                name="prodWt"
-                value={prodWt}
-                onChange={(e) => setProdWt(e.target.value)}
-              >
-                <option value="Master">Master</option>
-                <option value="Master_Cut_WT">Master_Cut_WT</option>
-                <option value="Master_Cut">Master_Cut</option>
-              </select>
-              {errors.prodWt && (
-                <small className="text-danger">{errors.prodWt}</small>
-              )}
-            </div>
-            <div className="col-md-4 mt-5">
-              <button className="btn" type="submit">Save</button>
-            </div>
-          </div>
-
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Type</th>
-                <th>Item WT</th>
-                <th>User Group</th>
-                <th>Edit</th>
-                <th>Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>cnc</td>
-                <td>0</td>
-                <td>0</td>
-                <td>
-                  <button className="btn">
-                    <i className="fas fa-edit"></i>
-                  </button>
-                </td>
-                <td>
-                  <button className="btn">
-                    <i className="fas fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </form>
-    </div>
-  </div>
+<WorkCenterType handleClose={handleNewButtonWork} />
 )}
 
                   </div>
                   <div className="centerMain mt-5">
+                    <ToastContainer position="top-right" autoClose={3000} />
                     <div className="container-fluid">
                       <div className="row text-start centerselect">
                         <div className="col-md-1 col-sm-3 mb-3 mb-sm-0">
@@ -348,41 +259,89 @@ const WorkCenterMaster = () => {
                               <th scope="col">Category</th>
                               <th scope="col">W.Hr.Rate</th>
                               <th scope="col">PPM</th>
-                              <th scope="col">Active</th>
+                              
                               <th scope="col">Edit</th>
                               <th scope="col">Delete</th>
                               <th scope="col">Doc</th>
                             </tr>
                           </thead>
-                          <tbody>
-                          {data.map((item, index) => (
-                <tr key={item.id}>
-                  <td>{index + 1}</td>
-                  <td>{item.Plant}</td>
-                  <td>{item.WorkCenterCode}</td>
-                  <td>{item.WorkCenterName}</td>
-                  <td>{item.WorkCenterType}</td>
-                  <td>-</td>
-                  <td>{item.Category}</td>
-                  <td>{item.Mhr_Rate}</td>
-                  <td>{item.PPM}</td>
-                  <td>-</td>
-                  <td>
-                    <button className="btn" onClick={() => handleEdit(item)}>
-                      <FaEdit/>
-                    </button>
-                  </td>
-                  <td>
-                    <button className="btn" onClick={() => handleDelete(item.id)}>
-                      <FaTrash/>
-                    </button>
-                  </td>
-                  <td>
-                    <button className="btn">Doc</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                        <tbody>
+  {data.map((item, index) => (
+    <tr key={item.id}>
+      <td>{index + 1}</td>
+      <td>
+        {editId === item.id ? (
+          <input name="Plant" value={editData.Plant} onChange={handleChange} />
+        ) : (
+          item.Plant
+        )}
+      </td>
+      <td>
+        {editId === item.id ? (
+          <input name="WorkCenterCode" value={editData.WorkCenterCode} onChange={handleChange} />
+        ) : (
+          item.WorkCenterCode
+        )}
+      </td>
+      <td>
+        {editId === item.id ? (
+          <input name="WorkCenterName" value={editData.WorkCenterName} onChange={handleChange} />
+        ) : (
+          item.WorkCenterName
+        )}
+      </td>
+      <td>
+        {editId === item.id ? (
+          <input name="WorkCenterType" value={editData.WorkCenterType} onChange={handleChange} />
+        ) : (
+          item.WorkCenterType
+        )}
+      </td>
+      <td>{editId === item.id ? (
+          <input name="TypeGroup" value={editData.TypeGroup} onChange={handleChange} />
+        ) : (
+          item.TypeGroup
+        )}</td>
+      <td>
+        {editId === item.id ? (
+          <input name="Category" value={editData.Category} onChange={handleChange} />
+        ) : (
+          item.Category
+        )}
+      </td>
+      <td>
+        {editId === item.id ? (
+          <input name="Mhr_Rate" value={editData.Mhr_Rate} onChange={handleChange} />
+        ) : (
+          item.Mhr_Rate
+        )}
+      </td>
+      <td>
+        {editId === item.id ? (
+          <input name="PPM" value={editData.PPM} onChange={handleChange} />
+        ) : (
+          item.PPM
+        )}
+      </td>
+      
+      <td>
+        {editId === item.id ? (
+          <>
+            <button className="btn" onClick={handleSave}>Save</button>
+            <button className="btn" onClick={handleCancel}>Cancel</button>
+          </>
+        ) : (
+          <button className="btn" onClick={() => handleEdit(item)}><FaEdit /></button>
+        )}
+      </td>
+      <td>
+        <button className="btn" onClick={() => handleDelete(item.id)}><FaTrash /></button>
+      </td>
+      <td><button className="btn">Doc</button></td>
+    </tr>
+  ))}
+</tbody>
+
           </table>
         </div>
         </div>

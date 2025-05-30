@@ -209,8 +209,8 @@ const totalPages = Math.ceil(cycleTimeList.length / itemsPerPage);
                                 onChange={handleChange}
                               >
                                 <option value="">Select Plant</option>
-                                <option value="Plant1">Plant 1</option>
-                                <option value="Plant2">Plant 2</option>
+                                <option value="Produlink">Produlink</option>
+                                
                               </select>
                               {/* {errors.Plant && (
                                 <div className="text-danger">
@@ -243,7 +243,7 @@ const totalPages = Math.ceil(cycleTimeList.length / itemsPerPage);
                               )} */}
                             </div>
                           </div>
-                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
+                          <div className="col-md-1 col-sm-6 mb-3 mb-sm-0">
                             <div className="mb-3">
                               <label htmlFor="MachineType" className="form-label">
                                 Machine Type
@@ -389,8 +389,8 @@ const totalPages = Math.ceil(cycleTimeList.length / itemsPerPage);
                               )} */}
                             </div>
                           </div>
-                          <div className="row text-end">
-                            <div className="col-md-12 col-sm-6">
+                          
+                            <div className="col-md-1 col-sm-6 mt-4">
                               <button type="submit" className="btn me-2" disabled={isSubmitting}>
                                 {isSubmitting ? "Saving..." : "Add"}
                               </button>
@@ -398,7 +398,7 @@ const totalPages = Math.ceil(cycleTimeList.length / itemsPerPage);
                                 Clear
                               </button>
                             </div>
-                          </div>
+                         
                         </div>
                       </form>
                     </div>

@@ -103,7 +103,7 @@ const Supervisor = () => {
   const validate = () => {
     let tempErrors = {};
     let isValid = true;
-    const requiredFields = ["Department", "Name", "Designation", "Type", "DailyWorkHours"];
+    const requiredFields = ["Department", "Name","Code", "Designation", "Type", "DailyWorkHours"];
 
     requiredFields.forEach((field) => {
       if (!formData[field]) {

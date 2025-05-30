@@ -45,14 +45,15 @@ const ContractorMaster = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteContractor(id);
-      loadContractors();
-    } catch (error) {
-      toast.error("Failed to delete contractor");
-    }
-  };
+const handleDelete = async (id) => {
+  try {
+    await deleteContractor(id);
+    toast.success("Contractor deleted successfully");
+    loadContractors();
+  } catch (error) {
+    toast.error("Failed to delete contractor");
+  }
+};
 
   const handleEditClick = (contractor) => {
     setEditingId(contractor.id);
@@ -64,15 +65,16 @@ const ContractorMaster = () => {
     setEditForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = async () => {
-    try {
-      await updateContractor(editingId, editForm);
-      setEditingId(null);
-      loadContractors();
-    } catch (error) {
-      toast.error("Failed to update contractor");
-    }
-  };
+const handleSave = async () => {
+  try {
+    await updateContractor(editingId, editForm);
+    toast.success("Contractor updated successfully");
+    setEditingId(null);
+    loadContractors();
+  } catch (error) {
+    toast.error("Failed to update contractor");
+  }
+};
 
   const paginatedData = contractorList.slice(
     (currentPage - 1) * itemsPerPage,

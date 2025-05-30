@@ -3,9 +3,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import './JobworkList.css';
+import { fetchJobWorkPOList } from "../../../Service/PurchaseApi.jsx";
+
 const JobworkList = () => {
       const [sideNavOpen, setSideNavOpen] = useState(false);
         
@@ -20,6 +22,45 @@ const JobworkList = () => {
               document.body.classList.remove("side-nav-open");
             }
           }, [sideNavOpen]);
+
+
+  const [jobWorkData, setJobWorkData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+
+
+useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await fetchJobWorkPOList();
+        setJobWorkData(data);
+        setFilteredData(data);
+      } catch (error) {
+        console.error("Failed to load Job Work PO List", error);
+      }
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    const filtered = jobWorkData.filter(item =>
+      (item.PoNo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.Name || "").toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(filtered);
+    setPage(1); // Reset to first page on search
+  }, [searchTerm, jobWorkData]);
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const currentData = filteredData.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  const handlePageChange = newPage => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
 
 
   return (
@@ -92,7 +133,14 @@ const JobworkList = () => {
                         {/* Supplier Name */}
                         <div className="col-sm-6 col-md-1 col-lg-1">
                         <label>Supplier Name:</label>
-                        <input type="text" className="form-control" />
+                        <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Search by PO No / Supplier"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  
                       </div>
 
 
@@ -157,63 +205,88 @@ const JobworkList = () => {
                   </div>
                 </div>
 
-                <div className="table-responsive">
+                <div className="table-responsive mt-3">
                   <table className="table table-bordered table-striped">
                     <thead>
                       <tr>
                         <th scope="col">Sr.</th>
-                        <th scope="col">Year</th>
+                      
                         <th scope="col">Plant</th>
                         <th scope="col">Po No</th>
                         <th scope="col">Po Date</th>
                         <th scope="col">Po Type</th>
-                        <th scope="col">Code No</th>
+                       
                         <th scope="col">Supplier/Vendor Name</th>
-                        
+                         <th scope="col">Code No</th>
                         <th scope="col">User</th>
-                        <th scope="col">Info</th>
-                        <th scope="col">Auth Status</th>
-                        <th scope="col">Po Status</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Doc</th>
+                        
 
-                        <th scope="col">Edit</th>
+                       
                         <th scope="col">View</th>
+                         <th scope="col">Edit</th>
                         
                       </tr>
                     </thead>
-                    <tbody>
-                      {/* Example data row */}
-                      <tr>
-                        <td>1</td>
-                        <td>January</td>
-                        <td>01/01/2024</td>
-                        <td>31/01/2024</td>
-                        <td>1</td>
-                        <td>2024</td>
-                        <td>1</td>
-                        <td>January</td>
-                        <td>01/01/2024</td>
-                        <td>31/01/2024</td>
-                        <td>1</td>
-                        <td>2024</td>
-                        <td>2024</td>
-                      
-                        <td>
-                          <button className="btn btn-link">
-                            <FaEdit />
-                          </button>
-                        </td>
-                        <td>
-                          <button className="btn btn-link text-danger">
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                      {/* More rows can be added here */}
-                    </tbody>
+                <tbody>
+                        {currentData.length > 0 ? (
+                          currentData.map((item, index) => (
+                            <tr key={item.id || index}>
+                              <td>{(page - 1) * itemsPerPage + index + 1}</td>
+                              <td>{item.Plant}</td>
+                              <td>{item.PoNo}</td>
+                              <td>{item.PoDate}</td>
+                              <td>{item.PoType}</td>
+                              <td>{item.Name}</td>
+                              <td>{item.number}</td>
+                              <td>{item.User || "-"}</td>
+                                    <td>
+                                                                    <a
+                                href={`http://3.7.91.234:8000${item.View}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-sm btn-primary"
+                              >
+                                View
+                              </a>
+                              
+                                      </td>
+                                      <td>
+                                      <Link
+                                to={`/new-jobwork-order/${item.id}`}
+                                className="btn"
+                              >
+                                <FaEdit />
+                              </Link>
+                                      </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="10" className="text-center">No data found</td>
+                          </tr>
+                        )}
+                      </tbody>
                   </table>
                 </div>
+                {/* Pagination */}
+                  <div className="d-flex justify-content-between align-items-center mt-3">
+                    <button
+                      className="btn btn-secondary"
+                      disabled={page === 1}
+                      onClick={() => handlePageChange(page - 1)}
+                    >
+                      Previous
+                    </button>
+                    <span>Page {page} of {totalPages}</span>
+                    <button
+                      className="btn btn-secondary"
+                      disabled={page === totalPages}
+                      onClick={() => handlePageChange(page + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+
               </div>
             </main>
           </div>

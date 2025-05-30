@@ -929,6 +929,53 @@ export const saveWorkCenterTypeGroupData = async (data) => {
   }
 };
 
+
+/// ✅ Update WorkCenter Type Group by ID
+export const updateWorkCenterTypeGroupData = async (id, data) => {
+  try {
+    const response = await axios.put(`${BASE_URL}WorkCenterTypeGroup/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating data:", error);
+    throw error;
+  }
+};
+
+// ✅ Fetch WorkCenter Type Group List with Pagination
+export const fetchWorkCenterTypeGroupList = async () => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}WorkCenterTypeGroup/`
+    );
+    return response;
+  } catch (error) {
+    console.error("Error fetching list:", error);
+    throw error;
+  }
+};
+
+// ✅ Get Single WorkCenter Type Group by ID
+export const getWorkCenterTypeGroupById = async (id) => {
+  try {
+    const response = await axios.get(`${BASE_URL}WorkCenterTypeGroup/${id}/`);
+    return response;
+  } catch (error) {
+    console.error("Error fetching by ID:", error);
+    throw error;
+  }
+};
+
+// ✅ Delete WorkCenter Type Group by ID
+export const deleteWorkCenterTypeGroup = async (id) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}WorkCenterTypeGroup/${id}/`);
+    return response;
+  } catch (error) {
+    console.error("Error deleting:", error);
+    throw error;
+  }
+};
+
 export const getMachineTypes = async () => {
   try {
     const response = await fetch(`${BASE_URL}Machine_Group_Work_Center/`);
@@ -1424,6 +1471,48 @@ export const fetchItemFields = async (query) => {
   }
 }
 
+
+// Add transaction API functions
+export const addTransaction = async (data) => {
+  try {
+    const token = localStorage.getItem("accessToken")
+    const headers = {
+      "Content-Type": "application/json",
+    }
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+
+    const response = await fetch(`${BASE_URL}api/transaction/create2/`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error("Error adding transaction:", error)
+    throw error
+  }
+}
+
+export const getTransaction = async (id) => {
+  try {
+    const response = await fetch(`${BASE_URL}api/transaction2/${id}/`)
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`)
+    }
+    return await response.json()
+  } catch (error) {
+    console.error("Error getting transaction:", error)
+    throw error
+  }
+}
 
 // Cost Center Master
 export const saveCostCenter = async (data) => {
@@ -2894,4 +2983,24 @@ export const deleteWorkCenter = async (id) => {
     console.error("Error deleting work center:", error);
     throw error;
   }
+};
+
+export const getOperatorList = async () => {
+  const res = await axios.get(`${BASE_URL}Add_New_Operator/`);
+  return res.data;
+};
+
+export const getOperatorById = async (id) => {
+  const res = await axios.get(`${BASE_URL}Add_New_Operator/${id}/`);
+  return res.data;
+};
+
+export const deleteOperator = async (id) => {
+  const res = await axios.delete(`${BASE_URL}Add_New_Operator/${id}/`);
+  return res.data;
+};
+
+export const updateOperator = async (id, data) => {
+  const res = await axios.put(`${BASE_URL}Add_New_Operator/${id}/`, data);
+  return res.data;
 };

@@ -521,7 +521,7 @@ function App() {
   <Route path="/ProductionEntry/:id" element={<ProductionEntry />} />
 <Route path="/ScrapRejection/:id" element={<ScrapRejection />} />
  <Route path="/ScrapRejectionEntry/:id" element={<ScrapRejectionEntry />} />
-
+  <Route path="/new-jobwork-order/:id" element={<NewJobworkPurchase />} />
 
         {/* ///////////////////////////////////////Store//////////////////////////////////////// */}
         <Route path="Gate-Inward-Entry" element={<GateInwardEntry />} />

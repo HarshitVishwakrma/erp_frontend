@@ -6,6 +6,15 @@ import NavBar from "../../NavBar/NavBar";
 import SideNav from "../../SideNav/SideNav";
 import "./Operator-Supervisor.css";
 import { Link } from "react-router-dom";
+import {  getOperatorList,
+  getOperatorById,
+  deleteOperator, } from "../../Service/Api";
+import { toast } from "react-toastify";
+import { ToastContainer } from "react-bootstrap";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
+
 const OperatorSupervisor = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
 
@@ -21,67 +30,69 @@ const OperatorSupervisor = () => {
     }
   }, [sideNavOpen]);
 
-  const data = [
-    {
-      id: 1,
-      plant: "Produlink",
-      code: "001",
-      name: "Bapu Gayke",
-      type: "Operator",
-      description: "Machining",
-      contact: "0",
-      deptName: "Production",
-      contractor: "Company",
-    },
-    {
-      id: 2,
-      plant: "Produlink",
-      code: "002",
-      name: "John Doe",
-      type: "Supervisor",
-      description: "Welding",
-      contact: "1",
-      deptName: "Maintenance",
-      contractor: "Contractor",
-    },
-    {
-      id: 3,
-      plant: "Produlink",
-      code: "003",
-      name: "Jane Smith",
-      type: "Staff",
-      description: "Assembly",
-      contact: "2",
-      deptName: "Production",
-      contractor: "Company",
-    },
-    {
-      id: 4,
-      plant: "Produlink",
-      code: "004",
-      name: "Samuel Green",
-      type: "Operator",
-      description: "Packing",
-      contact: "3",
-      deptName: "Logistics",
-      contractor: "Contractor",
-    },
-    {
-      id: 5,
-      plant: "Produlink",
-      code: "005",
-      name: "Emily Brown",
-      type: "Supervisor",
-      description: "Quality Control",
-      contact: "4",
-      deptName: "Quality",
-      contractor: "Company",
-    },
 
-  ];
+ const [operatorList, setOperatorList] = useState([]);
+  const [, setFormData] = useState({});
+  const [, setEditId] = useState(null);
+  const navigate = useNavigate();
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
+
+  useEffect(() => {
+    fetchOperators();
+  }, []);
+
+  const fetchOperators = async () => {
+    try {
+      const data = await getOperatorList();
+      setOperatorList(data);
+    } catch (err) {
+      console.error("Error fetching data", err);
+      toast.error("Failed to fetch data");
+    }
+  };
+
+const handleEdit = async (id) => {
+  try {
+    const data = await getOperatorById(id);
+    setFormData(data);
+    setEditId(id);
+    // You should store the data to localStorage or global state if needed
+    localStorage.setItem("editOperator", JSON.stringify(data));
+    
+    navigate("/Supervisor");
+  } catch (err) {
+    console.error("Error fetching operator by ID", err);
+    toast.error("Failed to load data for editing");
+  }
+};
+
+
+  const handleDelete = async (id) => {
+   
+    try {
+      await deleteOperator(id);
+      toast.success("Deleted successfully");
+      fetchOperators(); // Refresh list
+    } catch (err) {
+      console.error("Delete failed", err);
+      toast.error("Failed to delete entry");
+    }
+  };
+
+  // Pagination calculation
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = operatorList.slice(indexOfFirstRecord, indexOfLastRecord);
+  const totalPages = Math.ceil(operatorList.length / recordsPerPage);
+
+
 
   return (
     <div className="OperatorSupervisor">
+      <ToastContainer/>
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -215,68 +226,71 @@ const OperatorSupervisor = () => {
                             <thead>
                               <tr>
                                 <th>Sr.</th>
-                                <th>Plant</th>
-                                <th>Code</th>
+                               
                                 <th>Name</th>
                                 <th>Type</th>
-                                <th>Description</th>
+                                 <th>Department</th>
+                                <th>Code</th>
+                                <th>Designation4</th>
                                 <th>Contact</th>
-                                <th>Dept. Name</th>
+                                <th>DailyWorkHours</th>
                                 <th>Contractor</th>
-                                <th>Edit</th>
+                               
+                              
+                                 <th>Edit</th>
                                 <th>Delete</th>
-                                <th>Status</th>
-                                <th>Doc</th>
-                                <th>Sign</th>
                               </tr>
                             </thead>
-                            <tbody>
-                              {data.map((item, index) => (
-                                <tr key={index}>
-                                  <td>{item.id}</td>
-                                  <td>{item.plant}</td>
-                                  <td>{item.code}</td>
-                                  <td>{item.name}</td>
-                                  <td>{item.type}</td>
-                                  <td>{item.description}</td>
-                                  <td>{item.contact}</td>
-                                  <td>{item.deptName}</td>
-                                  <td>{item.contractor}</td>
-                                  <td>
-                                    <i className="fas fa-edit"></i>
-                                  </td>
-                                  <td>
-                                    <i className="fas fa-trash-alt"></i>
-                                  </td>
-                                  <td>
-                                    <button className="btn">
-                                      Action
-                                    </button>
-                                  </td>
-                                  <td>
-                                    <i className="fas fa-file-alt"></i>
-                                  </td>
-                                  <td>
-                                    <i className="fas fa-upload"></i>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
+                     <tbody>
+   {currentRecords.map((item, index) => (
+    <tr key={index}>
+      <td>{item.id}</td>
+      <td>{item.Name}</td>
+      <td>{item.Type}</td>
+      <td>{item.Department}</td>
+      <td>{item.Code}</td>
+      <td>{item.Designation}</td>
+      <td>{item.Contact_No}</td>
+      <td>{item.DailyWorkHours}</td>
+      <td>{item.Contractor}</td>
+
+     
+      <td>
+        <FaEdit  onClick={() => handleEdit(item.id)}/>
+        
+      </td>
+      <td>
+        <FaTrash  onClick={() => handleDelete(item.id)}/>
+        
+      </td>
+    </tr>
+  ))}
+</tbody>
+
                           </table>
                         </div>
                       </div>
+                       
                     </div>
                   </div>
-                  <div className="Operatorbottom mt-5">
-                    <div className="row">
-                      <div className="col-md-6 text-start">
-                        <p style={{ color: "blue" }}>Total Count : 347</p>
-                      </div>{" "}
-                      <div className="col-md-6 text-end">
-                        <p style={{ color: "blue" }}>Report Type: PDF</p>
-                      </div>
-                    </div>
-                  </div>
+               {/* Pagination Controls */}
+      <div className="d-flex justify-content-between">
+        <button
+          className="btn btn-secondary"
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button
+          className="btn btn-secondary"
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
                 </div>
               </main>
             </div>

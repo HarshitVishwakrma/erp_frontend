@@ -194,6 +194,7 @@ const CostCenterMaster = () => {
 
   return (
     <div className="CostcenterMaster">
+      <ToastContainer/>
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -474,7 +475,8 @@ const CostCenterMaster = () => {
                     </div>
                   )}
                   {showAddFormsecond && (
-                    <div className="costtype2-overlay">
+                    <div className="costtype2-overlay mt-5">
+                     
                       <div className="new-card">
                         <div className="row">
                           <div className="col-md-10 text-start">

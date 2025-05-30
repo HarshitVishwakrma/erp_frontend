@@ -1,11 +1,12 @@
-import React, { useState,useEffect } from "react";
-import "./JobWorkPoinfo.css";
-import {  FaEdit, FaTrash } from "react-icons/fa";
-import { saveJwPoInfo , fetchNextJobWorkNumber } from "../../../Service/PurchaseApi";
-import { toast, ToastContainer } from "react-toastify"; // Importing toaster
+"use client"
 
-const JobWorkPoinfo = () => {
-  const [showCard, setShowCard] = useState(false);
+import { useState, useEffect } from "react"
+import "./JobWorkPoinfo.css"
+import { FaEdit, FaTrash } from "react-icons/fa"
+import { ToastContainer } from "react-toastify"
+
+const JobWorkPoinfo = ({ data, updateData, poNo }) => {
+  const [showCard, setShowCard] = useState(false)
   const [formData, setFormData] = useState({
     PoNo: "",
     PaymentTerm: "",
@@ -21,108 +22,65 @@ const JobWorkPoinfo = () => {
     ContactPersion: "",
     PF_Charges: "",
     PoRateType: "",
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  })
+  const [errors, ] = useState({})
+  const [loading, ] = useState(false)
 
-  // Fetch Shortyear from localStorage
-  const year = localStorage.getItem("Shortyear");
-
-  // Fetch next_PoNo when the component loads
+  // Sync with parent data
   useEffect(() => {
-    const fetchPoNumber = async () => {
-      if (!year) {
-        console.error("Shortyear is not available in localStorage.");
-        return;
-      }
+    if (data && Object.keys(data).length > 0) {
+      setFormData(data)
+    }
+  }, [data])
 
-      setLoading(true);
-      try {
-        const response = await fetchNextJobWorkNumber(year);
-        if (response && response.next_PoNo) {
-          setFormData((prev) => ({ ...prev, PoNo: response.next_PoNo })); // Set PoNo
-        } else {
-          console.error("No PoNo received from the API.");
-        }
-      } catch (error) {
-        console.error("Error fetching next job work number:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Update PoNo from parent
+  useEffect(() => {
+    if (poNo) {
+      setFormData((prev) => ({ ...prev, PoNo: poNo }))
+    }
+  }, [poNo])
 
-    fetchPoNumber();
-  }, [year]);
-
-
-  const handleCloseCard = () => setShowCard(false);
+  const handleCloseCard = () => setShowCard(false)
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    const newFormData = { ...formData, [e.target.name]: e.target.value }
+    setFormData(newFormData)
+    // Update parent state
+    updateData(newFormData)
+    // Debug log
+    console.log("PO Info updated:", newFormData)
+  }
 
-  const validate = () => {
-    let tempErrors = {};
-    Object.keys(formData).forEach((field) => {
-      if (!formData[field]) tempErrors[field] = "This field is required.";
-    });
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
+  // const validate = () => {
+  //   const tempErrors = {}
+  //   Object.keys(formData).forEach((field) => {
+  //     if (!formData[field]) tempErrors[field] = "This field is required."
+  //   })
+  //   setErrors(tempErrors)
+  //   return Object.keys(tempErrors).length === 0
+  // }
 
-  const handleSubmit = () => {
-    if (validate()) {
-      saveJwPoInfo(formData)
-        .then((response) => {
-          
-          if (response && response.id) {
-            console.log("response");
-            
-            toast.success("Data saved successfully!");
-            clearForm();
-          } else {
-            toast.error("Failed to save data. Please try again.");
-            console.error("Unexpected API Response:", response);
-          }
-        })
-        .catch((error) => {
-          console.error("Error saving data:", error); // Log full error for debugging
-          if (error.response) {
-            // Display specific error message if available
-            toast.error(
-              error.response.data.message || "An error occurred while saving."
-            );
-          } else {
-            toast.error("An unexpected error occurred.");
-          }
-        });
-    } else {
-      toast.error("Please fill in all required fields.");
-    }
-  };
-  
-  
-
-  const clearForm = () => {
-    setFormData({
-      PoNo: "",
-      PaymentTerm: "",
-      QuotNo: "",
-      Delivery: "",
-      PoValidityDate: "",
-      PoNote: "",
-      GST: "",
-      PoDate: "",
-      PaymentRemark: "",
-      QuotationDate: "",
-      freight: "",
-      ContactPersion: "",
-      PF_Charges: "",
-      PoRateType: "",
-    });
-    setErrors({});
-  };
-
+  // const clearForm = () => {
+  //   const clearedData = {
+  //     PoNo: "",
+  //     PaymentTerm: "",
+  //     QuotNo: "",
+  //     Delivery: "",
+  //     PoValidityDate: "",
+  //     PoNote: "",
+  //     GST: "",
+  //     PoDate: "",
+  //     PaymentRemark: "",
+  //     QuotationDate: "",
+  //     freight: "",
+  //     ContactPersion: "",
+  //     PF_Charges: "",
+  //     PoRateType: "",
+  //   }
+  //   setFormData(clearedData)
+  //   updateData(clearedData)
+  //   setErrors({})
+  // }
 
   return (
     <div className="jobworkpoinfo">
@@ -138,7 +96,7 @@ const JobWorkPoinfo = () => {
               </div>
               <div className="col-md-8">
                 <div className="form-group mb-3">
-                <input
+                  <input
                     type="text"
                     id="PoNo"
                     name="PoNo"
@@ -148,11 +106,11 @@ const JobWorkPoinfo = () => {
                     onChange={handleChange}
                     readOnly={loading} // Make it read-only while fetching
                   />
-                    {errors.PoNo && <div className="invalid-feedback">{errors.PoNo}</div>}
+                  {errors.PoNo && <div className="invalid-feedback">{errors.PoNo}</div>}
                 </div>
               </div>
             </div>
-           
+
             <div className="row text-start">
               <div className="col-md-4">
                 <div className="form-group mb-3">
@@ -170,7 +128,7 @@ const JobWorkPoinfo = () => {
                     value={formData.PaymentTerm}
                     onChange={handleChange}
                   />
-                   {errors.PaymentTerm && <div className="invalid-feedback">{errors.PaymentTerm}</div>}
+                  {errors.PaymentTerm && <div className="invalid-feedback">{errors.PaymentTerm}</div>}
                 </div>
               </div>
             </div>
@@ -192,7 +150,7 @@ const JobWorkPoinfo = () => {
                     value={formData.QuotNo}
                     onChange={handleChange}
                   />
-                   {errors.QuotNo && <div className="invalid-feedback">{errors.QuotNo}</div>}
+                  {errors.QuotNo && <div className="invalid-feedback">{errors.QuotNo}</div>}
                 </div>
               </div>
             </div>
@@ -213,12 +171,11 @@ const JobWorkPoinfo = () => {
                     value={formData.Delivery}
                     onChange={handleChange}
                   />
-                   {errors.Delivery && <div className="invalid-feedback">{errors.Delivery}</div>}
+                  {errors.Delivery && <div className="invalid-feedback">{errors.Delivery}</div>}
                 </div>
               </div>
             </div>
-           
-        
+
             <div className="row text-start">
               <div className="col-md-4">
                 <div className="form-group mb-3">
@@ -235,7 +192,7 @@ const JobWorkPoinfo = () => {
                     value={formData.PoValidityDate}
                     onChange={handleChange}
                   />
-                   {errors.PoValidityDate && <div className="invalid-feedback">{errors.PoValidityDate}</div>}
+                  {errors.PoValidityDate && <div className="invalid-feedback">{errors.PoValidityDate}</div>}
                 </div>
               </div>
             </div>
@@ -256,7 +213,7 @@ const JobWorkPoinfo = () => {
                     value={formData.PoNote}
                     onChange={handleChange}
                   ></textarea>
-                   {errors.PoNote && <div className="invalid-feedback">{errors.PoNote}</div>}
+                  {errors.PoNote && <div className="invalid-feedback">{errors.PoNote}</div>}
                 </div>
               </div>
             </div>
@@ -278,14 +235,13 @@ const JobWorkPoinfo = () => {
                     value={formData.GST}
                     onChange={handleChange}
                   />
-                   {errors.GST && <div className="invalid-feedback">{errors.GST}</div>}
+                  {errors.GST && <div className="invalid-feedback">{errors.GST}</div>}
                 </div>
               </div>
             </div>
-            
           </div>
           <div className="col-md-4">
-          <div className="row text-start">
+            <div className="row text-start">
               <div className="col-md-4">
                 <div className="form-group mb-3">
                   <label htmlFor="PoDate">PO Date:</label>
@@ -301,7 +257,7 @@ const JobWorkPoinfo = () => {
                     value={formData.PoDate}
                     onChange={handleChange}
                   />
-                   {errors.PoDate && <div className="invalid-feedback">{errors.PoDate}</div>}
+                  {errors.PoDate && <div className="invalid-feedback">{errors.PoDate}</div>}
                 </div>
               </div>
             </div>
@@ -322,7 +278,7 @@ const JobWorkPoinfo = () => {
                     value={formData.PaymentRemark}
                     onChange={handleChange}
                   />
-                   {errors.PaymentRemark && <div className="invalid-feedback">{errors.PaymentRemark}</div>}
+                  {errors.PaymentRemark && <div className="invalid-feedback">{errors.PaymentRemark}</div>}
                 </div>
               </div>
             </div>
@@ -342,7 +298,7 @@ const JobWorkPoinfo = () => {
                     value={formData.QuotationDate}
                     onChange={handleChange}
                   />
-                   {errors.QuotationDate && <div className="invalid-feedback">{errors.QuotationDate}</div>}
+                  {errors.QuotationDate && <div className="invalid-feedback">{errors.QuotationDate}</div>}
                 </div>
               </div>
             </div>
@@ -356,18 +312,17 @@ const JobWorkPoinfo = () => {
               </div>
               <div className="col-md-8">
                 <div className="form-group mb-3">
-                <select
-                id="freight"
-                name="freight"
-                className="form-control"
-                value={formData.freight}
-                onChange={handleChange}
-              >
-                <option value="">SELECT</option>
-                <option value="option1">EX - AURANGABAD</option>
-                
-              </select>
-              {errors.freight && <div className="invalid-feedback">{errors.freight}</div>}
+                  <select
+                    id="freight"
+                    name="freight"
+                    className="form-control"
+                    value={formData.freight}
+                    onChange={handleChange}
+                  >
+                    <option value="">SELECT</option>
+                    <option value="option1">EX - AURANGABAD</option>
+                  </select>
+                  {errors.freight && <div className="invalid-feedback">{errors.freight}</div>}
                 </div>
               </div>
               {/* <div className="col-md-1">
@@ -398,15 +353,15 @@ const JobWorkPoinfo = () => {
                 </div>
               </div>
               <div className="col-md-8">
-              <input
-                 type="text"
-                    id="ContactPersion"
-                    name="ContactPersion"
-                    className="form-control"
-                    value={formData.ContactPersion}
-                    onChange={handleChange}
-                  />
-                   {errors.ContactPersion && <div className="invalid-feedback">{errors.ContactPersion}</div>}
+                <input
+                  type="text"
+                  id="ContactPersion"
+                  name="ContactPersion"
+                  className="form-control"
+                  value={formData.ContactPersion}
+                  onChange={handleChange}
+                />
+                {errors.ContactPersion && <div className="invalid-feedback">{errors.ContactPersion}</div>}
               </div>
             </div>
             <div className="row text-start">
@@ -427,7 +382,7 @@ const JobWorkPoinfo = () => {
                     onChange={handleChange}
                     placeholder="Enter Enquiry Number"
                   ></textarea>
-                   {errors.PF_Charges && <div className="invalid-feedback">{errors.PF_Charges}</div>}
+                  {errors.PF_Charges && <div className="invalid-feedback">{errors.PF_Charges}</div>}
                 </div>
               </div>
             </div>
@@ -441,38 +396,31 @@ const JobWorkPoinfo = () => {
               </div>
               <div className="col-md-8">
                 <div className="form-group mb-3">
-                <select
-                id="PoRateType"
-                name="PoRateType"
-                className="form-control"
-                value={formData.PoRateType}
-                onChange={handleChange}
-              >
-                <option value="">SELECT</option>
-                <option value="option1">GERNAL</option>
-                <option value="option2">RATEDIFF</option>
-                
-              </select>
-              {errors.PoRateType && <div className="invalid-feedback">{errors.PoRateType}</div>}
+                  <select
+                    id="PoRateType"
+                    name="PoRateType"
+                    className="form-control"
+                    value={formData.PoRateType}
+                    onChange={handleChange}
+                  >
+                    <option value="">SELECT</option>
+                    <option value="option1">GERNAL</option>
+                    <option value="option2">RATEDIFF</option>
+                  </select>
+                  {errors.PoRateType && <div className="invalid-feedback">{errors.PoRateType}</div>}
                 </div>
               </div>
             </div>
           </div>
           <div className="col-md-4"></div>
           {showCard && (
-            <div
-              className="modal fade show d-block"
-              tabIndex="-1"
-              role="dialog"
-            >
-              <div className="modal-dialog" role="document" style={{marginTop:"250px"}}>
+            <div className="modal fade show d-block" tabIndex="-1" role="dialog">
+              <div className="modal-dialog" role="document" style={{ marginTop: "250px" }}>
                 <div className="modal-content">
                   <div className="modal-header">
                     <div className="row">
                       <div className="col-md-12 text-start">
-                        <h5 className="modal-title text-primary">
-                          Freight Master
-                        </h5>
+                        <h5 className="modal-title text-primary">Freight Master</h5>
                       </div>
                       {/* <div className="col-md-12 text-end">
                 <button type="button" className="close" onClick={handleCloseCard}>
@@ -486,11 +434,7 @@ const JobWorkPoinfo = () => {
                     <div className="row mb-3">
                       <div className="col-md-6">
                         <label htmlFor="freightName">Enter Freight Name:</label>
-                        <input
-                          type="text"
-                          id="freightName"
-                          className="form-control"
-                        />
+                        <input type="text" id="freightName" className="form-control" />
                       </div>
                       <div className="col-md-6">
                         <button type="button" className="btn mt-4">
@@ -528,11 +472,7 @@ const JobWorkPoinfo = () => {
                     </table>
                   </div>
                   <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={handleCloseCard}
-                    >
+                    <button type="button" className="btn" onClick={handleCloseCard}>
                       Close
                     </button>
                   </div>
@@ -541,19 +481,10 @@ const JobWorkPoinfo = () => {
             </div>
           )}
         </div>
-        <div className="row text-end">
-          <div className="col-md-12 text-end">
-            <button type="button" className="jobbtn" onClick={handleSubmit}>
-              Save
-            </button>
-            <button type="button" className="jobbtn ms-2" onClick={clearForm}>
-              Clear
-            </button>
-          </div>
-        </div>
+        
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default JobWorkPoinfo;
+export default JobWorkPoinfo

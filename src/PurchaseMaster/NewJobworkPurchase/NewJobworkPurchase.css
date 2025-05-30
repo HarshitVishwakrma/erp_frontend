@@ -25,6 +25,11 @@
   .fas {
     font-size: 20px;
   }
+
+  #dra .zindex-dropdown {
+  z-index: 1000;
+}
+
   
   /* Responsive Styles */
   @media (max-width: 768px) {

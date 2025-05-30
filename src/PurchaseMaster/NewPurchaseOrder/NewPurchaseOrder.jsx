@@ -37,7 +37,7 @@ const NewPurchaseOrder = () => {
   const [loading, setLoading] = useState(false)
   const [isLoadingOrder, setIsLoadingOrder] = useState(isEditMode) // Loading state for fetching order
   // eslint-disable-next-line no-unused-vars
-  const [supplierData, setSupplierData] = useState(null)
+
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState)

@@ -38,7 +38,7 @@ const ProductionPlanList = () => {
                   <div className="ProductionPlanList-header mb-4 text-start">
                     <div className="row align-items-center">
                       <div className="col-md-4">
-                        <h5 className="header-title">Work Order List</h5>
+                        <h5 className="header-title">Production Plan List</h5>
                       </div>
                       <div className="col-md-8 text-end">
                         <button type="button" className="btn" to="/AddQuater">
