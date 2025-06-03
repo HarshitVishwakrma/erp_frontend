@@ -1,7 +1,7 @@
 "use client"
 
 import "./NewJobworkPurchase.css"
-import { useState, useEffect ,useRef} from "react"
+import { useState, useEffect } from "react"
 import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap/dist/js/bootstrap.bundle.min"
 import NavBar from "../../NavBar/NavBar.js"
@@ -161,22 +161,6 @@ const NewJobworkPurchase = () => {
   const [supplierCode, setSupplierCode] = useState("")
   const [dropdownData, setDropdownData] = useState([])
   const [showDropdown, setShowDropdown] = useState(false)
-
-    const wrapperRef = useRef(null);
-
-     useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
 
   useEffect(() => {
     if (supplierName.trim() === "") {
@@ -496,7 +480,7 @@ const NewJobworkPurchase = () => {
                         <div className="col-md-1" style={{ marginTop: "20px" }}>
                           <input type="text" className="form-control" value={indentNo} readOnly />
                         </div>
-                        <div className="col-md-1 position-relative" ref={wrapperRef}>
+                        <div className="col-md-1 position-relative">
                           <label>Supplier:</label>
                           <input
                             type="text"

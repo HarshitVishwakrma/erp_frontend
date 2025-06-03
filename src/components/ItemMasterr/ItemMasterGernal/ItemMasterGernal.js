@@ -796,23 +796,24 @@ const ItemMasterGernal = () => {
                                                 </button>
                                               </div>
                                             </div>
-                                            <div className="row mb-3">
-                                              <label for="part_no" className="col-sm-5 col-form-label">
-                                                Part No: <span className="text-danger">*</span>
-                                              </label>
-                                              <div className="col-sm-7">
-                                                <input
-                                                  type="text"
-                                                  className="form-control"
-                                                  id="part_no"
-                                                  name="part_no"
-                                                  value={formData.part_no}
-                                                  readOnly
-                                                  style={{ width: "115%" }}
-                                                />
-                                                {errors.part_no && <div className="text-danger">{errors.part_no}</div>}
-                                              </div>
-                                            </div>
+                                   <div className="row mb-3">
+  <label htmlFor="part_no" className="col-sm-5 col-form-label">
+    Part No: <span className="text-danger">*</span>
+  </label>
+  <div className="col-sm-7">
+    <input
+      type="text"
+      className="form-control"
+      id="part_no"
+      name="part_no"
+      value={formData.part_no}
+      onChange={(e) => setFormData({ ...formData, part_no: e.target.value })}
+      style={{ width: "115%" }}
+    />
+    {errors.part_no && <div className="text-danger">{errors.part_no}</div>}
+  </div>
+</div>
+
                                             <div className="row mb-3">
                                               <label for="Unit_Code" className="col-sm-5 col-form-label">
                                                 Unit Code:

@@ -2923,6 +2923,8 @@ export const searchItems = async (query) => {
 
 export const saveBomItem = async (itemId, formData, editingId = null) => {
   try {
+    console.log("API Call - Item ID:", itemId, "Form Data:", formData) // Debug log
+
     if (editingId) {
       // Update existing record
       const response = await axios.put(`${BASE_URL}api/items/${itemId}/boms/${editingId}/`, formData)
@@ -2934,6 +2936,10 @@ export const saveBomItem = async (itemId, formData, editingId = null) => {
     }
   } catch (error) {
     console.error("Error saving BOM data:", error)
+    if (error.response) {
+      console.error("Response data:", error.response.data)
+      console.error("Response status:", error.response.status)
+    }
     throw error
   }
 }
@@ -2947,7 +2953,6 @@ export const deleteBomItem = async (itemId, bomId) => {
     throw error
   }
 }
-
 
 
 
@@ -3003,4 +3008,78 @@ export const deleteOperator = async (id) => {
 export const updateOperator = async (id, data) => {
   const res = await axios.put(`${BASE_URL}Add_New_Operator/${id}/`, data);
   return res.data;
+};
+
+
+
+export const fetchoperationData = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}api/operations/`)
+    return response.data
+  } catch (error) {
+    console.error("Error fetching scrap data:", error)
+    return []
+  }
+}
+
+
+export const fetchCombinedPartNo = async (part_no, operation_name) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}api/combine-partno/?part_no=${part_no}&operation_name=${operation_name}`
+    );
+    return response.data.combined_part_no;
+  } catch (error) {
+    console.error("Error fetching combined part number:", error);
+    return null;
+  }
+};
+
+
+// Get all BOM entries
+export const getBomItemscards = async (page = 1) => {
+  try {
+    const response = await axios.get(`${BASE_URL}BOM_ItemPartMaster/`)
+    console.log("BOM Items API Response:", response.data) // Debug log
+    return {
+      results: response.data || [],
+      total_pages: 1,
+    }
+  } catch (error) {
+    console.error("Error fetching BOM items:", error)
+    return { results: [], total_pages: 1 }
+  }
+}
+
+// Save new BOM
+export const saveBomItemcards = async (data) => {
+  try {
+    const res = await axios.post(`${BASE_URL}BOM_ItemPartMaster/`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Error saving BOM item:", err);
+    throw err;
+  }
+};
+
+// Update BOM
+export const updateBomItemcards = async (id, data) => {
+  try {
+    const res = await axios.put(`${BASE_URL}BOM_ItemPartMaster/${id}/`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Error updating BOM item:", err);
+    throw err;
+  }
+};
+
+// Delete BOM
+export const deleteBomItemcards = async (id) => {
+  try {
+    const res = await axios.delete(`${BASE_URL}BOM_ItemPartMaster/${id}/`);
+    return res.data;
+  } catch (err) {
+    console.error("Error deleting BOM item:", err);
+    throw err;
+  }
 };
