@@ -589,64 +589,64 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     New Indent
                   </Dropdown.Item>
                 )}
-                {permissions.Store.includes("Store Report") && (
+              {permissions.Store.includes("Store Report") && (
                   <Dropdown>
                     <Dropdown.Toggle as="div" className="dropdown-item">
                       Report
                     </Dropdown.Toggle>
-                    <Dropdown.Menu>
+                     <Dropdown.Menu>
                       {permissions.Store.includes("GRN List") && (
                         <Dropdown.Item as={Link} to="/Report-Store">
                           GRN List
                         </Dropdown.Item>
                       )}
                       {permissions.Store.includes("MRN List") && (
-                        <Dropdown.Item as={Link} to="#/">
+                        <Dropdown.Item as={Link} to="/MRNList">
                           MRN List
                         </Dropdown.Item>
                       )}
                       {permissions.Store.includes(
                         "Inward 57F4 Challan List"
                       ) && (
-                        <Dropdown.Item as={Link} to="#/">
+                        <Dropdown.Item as={Link} to="/Challaninward">
                           Inward 57F4 Challan List
                         </Dropdown.Item>
                       )}
                       {permissions.Store.includes(
                         "Material Issue Challan List"
                       ) && (
-                        <Dropdown.Item as={Link} to="#/Stock-Report">
+                        <Dropdown.Item as={Link} to="/IssueMaterial">
                           Material Issue Challan List
                         </Dropdown.Item>
                       )}
                       {permissions.Store.includes(
-                        "Gernal Material Issue Challan List"
+                        "General Material Issue Challan List"
                       ) && (
-                        <Dropdown.Item as={Link} to="#/Stock-Report">
-                          Gernal Material Issue Challan List
+                        <Dropdown.Item as={Link} to="/GeneralMtrlIssue">
+                          General Material Issue Challan List
                         </Dropdown.Item>
                       )}
-                      {permissions.Store.includes("Delivery Challan List") && (
-                        <Dropdown.Item as={Link} to="#/Stock-Report">
+                      {permissions.Store.includes("Deliver Challan List") && (
+                        <Dropdown.Item as={Link} to="/DeliveryChlln">
                           Delivery Challan List
                         </Dropdown.Item>
                       )}
                       {permissions.Store.includes("DC GRN List") && (
-                        <Dropdown.Item as={Link} to="#/Stock-Report">
+                        <Dropdown.Item as={Link} to="/GRNDCReport">
                           DC GRN List
                         </Dropdown.Item>
                       )}
                       {permissions.Store.includes("Indent List") && (
-                        <Dropdown.Item as={Link} to="#/Stock-Report">
+                        <Dropdown.Item as={Link} to="/IndentReport">
                           Indent List
                         </Dropdown.Item>
                       )}
                       {permissions.Store.includes("Indent Status") && (
-                        <Dropdown.Item as={Link} to="#/Stock-Report">
+                        <Dropdown.Item as={Link} to="/IndentStatus">
                           Indent Status
                         </Dropdown.Item>
                       )}
-                    </Dropdown.Menu>
+                     </Dropdown.Menu>
                   </Dropdown>
                 )}
                 {permissions.Store.includes("Stock Report") && (

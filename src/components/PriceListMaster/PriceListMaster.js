@@ -7,6 +7,7 @@ import SideNav from "../../SideNav/SideNav";
 import "./PriceListMaster.css";
 import { ToastContainer, toast } from "react-toastify";
 import { savePriceList } from "../../Service/Api.jsx";
+import { Link } from "react-router-dom";
 
 const PriceListMaster = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -123,10 +124,10 @@ const PriceListMaster = () => {
                           >
                             Price List Report
                           </button>
-                          <button className="btn">
+                          <Link to={"/PriceListQueryMaster"} className="btn">
                             Price List Query
-                          </button>
-                          <button
+                          </Link>
+                          {/* <button
                             className="btn"
                            
                           >
@@ -142,7 +143,7 @@ const PriceListMaster = () => {
                               </button>
                               
                             </div>
-                          </button>
+                          </button> */}
                           <button className="btn">
                             Export To Excel
                           </button>

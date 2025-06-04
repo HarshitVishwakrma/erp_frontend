@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -26,16 +26,20 @@ import {
   searchItems,
   saveBomItem,
   deleteBomItem,
+  fetchPartCodeDropdownData
 } from "../../../Service/Api.jsx";
 
 import {
   fetchoperationData,
   fetchCombinedPartNo,
-  getBomItemscards,
-  saveBomItemcards,
-  updateBomItemcards,
-  deleteBomItemcards,
+  getBomItemsForSelectedItem,
+  saveBomItemForSelectedItem,
+  updateBomItemForSelectedItem,
+ deleteBomItemForSelectedItem
+  
 } from "../../../Service/Api.jsx";
+
+import { getRMItems ,getComItems } from "../../../Service/Api.jsx";
 
 const BillMaterial = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -182,7 +186,9 @@ const BillMaterial = () => {
   };
 
   //BOM
- const [formData1, setFormData1] = useState({
+
+  // Main BOM form state with additional fields
+  const [formData1, setFormData1] = useState({
     OPNo: "",
     PartCode: "",
     BOMPartType: [],
@@ -197,6 +203,8 @@ const BillMaterial = () => {
     WipRate: "",
     PieceRate: "",
     OPRate: "",
+    Operation: "",
+    BomPartDesc: "",
   })
 
   const [tableData, setTableData] = useState([])
@@ -214,15 +222,27 @@ const BillMaterial = () => {
   const [operationList, setOperationList] = useState([])
   const [selectedOperation, setSelectedOperation] = useState("")
   const [combinedPartCode, setCombinedPartCode] = useState("")
-  const [minLevel, setMinLevel] = useState("")
-  const [maxLevel, setMaxLevel] = useState("")
   const [editId2, setEditId2] = useState(null)
   const [bomList, setBomList] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
 
   // Part Code dropdown state
+  const [partCodeDropdownData, setPartCodeDropdownData] = useState([])
+  const [bomOptions, setBomOptions] = useState([])
   const partCodeDropdownRef = useRef(null)
+
+  // Memoize loadBomItems to fix useEffect dependency warning
+  const loadBomItems = useCallback(async () => {
+    if (!selectedItem) return
+
+    try {
+      const res = await getBomItemsForSelectedItem(selectedItem.id)
+      setBomList(res || [])
+      console.log("Loaded BOM items:", res)
+    } catch (error) {
+      console.error("Error loading BOM items:", error)
+      setBomList([])
+    }
+  }, [selectedItem])
 
   useEffect(() => {
     // Load initial data
@@ -232,10 +252,6 @@ const BillMaterial = () => {
 
       const opsData = await fetchoperationData()
       setOperationList(opsData)
-
-      // Load BOM items for dropdown
-      const bomData = await getBomItemscards(1)
-      setBomList(bomData.results || [])
     }
 
     loadInitialData()
@@ -245,8 +261,6 @@ const BillMaterial = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false)
       }
-      if (partCodeDropdownRef.current && !partCodeDropdownRef.current.contains(event.target)) {
-      }
     }
 
     document.addEventListener("mousedown", handleClickOutside)
@@ -255,12 +269,31 @@ const BillMaterial = () => {
     }
   }, [])
 
-  // Load BOM items when card opens or page changes
+  // Load Part Code dropdown data when selectedItem changes
   useEffect(() => {
-    if (cardBomPlus) {
-      loadBomItems(currentPage)
+    const loadPartCodeDropdown = async () => {
+      if (selectedItem && selectedItem.id) {
+        try {
+          const dropdownData = await fetchPartCodeDropdownData(selectedItem.id)
+          setPartCodeDropdownData(dropdownData)
+        } catch (error) {
+          console.error("Error loading part code dropdown:", error)
+          setPartCodeDropdownData([])
+        }
+      } else {
+        setPartCodeDropdownData([])
+      }
     }
-  }, [currentPage, cardBomPlus])
+
+    loadPartCodeDropdown()
+  }, [selectedItem])
+
+  // Load BOM items when card opens - fixed dependency
+  useEffect(() => {
+    if (cardBomPlus && selectedItem) {
+      loadBomItems()
+    }
+  }, [cardBomPlus, selectedItem, loadBomItems])
 
   // Update combined part code when item or operation changes
   useEffect(() => {
@@ -323,7 +356,7 @@ const BillMaterial = () => {
 
   const handleSearchSelect = (item) => {
     setSelectedItem(item)
-    setSearchTerm(`${item.part_no} - ${item.Name_Description}`)
+    setSearchTerm(`${item.part_no} | ${item.Part_Code} | ${item.Name_Description}`)
     setShowDropdown(false)
 
     if (item.bom_items && item.bom_items.length > 0) {
@@ -351,14 +384,14 @@ const BillMaterial = () => {
         } else {
           setSelectedItem(null)
           setTableData([])
-          alert("Item not found. Please try a different search term.")
+          toast.error("Item not found. Please try a different search term.")
         }
         setIsLoading(false)
       } catch (error) {
         console.error("Error searching items:", error)
         setSelectedItem(null)
         setTableData([])
-        alert("Error searching for items. Please try again.")
+        toast.error("Error searching for items. Please try again.")
         setIsLoading(false)
       }
     }
@@ -368,17 +401,18 @@ const BillMaterial = () => {
     setSearchTerm("")
     setSelectedItem(null)
     setTableData([])
+    setPartCodeDropdownData([])
   }
 
   const handleSave1 = async () => {
     try {
       if (!selectedItem) {
-        alert("Please search and select an item first.")
+        toast.error("Please search and select an item first.")
         return
       }
 
       if (!formData1.OPNo || !formData1.PartCode) {
-        alert("Please fill in all required fields (Op No and Part Code).")
+        toast.error("Please fill in all required fields (Op No and Part Code).")
         return
       }
 
@@ -443,19 +477,21 @@ const BillMaterial = () => {
         WipRate: "",
         PieceRate: "",
         OPRate: "",
+        Operation: "",
+        BomPartDesc: "",
       })
       setEditingId(null)
       setIsLoading(false)
 
-   toast.success(editingId ? "BOM item updated successfully!" : "BOM item saved successfully!");
-} catch (error) {
-  console.error("Error saving BOM data:", error);
-  if (error.response && error.response.status === 404) {
-    toast.error("Item not found. Please make sure the selected item exists.");
-  } else {
-    toast.error("Error saving data. Please try again.");
-  }
-  setIsLoading(false);
+      toast.success(editingId ? "BOM item updated successfully!" : "BOM item saved successfully!")
+    } catch (error) {
+      console.error("Error saving BOM data:", error)
+      if (error.response && error.response.status === 404) {
+        toast.error("Item not found. Please make sure the selected item exists.")
+      } else {
+        toast.error("Error saving data. Please try again.")
+      }
+      setIsLoading(false)
     }
   }
 
@@ -478,93 +514,147 @@ const BillMaterial = () => {
       WipRate: item.WipRate || "",
       PieceRate: item.PieceRate || "",
       OPRate: item.OPRate || "",
+      Operation: item.Operation || "",
+      BomPartDesc: item.BomPartDesc || "",
     })
   }
 
   const handleDelete1 = async (id) => {
-  try {
-    const itemId = selectedItem ? selectedItem.id : 1;
-    setIsLoading(true);
-    await deleteBomItem(itemId, id);
-    setTableData(tableData.filter((item) => item.id !== id));
-    toast.success("BOM item deleted successfully!");
-  } catch (error) {
-    console.error("Error deleting BOM data:", error);
-    toast.error("Error deleting data. Please try again.");
-  } finally {
-    setIsLoading(false);
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      try {
+        const itemId = selectedItem ? selectedItem.id : 1
+        setIsLoading(true)
+        await deleteBomItem(itemId, id)
+        setTableData(tableData.filter((item) => item.id !== id))
+        toast.success("BOM item deleted successfully!")
+        setIsLoading(false)
+      } catch (error) {
+        console.error("Error deleting BOM data:", error)
+        toast.error("Error deleting data. Please try again.")
+        setIsLoading(false)
+      }
+    }
   }
-};
-
 
   // BOM Item Part Master functions
   const toggleCardPlus1 = () => {
+    if (!selectedItem) {
+      toast.error("Please select an item first.")
+      return
+    }
     setCardBomPlus(true)
-    loadBomItems(1) // Load first page when opening
+    loadBomItems()
   }
 
   const closeCard = () => {
     setCardBomPlus(false)
-  }
-
-  const loadBomItems = async (page) => {
-    try {
-      const res = await getBomItemscards(page)
-      setBomList(res.results || [])
-      setTotalPages(res.total_pages || 1)
-    } catch (error) {
-      console.error("Error loading BOM items:", error)
-    }
+    clearFields()
   }
 
   const clearFields = () => {
     setEditId2(null)
     setSelectedOperation("")
     setCombinedPartCode("")
-    setMinLevel("")
-    setMaxLevel("")
   }
 
   const handleSave2 = async () => {
+    if (!selectedItem) {
+      toast.error("Please select an item first.")
+      return
+    }
+
+    if (!selectedOperation || !combinedPartCode) {
+      toast.error("Please fill in all required fields (Operation and Part Code).")
+      return
+    }
+
     const data = {
       Operation: selectedOperation,
       PartCode: combinedPartCode,
-      min_level: minLevel,
-      max_level: maxLevel,
     }
-     try {
-    if (editId2) {
-      await updateBomItemcards(editId2, data);
-      toast.success("BOM Item updated successfully!");
-    } else {
-      await saveBomItemcards(data);
-      toast.success("BOM Item saved successfully!");
+
+    try {
+      console.log("Saving BOM data:", data)
+      if (editId2) {
+        await updateBomItemForSelectedItem(selectedItem.id, editId2, data)
+        toast.success("BOM Item updated successfully!")
+      } else {
+        await saveBomItemForSelectedItem(selectedItem.id, data)
+        toast.success("BOM Item saved successfully!")
+      }
+      loadBomItems()
+      clearFields()
+
+      // Refresh the part code dropdown
+      const dropdownData = await fetchPartCodeDropdownData(selectedItem.id)
+      setPartCodeDropdownData(dropdownData)
+    } catch (err) {
+      console.error("Error saving BOM item:", err)
+      toast.error("Error saving data.")
     }
-    loadBomItems(currentPage);
-    clearFields();
-  } catch (err) {
-    toast.error("Error saving BOM item.");
-  }
   }
 
-const handleEdit2 = (item) => {
-  setEditId2(item.id);
-  setSelectedOperation(item.operation_name);
-  setCombinedPartCode(item.part_code);
-  setMinLevel(item.min_level);
-  setMaxLevel(item.max_level);
-  toast.info("You are editing this BOM item.");
-};
-
-const handleDelete2 = async (id) => {
-  try {
-    await deleteBomItemcards(id);
-    loadBomItems(currentPage);
-    toast.success("BOM Item deleted successfully!");
-  } catch (error) {
-    toast.error("Error deleting BOM item.");
+  const handleEdit2 = (item) => {
+    setEditId2(item.id)
+    setSelectedOperation(item.Operation)
+    setCombinedPartCode(item.PartCode)
   }
-};
+
+  const handleDelete2 = async (id) => {
+    if (!selectedItem) return
+
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      try {
+        await deleteBomItemForSelectedItem(selectedItem.id, id)
+        loadBomItems()
+        toast.success("BOM Item deleted successfully!")
+
+        // Refresh the part code dropdown
+        const dropdownData = await fetchPartCodeDropdownData(selectedItem.id)
+        setPartCodeDropdownData(dropdownData)
+      } catch (error) {
+        console.error("Error deleting BOM item:", error)
+        toast.error("Error deleting data.")
+      }
+    }
+  }
+
+  // Fixed BOM Part Code options fetching
+  const fetchBomPartCodeOptions = async (type) => {
+    try {
+      if (type === "RM") {
+        const res = await getRMItems(formData1.PartCode || "")
+        setBomOptions(res || [])
+      } else if (type === "COM") {
+        const selectedItemId = selectedItem?.id || 67
+        const res = await getComItems(selectedItemId, formData1.PartCode || "")
+        console.log("COM API Response:", res)
+        // Handle both array and single object responses
+        if (Array.isArray(res)) {
+          setBomOptions(res)
+        } else if (res && typeof res === "object") {
+          setBomOptions([res]) // Wrap single object in array
+        } else {
+          setBomOptions([])
+        }
+      } else {
+        setBomOptions([]) // BOM selected, nothing to show
+      }
+    } catch (error) {
+      console.error("Error fetching BOM part code options:", error)
+      setBomOptions([])
+    }
+  }
+
+  const handleBOMPartTypeChange = (type) => {
+    setFormData1((prev) => ({
+      ...prev,
+      BOMPartType: [type], // only one allowed
+      BomPartCode: "", // reset on change
+    }))
+    fetchBomPartCodeOptions(type) // fetch related data
+  }
+
 
   
   return (
@@ -826,7 +916,7 @@ const handleDelete2 = async (id) => {
                                   className="p-2 border-bottom cursor-pointer hover:bg-light"
                                   onClick={() => handleSearchSelect(item)}
                                 >
-                                  {item.part_no} - {item.Name_Description}
+                                  {item.part_no} | {item.Part_Code} | {item.Name_Description}
                                 </div>
                               ))}
                             </div>
@@ -927,20 +1017,21 @@ const handleDelete2 = async (id) => {
                                       </label>
                                     </div>
                                   </div>
-                                    <div className="row mb-3 text-start mt-4">
+         {/* BOM Form Section - First Row */}
+      <div className="row mb-3 text-start mt-4">
         <div className="col-md-1">
           <label>Op No:</label>
           <input type="text" className="form-control" name="OPNo" value={formData1.OPNo} onChange={handleChange} />
         </div>
-         <div className="col-md-2">
+        <div className="col-md-2">
           <label>Part Code:</label>
           <div className="row align-items-center">
             <div className="col position-relative" ref={partCodeDropdownRef}>
               <select className="form-control" name="PartCode" value={formData1.PartCode} onChange={handleChange}>
                 <option value="">Select Part Code</option>
-                {bomList.map((item) => (
-                  <option key={item.id} value={item.PartCode || item.part_code}>
-                    {item.PartCode || item.part_code}
+                {partCodeDropdownData.map((item, index) => (
+                  <option key={index} value={item.PartCode}>
+                    {item.PartCode} - {item.Operation}
                   </option>
                 ))}
               </select>
@@ -963,7 +1054,7 @@ const handleDelete2 = async (id) => {
                   name="BOMPartType"
                   value={type}
                   checked={formData1.BOMPartType.includes(type)}
-                  onChange={handleChange}
+                  onChange={() => handleBOMPartTypeChange(type)}
                 />
                 <label htmlFor={type} className="ms-2">
                   {type}
@@ -972,16 +1063,28 @@ const handleDelete2 = async (id) => {
             ))}
           </div>
         </div>
-        <div className="col-md-1">
-          <label>Bom Part Code:</label>
-          <input
-            type="text"
-            className="form-control"
-            name="BomPartCode"
-            value={formData1.BomPartCode}
-            onChange={handleChange}
-          />
-        </div>
+
+        {(formData1.BOMPartType.includes("RM") || formData1.BOMPartType.includes("COM")) && (
+          <div className="col-md-1">
+            <label>Bom Part Code:</label>
+            <select className="form-control" name="BomPartCode" value={formData1.BomPartCode} onChange={handleChange}>
+              <option value="">Select Bom Part Code</option>
+              {formData1.BOMPartType.includes("RM") &&
+                bomOptions.map((item) => (
+                  <option key={item.id} value={item.Part_Code}>
+                    {item.part_no} ({item.Name_Description})
+                  </option>
+                ))}
+              {formData1.BOMPartType.includes("COM") &&
+                bomOptions.map((item, index) => (
+                  <option key={item.id || index} value={item.PartCode}>
+                    {item.OPNo} ({item.Operation}) - {item.PartCode}
+                  </option>
+                ))}
+            </select>
+          </div>
+        )}
+
         <div className="col-md-1">
           <label>Qty : Kg</label>
           <input type="text" className="form-control" name="QtyKg" value={formData1.QtyKg} onChange={handleChange} />
@@ -1068,7 +1171,8 @@ const handleDelete2 = async (id) => {
         </div>
       </div>
 
-                                  <div className="table-responsive">
+      {/* BOM Table */}
+      <div className="table-responsive">
         <table className="table table-bordered mt-3">
           <thead>
             <tr>
@@ -1087,7 +1191,8 @@ const handleDelete2 = async (id) => {
               <th>WIP Rate</th>
               <th>Piece Rate</th>
               <th>OP Rate</th>
-              <th>Item</th>
+              <th>Operation</th>
+              {/* <th>BOM Part Desc</th> */}
               <th>Edit</th>
               <th>Del</th>
             </tr>
@@ -1111,7 +1216,8 @@ const handleDelete2 = async (id) => {
                   <td>{item.WipRate}</td>
                   <td>{item.PieceRate}</td>
                   <td>{item.OPRate}</td>
-                  <td>{selectedItem ? selectedItem.part_no : item.item}</td>
+                  <td>{item.Operation}</td>
+                  {/* <td>{item.BomPartDesc}</td> */}
                   <td>
                     <button className="btn" onClick={() => handleEdit1(item)}>
                       <FaEdit />
@@ -1126,7 +1232,7 @@ const handleDelete2 = async (id) => {
               ))
             ) : (
               <tr>
-                <td colSpan="18" className="text-center">
+                <td colSpan="19" className="text-center">
                   {selectedItem ? "No BOM items found for this item. You can add new ones." : "No data available"}
                 </td>
               </tr>
@@ -1135,14 +1241,15 @@ const handleDelete2 = async (id) => {
         </table>
       </div>
 
-                                {cardBomPlus && (
+      {/* BOM Item Part Master Modal */}
+      {cardBomPlus && (
         <div
           className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-50"
           style={{ zIndex: 1055 }}
         >
           <div
             className="bg-white rounded p-4"
-            style={{ width: "90%", maxWidth: "1200px", maxHeight: "90vh", overflowY: "auto" }}
+            style={{ width: "90%", maxWidth: "700px", maxHeight: "90vh", overflowY: "auto" }}
           >
             <div className="row align-items-center mb-3">
               <div className="col-md-10 text-start">
@@ -1157,7 +1264,7 @@ const handleDelete2 = async (id) => {
 
             {/* Form Section */}
             <div className="row mb-3">
-              <div className="col-md-2">
+              <div className="col-md-3">
                 <label>Operation</label>
                 <select
                   className="form-control"
@@ -1173,7 +1280,7 @@ const handleDelete2 = async (id) => {
                 </select>
               </div>
 
-              <div className="col-md-2">
+              <div className="col-md-3">
                 <label>Part Code</label>
                 <input
                   type="text"
@@ -1182,28 +1289,8 @@ const handleDelete2 = async (id) => {
                   onChange={(e) => setCombinedPartCode(e.target.value)}
                 />
               </div>
-    <div className="col-md-2">
-                <label>Min Level</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={minLevel}
-                  onChange={(e) => setMinLevel(e.target.value)}
-                />
-              </div>
 
-              <div className="col-md-2">
-                <label>Max Level</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={maxLevel}
-                  onChange={(e) => setMaxLevel(e.target.value)}
-                />
-              </div>
-              
-
-              <div className="col-md-2 d-flex align-items-end">
+              <div className="col-md-3 d-flex align-items-end">
                 <button className="btn btn-primary" onClick={handleSave2}>
                   {editId2 ? "Update" : "Save"}
                 </button>
@@ -1218,8 +1305,6 @@ const handleDelete2 = async (id) => {
                     <th>Sr.</th>
                     <th>Part Code</th>
                     <th>Operation</th>
-                    <th>Min Level</th>
-                    <th>Max Level</th>
                     <th>Edit</th>
                     <th>Delete</th>
                   </tr>
@@ -1228,11 +1313,9 @@ const handleDelete2 = async (id) => {
                   {bomList.length > 0 ? (
                     bomList.map((item, index) => (
                       <tr key={item.id}>
-                        <td>{index + 1 + (currentPage - 1) * 10}</td>
+                        <td>{index + 1}</td>
                         <td>{item.PartCode}</td>
                         <td>{item.Operation}</td>
-                        <td>{item.min_level}</td>
-                        <td>{item.max_level}</td>
                         <td>
                           <button className="btn" onClick={() => handleEdit2(item)}>
                             <FaEdit />
@@ -1247,28 +1330,13 @@ const handleDelete2 = async (id) => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center text-muted">
+                      <td colSpan="5" className="text-center text-muted">
                         No data available
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Pagination */}
-            <div className="d-flex justify-content-center">
-              <nav>
-                <ul className="pagination">
-                  {[...Array(totalPages)].map((_, index) => (
-                    <li key={index} className={`page-item ${currentPage === index + 1 ? "active" : ""}`}>
-                      <button className="page-link" onClick={() => setCurrentPage(index + 1)}>
-                        {index + 1}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
             </div>
           </div>
         </div>

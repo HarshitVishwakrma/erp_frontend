@@ -142,7 +142,7 @@ const TaskMaster = () => {
                       <Link to="/gst-rate-master" className="btn">
                         GST Rate Master
                       </Link>
-                      <Link to="/" className="btn">
+                      <Link to="/#" className="btn">
                         Export To Excel
                       </Link>
                     </div>

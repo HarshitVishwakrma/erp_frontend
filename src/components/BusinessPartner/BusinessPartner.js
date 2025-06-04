@@ -13,6 +13,7 @@ import Button from "react-bootstrap/Button"
 
 import { fetchCountries, fetchStateData, fetchStateDetails, saveBusiness } from "../../Service/Api.jsx"
 import { ToastContainer, toast } from "react-toastify"
+import { Link } from "react-router-dom"
 
 const BusinessPartner = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false)
@@ -294,7 +295,7 @@ const BusinessPartner = () => {
                             <h5 className="header-title">Business Partner</h5>
                           </div>
                           <div className="col-md-6 text-end">
-                            <button className="btn">Customer Supplier List</button>
+                            <Link to={"/Vender-List"} className="btn">Customer Supplier List</Link>
                           </div>
                         </div>
                       </div>

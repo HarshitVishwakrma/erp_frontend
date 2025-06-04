@@ -183,7 +183,7 @@ const GstMaster = () => {
                         <Link to="/Customer-Item-Wise-Gst" className="btn">
                           Cut-Wise GST Rate - Excel Upload
                         </Link>
-                        <Link to="/" className="btn">
+                        <Link to="/#" className="btn">
                           Export To Excel
                         </Link>
                       </div>

@@ -104,7 +104,7 @@ const VenderList = () => {
                         >
                           Add New
                         </Link>
-                        <Link className="venbtn">Customer - Query</Link>
+                        <Link to={"/CustomerQuery"} className="venbtn">Customer - Query</Link>
                       </div>
                     </div>
                   </div>

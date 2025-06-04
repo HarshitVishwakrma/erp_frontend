@@ -13,6 +13,20 @@ const BomRouting = () => {
     setSideNavOpen(!sideNavOpen);
   };
 
+  const [activeTable, setActiveTable] = useState('');
+
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  // const [dropdownOpen, setDropdownOpen] = useState(false);
+  // const toggleDropdown = () => {
+  //   setDropdownOpen(prevState => !prevState);
+  // };
+  
+
   useEffect(() => {
     if (sideNavOpen) {
       document.body.classList.add("side-nav-open");
@@ -35,8 +49,8 @@ const BomRouting = () => {
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="BomRouting1">
                   
-                  <div className="BomRoutingheading mb-4 text-start mt-5">
-                    <div className="row align-items-center">
+                  <div className="BomRoutingheading mb-4 text-start">
+                      <div className="row align-items-center">
                       <div className="col-md-2">
                         <h5 className="header-title">
                             BOM And Routing List
@@ -47,75 +61,106 @@ const BomRouting = () => {
                         </div>
 
                         <div className="col-sm-9 text-end">
-                          <button className="BOMRoutingbtn">FG:548</button>
-                          <button className="BOMRoutingbtn">SFG:1</button>
-                          <button className="BOMRoutingbtn">RM:44</button>
-                          <button className="BOMRoutingbtn">NPD:0</button>
-                          <button className="BOMRoutingbtn">Total:593</button>
-                          <button className="BOMRoutingbtn">Un-Auth:2</button>
-                          <button className="BOMRoutingbtn">Auth:591</button>
+                         <button className="vndrbtn" onClick={() => setActiveTable('FG')}>
+                            FG:548
+                          </button>
+                          <button className="vndrbtn" onClick={() => setActiveTable('SFG')}>
+                            SFG:1
+                          </button>
+                          <button className="vndrbtn" onClick={() => setActiveTable('RM')}>
+                            RM:44
+                          </button>
+                          <button className="vndrbtn" onClick={() => setActiveTable('NPD')}>
+                            NPD:0
+                          </button>
+                          <button className="vndrbtn" onClick={() => setActiveTable('Total')}>
+                            Total:593
+                          </button>
+                          <button className="vndrbtn" onClick={() => setActiveTable('UnAuth')}>
+                            Un-Auth:2
+                          </button>
+                          <button className="vndrbtn" onClick={() => setActiveTable('Auth')}>
+                            Auth:591
+                          </button>
 
-                          
-                          
-                            <button  style={{marginLeft:"3px", padding:'5px'}}
-                              className="BOMRoutingbtn dropdown-toggle"
-                              type="button"
-                              id="dropdownMenuButton"
-                              data-bs-toggle="dropdown"
-                              aria-expanded="false"
+                          <div style={{ position: 'relative', display: 'inline-block', marginLeft: '3px' }}>
+                            <button
+                              style={{ padding: '5px' }}
+                              className="BOMRouting vndrbtn"
+                              onClick={toggleDropdown}
                             >
-                              BOM:Report
+                              BOM:Report ▼
                             </button>
-                            <ul
-                              className="dropdown-menu"
-                              aria-labelledby="dropdownMenuButton"
-                            >
-                              <li>
-                                <a className="dropdown-item" href="#report1">
-                                  Upload WIP Value
-                                </a>
-                              </li>
-                              <li>
-                                <a className="dropdown-item" href="#report2">
-                                  Upload Operation Specification
-                                </a>
-                              </li>
-                              <li>
-                                <a className="dropdown-item" href="#report3">
-                                  Manual BOM Working Sheet
-                                </a>
-                              </li>
-                              <li>
-                                <a className="dropdown-item" href="#report1">
-                                  BOM Item Traceability
-                                </a>
-                              </li>
-                              <li>
-                                <a className="dropdown-item" href="#report2">
-                                  BOM Value Report
-                                </a>
-                              </li>
-                              <li>
-                                <a className="dropdown-item" href="#report3">
-                                 BOM Tree View
-                                </a>
-                              </li>
-                            </ul>
+
+                            {dropdownOpen && (
+                              <ul
+                                className="dropdown-menu show"
+                                style={{
+                                  position: 'absolute',
+                                  top: '100%',
+                                  left: 0,
+                                  zIndex: 1000,
+                                  display: 'block',
+                                  minWidth: '10rem',
+                                  padding: '0.5rem 0',
+                                  margin: '0.125rem 0 0',
+                                  fontSize: '12px',
+                                  color: '#212529',
+                                  textAlign: 'left',
+                                  listStyle: 'none',
+                                  backgroundColor: '#fff',
+                                  backgroundClip: 'padding-box',
+                                }}
+                              >
+                                <li>
+                                  <Link className="vndrbtn dropdown-item" to={"/UploadWIPvalue"}>
+                                    Upload WIP Value
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link className="vndrbtn dropdown-item" to={"/UploadOperationSpeci"}>
+                                    Upload Operation Specification
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link className="vndrbtn dropdown-item" to={"/ManualBOMWorking"}>
+                                    Manual BOM Working Sheet
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link className="vndrbtn dropdown-item" to={"/BOMItemTrace"} >
+                                    BOM Item Traceability
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link className="vndrbtn dropdown-item"  to={"/"}>
+                                    BOM Value Report
+                                  </Link>
+                                </li>
+                                <li>
+                                  <Link className="vndrbtn dropdown-item" to={"/"}>
+                                    BOM Tree View
+                                  </Link>
+                                </li>
+                              </ul>
+                            )}
+                          </div>
                           
                           <Link
                             to={"/bill-material"}
-                            className="BOMRoutingbtn"
-                            style={{ padding: "8px" }}
+                            className="vndrbtn"
                           >
                             New / Modify BOM
                           </Link>
-                          <button className="BOMRoutingbtn">BOM:Query</button>
+                          <Link className="vndrbtn"  to={"/BOMQuery"}>BOM:Query</Link>
                         </div>
+
                       </div>
                     </div>
               
-                  <div className="BomRoutingMain mt-5">
+                  <div className="BomRoutingMain">
                     <div className="Container-fluid">
+
                       <div className="row mb-3 text-start">
                         <div className="col-md-1 mt-1">
                           <select
@@ -159,60 +204,289 @@ const BomRouting = () => {
                           </select>
                         </div>
                         <div className="col-md-6 mt-2">
-                          <button className="btn">Search</button>
-                          <button className="btn">View All</button>
-                          <button className="btn">
+                          <button className="  vndrbtn">Search</button>
+                          <button className="  vndrbtn">View All</button>
+                          <button className="  vndrbtn">
                             Export Excel (Routing)
                           </button>
-                          <button className="btn">
+                          <button className="  vndrbtn">
                             Export Excel (BOM)
                           </button>
-                          <button className="btn">Excel(Routing)</button>
+                          <button className="  vndrbtn">Excel(Routing)</button>
                         </div>
                       </div>
+
                     </div>
                   </div>
-                  <div className="BomRoutingTable mt-5">
+
+                  <div className="BomRoutingTable mt-4">
                     <div className="row">
-                      <div className="col-md-12">
-                        <div className="table-responsive">
-                          <table className="table  table-striped">
-                            <thead>
-                              <tr>
-                                <th>Sr</th>
-                                <th>Item No</th>
-                                <th>Item Code</th>
-                                <th>Item Docs</th>
-                                <th>NPO</th>
-                                <th>Auth</th>
-                                <th>User</th>
-                                <th>View</th>
-                                <th>View</th>
-                                <th>Tree</th>
-                                <th>Tree</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                <td>1</td>
-                                <td>Item No 1</td>
-                                <td>Item Code 1</td>
-                                <td>Item Docs 1</td>
-                                <td>NPO 1</td>
-                                <td>Auth 1</td>
-                                <td>User 1</td>
-                                <td>View 1</td>
-                                <td>View 1</td>
-                                <td>Tree 1</td>
-                                <td>Tree 1</td>
-                              </tr>
-                            
-                            </tbody>
-                          </table>
-                        </div>
+
+                       <div className="col-md-12">
+                            {/* Tables */}
+                            {activeTable === 'FG' && (
+                              <div className="table-responsive">
+                                <table className="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                                    <th>Sr</th>
+                                                    <th>Item No</th>
+                                                      <th>Item Code</th>
+                                                      <th>Item Docs</th>
+                                                      <th>NPO</th>
+                                                      <th>Auth</th>
+                                                      <th>User</th>
+                                                      <th>View</th>
+                                                      <th>View</th>
+                                                      <th>Tree</th>
+                                                      <th>Tree</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                    <td>1</td>
+                                                      <td>Item No 1</td>
+                                                      <td>Item Code 1</td>
+                                                      <td>Item Docs 1</td>
+                                                      <td>NPO 1</td>
+                                                      <td>Auth 1</td>
+                                                      <td>User 1</td>
+                                                      <td>View 1</td>
+                                                      <td>View 1</td>
+                                                      <td>Tree 1</td>
+                                                      <td>Tree 1</td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {activeTable === 'SFG' && (
+                              <div className="table-responsive">
+                                <table className="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                    <th>Sr</th>
+                                                      <th>Item No</th>
+                                                      <th>Item Code</th>
+                                                      <th>Item Docs</th>
+                                                      <th>NPO</th>
+                                                      <th>Auth</th>
+                                                      <th>User</th>
+                                                      <th>View</th>
+                                                      <th>View</th>
+                                                      <th>Tree</th>
+                                                      <th>Tree</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {activeTable === 'RM' && (
+                              <div className="table-responsive">
+                                <table className="table table-bordered">
+                                  <thead>
+                                  <tr>
+                                                      <th>Sr</th>
+                                                      <th>Item No</th>
+                                                      <th>Item Code</th>
+                                                      <th>Item Docs</th>
+                                                      <th>NPO</th>
+                                                      <th>Auth</th>
+                                                      <th>User</th>
+                                                      <th>View</th>
+                                                      <th>View</th>
+                                                      <th>Tree</th>
+                                                      <th>Tree</th>
+                                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                  <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td>admin</td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {activeTable === 'NPD' && (
+                              <div className="table-responsive">
+                              <table className="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                    <th>Sr</th>
+                                                      <th>Item No</th>
+                                                      <th>Item Code</th>
+                                                      <th>Item Docs</th>
+                                                      <th>NPO</th>
+                                                      <th>Auth</th>
+                                                      <th>User</th>
+                                                      <th>View</th>
+                                                      <th>View</th>
+                                                      <th>Tree</th>
+                                                      <th>Tree</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {activeTable === 'Total' && (
+                              <div className="table-responsive">
+                                <table className="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                    <th>Sr</th>
+                                                      <th>Item No</th>
+                                                      <th>Item Code</th>
+                                                      <th>Item Docs</th>
+                                                      <th>NPO</th>
+                                                      <th>Auth</th>
+                                                      <th>User</th>
+                                                      <th>View</th>
+                                                      <th>View</th>
+                                                      <th>Tree</th>
+                                                      <th>Tree</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {activeTable === 'UnAuth' && (
+                              <div className="table-responsive">    
+                              <table className="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                    <th>Sr</th>
+                                                      <th>Item No</th>
+                                                      <th>Item Code</th>
+                                                      <th>Item Docs</th>
+                                                      <th>NPO</th>
+                                                      <th>Auth</th>
+                                                      <th>User</th>
+                                                      <th>View</th>
+                                                      <th>View</th>
+                                                      <th>Tree</th>
+                                                      <th>Tree</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+
+                            {activeTable === 'Auth' && (
+                              <div className="table-responsive">
+                              <table className="table table-bordered">
+                                  <thead>
+                                    <tr>
+                                    <th>Sr</th>
+                                                      <th>Item No</th>
+                                                      <th>Item Code</th>
+                                                      <th>Item Docs</th>
+                                                      <th>NPO</th>
+                                                      <th>Auth</th>
+                                                      <th>User</th>
+                                                      <th>View</th>
+                                                      <th>View</th>
+                                                      <th>Tree</th>
+                                                      <th>Tree</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
                       </div>
+
                     </div>
                   </div>
+
                   <div className="BomRouteBottom mt-5">
                     <div className="row">
                       <div className="col-md-6 text-start">
@@ -227,6 +501,7 @@ const BomRouting = () => {
                       </div>
                     </div>
                   </div>
+
                 </div>
               </main>
             </div>

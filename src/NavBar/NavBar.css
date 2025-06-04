@@ -5,14 +5,14 @@
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: center; 
   padding: 10px 10px;
-  background-color: #fff;
+  background-color: #1E293b;
   border-bottom: 1px solid #ccc;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   color: grey;
-  margin-left: -10px;
+  margin-left: -12px;
 }
 .navbar-brand {
   display: flex;
@@ -21,6 +21,7 @@
 .navbar-toggle {
   font-size: 24px;
   background: none;
+  color: #fff;
   border: none;
   cursor: pointer;
   margin-right: 10px;
@@ -29,7 +30,7 @@
 .navbar-logo {
   font-size: 18px;
   font-weight: bold;
-  color: black;
+  color: white;
   margin: 0;
 }
 
@@ -47,7 +48,8 @@
 }
 
 .navbar-button {
-  background-color: white;
+  background-color: #1E293B;
+  color: whitesmoke;
   border: none;
   cursor: pointer;
 }

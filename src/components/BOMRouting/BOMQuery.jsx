@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./ItemMasterQuery.css"
+import "./BomRouting.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 
-const ItemMasterQuery = () => {
+const BOMQuery = () => {
 
   const [activeTab, setActiveTab] = useState("query");
+
    const navigate = useNavigate();
     
       const handleClose = () => {
-        navigate("/item-master");
+        navigate("/bom-routing");
       };
 
   return (
@@ -19,12 +20,12 @@ const ItemMasterQuery = () => {
         <div className="top-but3-header mb-4 text-start">
                <div className="row align-items-center">
                     <div className="col-md-4">
-                      <h5 className="header-title">Item Master Query</h5>
+                      <h5 className="header-title">BOM Query</h5>
                     </div>
                     <div className="col-md-8 text-end">
                        <div className="d-flex align-items-center justify-content-end">                          
-                          <Link className="vndrbtn me-2" to={"/QueryPages"}>
-                              Query Master
+                          <Link className="vndrbtn me-2" to={"/BOMMasterQuery"}>
+                             Query Master
                           </Link>
 
                           <Link type="button" className="vndrbtn me-2">
@@ -36,7 +37,7 @@ const ItemMasterQuery = () => {
                             aria-label="Close"
                             onClick={handleClose} >
                            X </button>
-                    
+
                         </div>
                     </div>
                </div>
@@ -65,7 +66,7 @@ const ItemMasterQuery = () => {
                        {/* Customer Type */}
                       <div className="row">
                         <div className="col-md-2">
-                          <label htmlFor="customerType" className="form-label"> Item Query</label>
+                          <label htmlFor="customerType" className="form-label"> BOM Query</label>
                         </div>
                       </div>
 
@@ -95,19 +96,6 @@ const ItemMasterQuery = () => {
                         </div>
                       </div>
 
-                      {/* City Name */}
-                      <div className="row mt-2">
-                        <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label"> Item SubGroup :</label>
-                        </div>
-                        <div className="col-md-3">
-                        <select className="form-select" id="status">
-                            <option value="">All</option>
-                            <option value="active">Active</option>
-                          </select>
-                        </div>
-                      </div>
-
                       <div className="row mt-2">
                         <div className="col-md-2">
                           <label htmlFor="cityName" className="form-label"> Item Name :</label>
@@ -119,39 +107,14 @@ const ItemMasterQuery = () => {
 
                       <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label">  Make :</label>
+                          <label htmlFor="cityName" className="form-label">Query  Name :</label>
                         </div>
                         <div className="col-md-3">
-                        <input type="text" className="form-control" />
-                        </div>
-                      </div>
-
-
-                      {/* Query Type with Radio + Select */}
-                      <div className="row mt-2">
-                        {/* First Option */}
-                        <div className="col-md-2">
-                          <div className="d-flex align-items-center">
-                            <input type="radio" id="userQuery" name="queryType" className="me-2" />
-                            <label htmlFor="userQuery" className="form-label mb-0">User Query:</label>
-                          </div>
-                        </div>
-                        <div className="col-md-3">
-                          <select className="form-select">
-                            <option value="">Select</option>
+                        <select className="form-select" id="status">
+                            <option value="">All</option>
+                            <option value="active">Active</option>
                           </select>
                         </div>
-                      </div>
-
-                      <div className="row mt-2">
-                        {/* Second Option */}
-                        <div className="col-md-2">
-                          <div className="d-flex align-items-center">
-                            <input type="radio" id="erpQuery" name="queryType" className="me-2" />
-                            <label htmlFor="erpQuery" className="form-label mb-0">ERP Query:</label>
-                          </div>
-                        </div>
-                      
                       </div>
 
                       {/* Execute Button */}
@@ -176,4 +139,4 @@ const ItemMasterQuery = () => {
   )
 }
 
-export default ItemMasterQuery
+export default BOMQuery

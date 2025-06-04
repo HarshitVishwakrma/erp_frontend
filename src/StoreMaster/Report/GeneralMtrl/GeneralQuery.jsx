@@ -1,17 +1,17 @@
+
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./ItemMasterQuery.css"
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 
-const ItemMasterQuery = () => {
+const GeneralQuery = () => {
 
   const [activeTab, setActiveTab] = useState("query");
    const navigate = useNavigate();
     
       const handleClose = () => {
-        navigate("/item-master");
+        navigate("/GeneralMtrlIssue");
       };
 
   return (
@@ -19,11 +19,11 @@ const ItemMasterQuery = () => {
         <div className="top-but3-header mb-4 text-start">
                <div className="row align-items-center">
                     <div className="col-md-4">
-                      <h5 className="header-title">Item Master Query</h5>
+                      <h5 className="header-title"> General Material Issue  Query</h5>
                     </div>
                     <div className="col-md-8 text-end">
                        <div className="d-flex align-items-center justify-content-end">                          
-                          <Link className="vndrbtn me-2" to={"/QueryPages"}>
+                          <Link className="vndrbtn me-2" to={"/QueryGnrl"}>
                               Query Master
                           </Link>
 
@@ -62,108 +62,147 @@ const ItemMasterQuery = () => {
               {activeTab === "query" && (
                 <div className="tab-panel">
                    <div className="mb-3">
-                       {/* Customer Type */}
-                      <div className="row">
-                        <div className="col-md-2">
-                          <label htmlFor="customerType" className="form-label"> Item Query</label>
-                        </div>
-                      </div>
 
-                      {/* Status */}
-                      <div className="row mt-2">
+                     <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="status" className="form-label">Main Group:</label>
+                          <label htmlFor="status" className="form-label">From:</label>
                         </div>
                         <div className="col-md-3">
-                          <select className="form-select" id="status">
-                            <option value="">All</option>
-                            <option value="active">Active</option>
-                          </select>
+                            <input type="date" className="form-control"  />
+                        </div>
+
+                        <div className="col-md-2">
+                          <label htmlFor="status" className="form-label">To :</label>
+                        </div>
+                        <div className="col-md-3">
+                            <input type="date" className="form-control"  />
                         </div>
                       </div>
-
-                      {/* Customer Name */}
+                       
                       <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="custName" className="form-label"> Group:</label>
+                          <label htmlFor="custName" className="form-label"> Plant :</label>
                         </div>
                         <div className="col-md-3">
                         <select className="form-select" id="status">
+                            <option value="">Produlink</option>
+                            <option value="active"></option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="row mt-2">
+                        <div className="col-md-2">
+                          <label htmlFor="cityName" className="form-label"> Department :</label>
+                        </div>
+                        <div className="col-md-3">
+                         <select className="form-select" id="status">
                             <option value="">All</option>
-                            <option value="active">Active</option>
+                            <option value="active"></option>
                           </select>
                         </div>
                       </div>
 
-                      {/* City Name */}
                       <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label"> Item SubGroup :</label>
+                          <label htmlFor="cityName" className="form-label"> Item Group :</label>
                         </div>
                         <div className="col-md-3">
-                        <select className="form-select" id="status">
+                         <select className="form-select" id="status">
                             <option value="">All</option>
-                            <option value="active">Active</option>
+                            <option value="active"></option>
                           </select>
                         </div>
                       </div>
 
                       <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label"> Item Name :</label>
+                          <label htmlFor="cityName" className="form-label"> Item Sub Group :</label>
                         </div>
                         <div className="col-md-3">
-                        <input type="text" className="form-control" />
-                        </div>
-                      </div>
-
-                      <div className="row mt-2">
-                        <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label">  Make :</label>
-                        </div>
-                        <div className="col-md-3">
-                        <input type="text" className="form-control" />
-                        </div>
-                      </div>
-
-
-                      {/* Query Type with Radio + Select */}
-                      <div className="row mt-2">
-                        {/* First Option */}
-                        <div className="col-md-2">
-                          <div className="d-flex align-items-center">
-                            <input type="radio" id="userQuery" name="queryType" className="me-2" />
-                            <label htmlFor="userQuery" className="form-label mb-0">User Query:</label>
-                          </div>
-                        </div>
-                        <div className="col-md-3">
-                          <select className="form-select">
-                            <option value="">Select</option>
+                         <select className="form-select" id="status">
+                            <option value="">All</option>
+                            <option value="active"></option>
                           </select>
                         </div>
-                      </div>
+                      </div> 
 
                       <div className="row mt-2">
-                        {/* Second Option */}
                         <div className="col-md-2">
-                          <div className="d-flex align-items-center">
-                            <input type="radio" id="erpQuery" name="queryType" className="me-2" />
-                            <label htmlFor="erpQuery" className="form-label mb-0">ERP Query:</label>
-                          </div>
+                          <label htmlFor="status" className="form-label">M Issue No:</label>
                         </div>
+                        <div className="col-md-3">
+                            <input type="text" className="form-control"  />
+                        </div>
+
+                        <div className="col-md-2">
+                          <label htmlFor="status" className="form-label">To :</label>
+                        </div>
+                        <div className="col-md-3">
+                            <input type="text" className="form-control"  />
+                        </div>
+                      </div>
                       
+
+                       <div className="row mt-2">
+                        <div className="col-md-2">
+                          <label htmlFor="cityName" className="form-label"> Emp Name :</label>
+                        </div>
+                        <div className="col-md-3">
+                          <input type="text" className="form-control" />
+                        </div>
+                      </div>
+
+                       <div className="row mt-2">
+                        <div className="col-md-2">
+                          <label htmlFor="cityName" className="form-label">  Item Name  :</label>
+                        </div>
+                        <div className="col-md-3">
+                           <input type="text" className="form-control" />
+                        </div>
+                      </div>
+
+                       <div className="row mt-2">
+                        <div className="col-md-2">
+                          <label htmlFor="cityName" className="form-label">  User  :</label>
+                        </div>
+                        <div className="col-md-3">
+                           <input type="text" placeholder="Name..." className="form-control" />
+                        </div>
+                      </div>
+
+                      <div className="row mt-2">
+                        <div className="col-md-2">
+                          <label htmlFor="cityName" className="form-label">  MRN No  :</label>
+                        </div>
+                        <div className="col-md-3">
+                           <input type="text" placeholder=" " className="form-control" />
+                        </div>
+                      </div>
+
+                      <div className="row mt-2">
+                        <div className="col-md-2">
+                          <label htmlFor="cityName" className="form-label"> Query Name :</label>
+                        </div>
+                        <div className="col-md-3">
+                         <select className="form-select" id="status">
+                            <option value="">Select</option>
+                            <option value="active"></option>
+                          </select>
+                        </div>
                       </div>
 
                       {/* Execute Button */}
                       <div className="row mt-3">
                         <div className="col-md-5">
-                          <button className="vndrbtn btn-primary">Execute</button>
+                          <button className="vndrbtn btn-primary"> Execute Report </button>
                         </div>
                       </div>
 
                    </div>
                 </div>
               )}
+
               {activeTab === "result" && (
                 <div className="tab-panel">
                   <h4 className="text-success">Result</h4>
@@ -176,4 +215,4 @@ const ItemMasterQuery = () => {
   )
 }
 
-export default ItemMasterQuery
+export default GeneralQuery

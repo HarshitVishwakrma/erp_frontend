@@ -204,8 +204,8 @@
   top: 280px;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  max-width: 1000px;
+  width: 50%;
+  max-width: 500px;
   background-color: #fff;
   padding: 20px 25px;
   border-radius: 12px;

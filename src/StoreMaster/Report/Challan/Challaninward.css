@@ -4,18 +4,18 @@
     padding: 0px;
   }
   
-  .NewStoreGateInward {
+  .Challaninward {
     width: 100%;
     height: 100vh;
   }
   
-  .GateInward-header {
+  .Challaninward-header {
     background-color: #f8f9fa; 
     border-bottom: 1px solid #dee2e6; 
     padding: 10px 15px; 
   }
   
-  .GateInward-main {
+  .Challaninward-main {
     background-color: #f8f9fa;
     font-size: 12px;
     padding: 10px;
@@ -60,7 +60,7 @@
     font-size: 12px;
   }
   
-  .StoreGateInward {
+  .StoreChallaninward {
     background-color: #f8f9fa;
     font-size: 12px;
     padding: 10px;

@@ -1,30 +1,30 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./ItemMasterQuery.css"
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
-const ItemMasterQuery = () => {
+const CustomerQuery = () => {
 
   const [activeTab, setActiveTab] = useState("query");
-   const navigate = useNavigate();
-    
-      const handleClose = () => {
-        navigate("/item-master");
-      };
+
+  const navigate = useNavigate();
+
+  const handleClose = () => {
+    navigate("/vender-list");
+  };
 
   return (
     <div className="container mt-4">
         <div className="top-but3-header mb-4 text-start">
+      
                <div className="row align-items-center">
                     <div className="col-md-4">
-                      <h5 className="header-title">Item Master Query</h5>
+                      <h5 className="header-title">Customer Supplier Query</h5>
                     </div>
                     <div className="col-md-8 text-end">
                        <div className="d-flex align-items-center justify-content-end">                          
-                          <Link className="vndrbtn me-2" to={"/QueryPages"}>
-                              Query Master
+                          <Link className="vndrbtn me-2" to={"/CustomerQueryMaster"}>
+                             Query Master
                           </Link>
 
                           <Link type="button" className="vndrbtn me-2">
@@ -36,7 +36,6 @@ const ItemMasterQuery = () => {
                             aria-label="Close"
                             onClick={handleClose} >
                            X </button>
-                    
                         </div>
                     </div>
                </div>
@@ -62,17 +61,23 @@ const ItemMasterQuery = () => {
               {activeTab === "query" && (
                 <div className="tab-panel">
                    <div className="mb-3">
-                       {/* Customer Type */}
+                                                    {/* Customer Type */}
                       <div className="row">
                         <div className="col-md-2">
-                          <label htmlFor="customerType" className="form-label"> Item Query</label>
+                          <label htmlFor="customerType" className="form-label">Customer Type:</label>
+                        </div>
+                        <div className="col-md-3">
+                          <select className="form-select" id="customerType">
+                            <option value="">All</option>
+                            <option value="type1">Type 1</option>
+                          </select>
                         </div>
                       </div>
 
                       {/* Status */}
                       <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="status" className="form-label">Main Group:</label>
+                          <label htmlFor="status" className="form-label">Status:</label>
                         </div>
                         <div className="col-md-3">
                           <select className="form-select" id="status">
@@ -85,47 +90,22 @@ const ItemMasterQuery = () => {
                       {/* Customer Name */}
                       <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="custName" className="form-label"> Group:</label>
+                          <label htmlFor="custName" className="form-label">Cust Name:</label>
                         </div>
                         <div className="col-md-3">
-                        <select className="form-select" id="status">
-                            <option value="">All</option>
-                            <option value="active">Active</option>
-                          </select>
+                          <input type="text" className="form-control" id="custName" />
                         </div>
                       </div>
 
                       {/* City Name */}
                       <div className="row mt-2">
                         <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label"> Item SubGroup :</label>
+                          <label htmlFor="cityName" className="form-label">City Name:</label>
                         </div>
                         <div className="col-md-3">
-                        <select className="form-select" id="status">
-                            <option value="">All</option>
-                            <option value="active">Active</option>
-                          </select>
+                          <input type="text" className="form-control" id="cityName" />
                         </div>
                       </div>
-
-                      <div className="row mt-2">
-                        <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label"> Item Name :</label>
-                        </div>
-                        <div className="col-md-3">
-                        <input type="text" className="form-control" />
-                        </div>
-                      </div>
-
-                      <div className="row mt-2">
-                        <div className="col-md-2">
-                          <label htmlFor="cityName" className="form-label">  Make :</label>
-                        </div>
-                        <div className="col-md-3">
-                        <input type="text" className="form-control" />
-                        </div>
-                      </div>
-
 
                       {/* Query Type with Radio + Select */}
                       <div className="row mt-2">
@@ -176,4 +156,4 @@ const ItemMasterQuery = () => {
   )
 }
 
-export default ItemMasterQuery
+export default CustomerQuery

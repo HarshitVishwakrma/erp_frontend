@@ -2946,13 +2946,14 @@ export const saveBomItem = async (itemId, formData, editingId = null) => {
 
 export const deleteBomItem = async (itemId, bomId) => {
   try {
-    const response = await axios.delete(`${BASE_URL}api/items/${itemId}/boms/${bomId}/`)
+    const response = await axios.delete(`${BASE_URL}api/items/${itemId}/boms/${bomId}/delete/`)
     return response.data
   } catch (error) {
     console.error("Error deleting BOM data:", error)
     throw error
   }
 }
+
 
 
 
@@ -3036,50 +3037,71 @@ export const fetchCombinedPartNo = async (part_no, operation_name) => {
 };
 
 
-// Get all BOM entries
-export const getBomItemscards = async (page = 1) => {
+// Updated API functions for BOM Item Part Master
+export const getBomItemsForSelectedItem = async (itemId) => {
   try {
-    const response = await axios.get(`${BASE_URL}BOM_ItemPartMaster/`)
-    console.log("BOM Items API Response:", response.data) // Debug log
-    return {
-      results: response.data || [],
-      total_pages: 1,
-    }
+    const response = await axios.get(`${BASE_URL}BOM_ItemPartMaster/item/${itemId}/bom/`)
+    console.log("BOM Items for selected item:", response.data)
+    return response.data || []
   } catch (error) {
-    console.error("Error fetching BOM items:", error)
-    return { results: [], total_pages: 1 }
+    console.error("Error fetching BOM items for selected item:", error)
+    return []
   }
 }
 
-// Save new BOM
-export const saveBomItemcards = async (data) => {
+export const saveBomItemForSelectedItem = async (itemId, data) => {
   try {
-    const res = await axios.post(`${BASE_URL}BOM_ItemPartMaster/`, data);
-    return res.data;
-  } catch (err) {
-    console.error("Error saving BOM item:", err);
-    throw err;
+    const response = await axios.post(`${BASE_URL}BOM_ItemPartMaster/item/${itemId}/bom/`, data)
+    console.log("Saved BOM item:", response.data)
+    return response.data
+  } catch (error) {
+    console.error("Error saving BOM item:", error)
+    throw error
   }
-};
+}
 
 // Update BOM
-export const updateBomItemcards = async (id, data) => {
+export const updateBomItemForSelectedItem = async (itemId, bomId, data) => {
   try {
-    const res = await axios.put(`${BASE_URL}BOM_ItemPartMaster/${id}/`, data);
-    return res.data;
-  } catch (err) {
-    console.error("Error updating BOM item:", err);
-    throw err;
+    const response = await axios.put(`${BASE_URL}api/item/${itemId}/bom/${bomId}/`, data)
+    console.log("Updated BOM item:", response.data)
+    return response.data
+  } catch (error) {
+    console.error("Error updating BOM item:", error)
+    throw error
   }
+}
+
+export const deleteBomItemForSelectedItem = async (itemId, bomId) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}api/item/${itemId}/bom/${bomId}/`)
+    console.log("Deleted BOM item")
+    return response.data
+  } catch (error) {
+    console.error("Error deleting BOM item:", error)
+    throw error
+  }
+}
+
+
+export const getRMItems = async (search) => {
+  const res = await axios.get(`${BASE_URL}api/rm-items/?search=${search}`);
+  return res.data;
 };
 
-// Delete BOM
-export const deleteBomItemcards = async (id) => {
-  try {
-    const res = await axios.delete(`${BASE_URL}BOM_ItemPartMaster/${id}/`);
-    return res.data;
-  } catch (err) {
-    console.error("Error deleting BOM item:", err);
-    throw err;
-  }
+export const getComItems = async (itemId, search) => {
+  const res = await axios.get(`${BASE_URL}bom/simple-search/${itemId}/?search=${search}`);
+  return res.data;
 };
+
+
+export const fetchPartCodeDropdownData = async (itemId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}api/item/${itemId}/bom/dropdown/`)
+    console.log("Part Code dropdown data:", response.data)
+    return response.data || []
+  } catch (error) {
+    console.error("Error fetching part code dropdown data:", error)
+    return []
+  }
+}
