@@ -1,33 +1,30 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min";
-import "@fortawesome/fontawesome-free/css/all.min.css";
-import NavBar from "../../../NavBar/NavBar";
-import SideNav from "../../../SideNav/SideNav";
+"use client"
 
-import "./BillMaterial.css";
-import VisibleStandard from "./VisibleStandard.jsx";
+import { useEffect, useState, useRef, useCallback } from "react"
+import "bootstrap/dist/css/bootstrap.min.css"
+import "bootstrap/dist/js/bootstrap.bundle.min"
+import "@fortawesome/fontawesome-free/css/all.min.css"
+import NavBar from "../../../NavBar/NavBar"
+import SideNav from "../../../SideNav/SideNav"
+
+import "./BillMaterial.css"
+import VisibleStandard from "./VisibleStandard.jsx"
 // Purchase Card
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { FaEdit, FaPlus, FaTimes, FaTrash } from "react-icons/fa";
-import {
-  saveDepartment,
-  getDepartments,
-  updateDepartment,
-  deleteDepartmentCard,
-} from "../../../Service/Api.jsx";
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { FaEdit, FaPlus, FaTimes, FaTrash } from "react-icons/fa"
+import { saveDepartment, getDepartments, updateDepartment, deleteDepartmentCard } from "../../../Service/Api.jsx"
 
-import VisibleBomitem from "./VisibleBomitem.jsx";
-import { Link } from "react-router-dom";
-import BOMoperation from "../BOMoperation/BOMoperation.jsx";
+import VisibleBomitem from "./VisibleBomitem.jsx"
+import { Link } from "react-router-dom"
+import BOMoperation from "../BOMoperation/BOMoperation.jsx"
 import {
   fetchScrapData,
   searchItems,
   saveBomItem,
   deleteBomItem,
-  fetchPartCodeDropdownData
-} from "../../../Service/Api.jsx";
+  fetchPartCodeDropdownData,
+} from "../../../Service/Api.jsx"
 
 import {
   fetchoperationData,
@@ -35,61 +32,60 @@ import {
   getBomItemsForSelectedItem,
   saveBomItemForSelectedItem,
   updateBomItemForSelectedItem,
- deleteBomItemForSelectedItem
-  
-} from "../../../Service/Api.jsx";
+  deleteBomItemForSelectedItem,
+} from "../../../Service/Api.jsx"
 
-import { getRMItems ,getComItems } from "../../../Service/Api.jsx";
+import { getRMItems, getComItems } from "../../../Service/Api.jsx"
 
 const BillMaterial = () => {
-  const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("BOM");
+  const [sideNavOpen, setSideNavOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("BOM")
 
   const toggleSideNav = () => {
-    setSideNavOpen(!sideNavOpen);
-  };
+    setSideNavOpen(!sideNavOpen)
+  }
 
   useEffect(() => {
     if (sideNavOpen) {
-      document.body.classList.add("side-nav-open");
+      document.body.classList.add("side-nav-open")
     } else {
-      document.body.classList.remove("side-nav-open");
+      document.body.classList.remove("side-nav-open")
     }
-  }, [sideNavOpen]);
+  }, [sideNavOpen])
 
   //   card
-  const [cardVisibleProduction, setCardVisibleProduction] = useState(false);
+  const [cardVisibleProduction, setCardVisibleProduction] = useState(false)
 
   const toggleCardProduction = () => {
-    setCardVisibleProduction(!cardVisibleProduction);
-  };
+    setCardVisibleProduction(!cardVisibleProduction)
+  }
 
-  const [cardVisibleOperation, setCardVisibleOperation] = useState(false);
+  const [cardVisibleOperation, setCardVisibleOperation] = useState(false)
 
   const toggleCardOperation = () => {
-    setCardVisibleOperation(!cardVisibleOperation);
-  };
+    setCardVisibleOperation(!cardVisibleOperation)
+  }
 
-  const [cardVisibleStandard, setCardVisibleStandard] = useState(false);
+  const [cardVisibleStandard, setCardVisibleStandard] = useState(false)
 
   const toggleCardStandard = () => {
-    setCardVisibleStandard(!cardVisibleStandard);
-  };
+    setCardVisibleStandard(!cardVisibleStandard)
+  }
 
-  const [cardVisibleBomitem, setCardVisibleBomitem] = useState(false);
+  const [cardVisibleBomitem, setCardVisibleBomitem] = useState(false)
 
   const toggleCardBomitem = () => {
-    setCardVisibleBomitem(!cardVisibleBomitem);
-  };
+    setCardVisibleBomitem(!cardVisibleBomitem)
+  }
 
-  const [cardVisiblePlus, setCardVisiblePlus] = useState(false);
+  const [cardVisiblePlus, setCardVisiblePlus] = useState(false)
 
   const toggleCardPlus = () => {
-    setCardVisiblePlus(!cardVisiblePlus);
-  };
+    setCardVisiblePlus(!cardVisiblePlus)
+  }
 
   // Purchase Card
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([])
   const [formData, setFormData] = useState({
     Department_Name: "",
     Short_Name: "",
@@ -106,84 +102,84 @@ const BillMaterial = () => {
     Bom_Item_Group: "",
     Item: "",
     Qty: "",
-  });
-  const [errors, setErrors] = useState({});
-  const [isEditing, setIsEditing] = useState(false);
-  const [editId, setEditId] = useState(null);
+  })
+  const [errors, setErrors] = useState({})
+  const [isEditing, setIsEditing] = useState(false)
+  const [editId, setEditId] = useState(null)
 
   useEffect(() => {
-    fetchDepartments();
-  }, []);
+    fetchDepartments()
+  }, [])
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors = {}
     if (!formData.Department_Name) {
-      newErrors.Department_Name = "This field is required.";
+      newErrors.Department_Name = "This field is required."
     }
     if (!formData.Short_Name) {
-      newErrors.Short_Name = "This field is required.";
+      newErrors.Short_Name = "This field is required."
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    const { name, value } = e.target
+    setFormData({ ...formData, [name]: value })
+  }
 
   const handleSave = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!validateForm()) {
-      return;
+      return
     }
     try {
       if (isEditing) {
-        await updateDepartment(editId, formData);
-        toast.success("Department updated successfully!");
+        await updateDepartment(editId, formData)
+        toast.success("Department updated successfully!")
       } else {
-        await saveDepartment(formData);
-        toast.success("Department saved successfully!");
+        await saveDepartment(formData)
+        toast.success("Department saved successfully!")
       }
-      fetchDepartments(); // Refresh data
-      setFormData({ Department_Name: "", Short_Name: "" });
-      setIsEditing(false);
-      setEditId(null);
+      fetchDepartments() // Refresh data
+      setFormData({ Department_Name: "", Short_Name: "" })
+      setIsEditing(false)
+      setEditId(null)
     } catch (error) {
-      toast.error("Failed to save department.");
-      console.error("Error saving department:", error);
+      toast.error("Failed to save department.")
+      console.error("Error saving department:", error)
     }
-  };
+  }
 
   const fetchDepartments = async () => {
     try {
-      const response = await getDepartments();
-      setData(response);
+      const response = await getDepartments()
+      setData(response)
     } catch (error) {
-      toast.error("Failed to fetch departments.");
-      console.error("Error fetching departments:", error);
+      toast.error("Failed to fetch departments.")
+      console.error("Error fetching departments:", error)
     }
-  };
+  }
 
   const handleDelete = async (id) => {
     try {
-      await deleteDepartmentCard(id);
-      toast.success("Department deleted successfully!");
-      fetchDepartments(); // Refresh data
+      await deleteDepartmentCard(id)
+      toast.success("Department deleted successfully!")
+      fetchDepartments() // Refresh data
     } catch (error) {
-      toast.error("Failed to delete department.");
-      console.error("Error deleting department:", error);
+      toast.error("Failed to delete department.")
+      console.error("Error deleting department:", error)
     }
-  };
+  }
 
   const handleEdit = (item) => {
     setFormData({
       Department_Name: item.Department_Name,
       Short_Name: item.Short_Name,
-    });
-    setIsEditing(true);
-    setEditId(item.id);
-  };
+    })
+    setIsEditing(true)
+    setEditId(item.id)
+  }
 
   //BOM
 
@@ -370,17 +366,36 @@ const BillMaterial = () => {
     if (searchTerm) {
       try {
         setIsLoading(true)
-        const data = await searchItems(searchTerm.split(" - ")[0])
+
+        // Extract the part number - handle both manual input and dropdown selection
+        let searchValue = searchTerm.trim()
+
+        // If the search term contains " | " (from dropdown selection), extract the part number
+        if (searchValue.includes(" | ")) {
+          searchValue = searchValue.split(" | ")[0]
+        }
+        // If the search term contains " - " (legacy format), extract the part number
+        else if (searchValue.includes(" - ")) {
+          searchValue = searchValue.split(" - ")[0]
+        }
+
+        console.log("Searching for:", searchValue)
+        const data = await searchItems(searchValue)
 
         if (data && data.length > 0) {
           const item = data[0]
           setSelectedItem(item)
+
+          // Update search term to show full item info
+          setSearchTerm(`${item.part_no} | ${item.Part_Code} | ${item.Name_Description}`)
 
           if (item.bom_items && item.bom_items.length > 0) {
             setTableData(item.bom_items)
           } else {
             setTableData([])
           }
+
+          toast.success(`Item found: ${item.part_no}`)
         } else {
           setSelectedItem(null)
           setTableData([])
@@ -394,6 +409,8 @@ const BillMaterial = () => {
         toast.error("Error searching for items. Please try again.")
         setIsLoading(false)
       }
+    } else {
+      toast.warning("Please enter a search term.")
     }
   }
 
@@ -622,13 +639,24 @@ const BillMaterial = () => {
   // Fixed BOM Part Code options fetching
   const fetchBomPartCodeOptions = async (type) => {
     try {
+      console.log("Fetching options for type:", type, "with PartCode:", formData1.PartCode)
+
       if (type === "RM") {
-        const res = await getRMItems(formData1.PartCode || "")
+        // Get the current PartCode directly from the form element to ensure latest value
+        const currentPartCode = document.querySelector('select[name="PartCode"]')?.value || formData1.PartCode || ""
+        console.log("Using PartCode for RM fetch:", currentPartCode)
+
+        const res = await getRMItems(currentPartCode)
+        console.log("RM API Response:", res)
         setBomOptions(res || [])
       } else if (type === "COM") {
         const selectedItemId = selectedItem?.id || 67
-        const res = await getComItems(selectedItemId, formData1.PartCode || "")
+        const currentPartCode = document.querySelector('select[name="PartCode"]')?.value || formData1.PartCode || ""
+        console.log("Using PartCode for COM fetch:", currentPartCode)
+
+        const res = await getComItems(selectedItemId, currentPartCode)
         console.log("COM API Response:", res)
+
         // Handle both array and single object responses
         if (Array.isArray(res)) {
           setBomOptions(res)
@@ -652,11 +680,13 @@ const BillMaterial = () => {
       BOMPartType: [type], // only one allowed
       BomPartCode: "", // reset on change
     }))
-    fetchBomPartCodeOptions(type) // fetch related data
+
+    // Ensure we're using the current PartCode value when fetching options
+    setTimeout(() => {
+      fetchBomPartCodeOptions(type)
+    }, 0)
   }
 
-
-  
   return (
     <div className="BillMaterial">
       <div className="container-fluid">
@@ -665,42 +695,25 @@ const BillMaterial = () => {
           <div className="col-md-12">
             <div className="Main-NavBar">
               <NavBar toggleSideNav={toggleSideNav} />
-              <SideNav
-                sideNavOpen={sideNavOpen}
-                toggleSideNav={toggleSideNav}
-              />
+              <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="BillMaterial1">
                   <div className="BillMaterialMain mb-4 text-start mt-5">
                     <div className="row align-items-center">
                       <div className="col-md-5">
-                        <h5 className="header-title">
-                          Routing & Bill of Material (BOM)
-                        </h5>
+                        <h5 className="header-title">Routing & Bill of Material (BOM)</h5>
                       </div>
                       <div className="col-md-7 text-end">
-                        <button
-                          className="Billmaterialbtn"
-                          onClick={toggleCardProduction}
-                        >
+                        <button className="Billmaterialbtn" onClick={toggleCardProduction}>
                           1. Production Dept
                         </button>
-                        <button
-                          className="Billmaterialbtn"
-                          onClick={toggleCardOperation}
-                        >
+                        <button className="Billmaterialbtn" onClick={toggleCardOperation}>
                           2. Operation Master
                         </button>
-                        <button
-                          className="Billmaterialbtn"
-                          onClick={toggleCardStandard}
-                        >
+                        <button className="Billmaterialbtn" onClick={toggleCardStandard}>
                           3. Std Routing
                         </button>
-                        <button
-                          className="Billmaterialbtn"
-                          onClick={toggleCardBomitem}
-                        >
+                        <button className="Billmaterialbtn" onClick={toggleCardBomitem}>
                           BOM Item Group
                         </button>
                         <button className="Billmaterialbtn">BOM Print</button>
@@ -715,13 +728,8 @@ const BillMaterial = () => {
                     <div className="ProductionDeptCard">
                       <div className="card">
                         <div className="card-header d-flex justify-content-between">
-                          <h5 style={{ color: "blue" }}>
-                            Production Department Master
-                          </h5>
-                          <button
-                            className="Closebom"
-                            onClick={toggleCardProduction}
-                          >
+                          <h5 style={{ color: "blue" }}>Production Department Master</h5>
+                          <button className="Closebom" onClick={toggleCardProduction}>
                             X
                           </button>
                         </div>
@@ -730,18 +738,13 @@ const BillMaterial = () => {
                           <form onSubmit={handleSave}>
                             <div className="row mb-3 text-start">
                               <div className="col-md-5">
-                                <label
-                                  htmlFor="Department_Name"
-                                  className="form-label"
-                                >
+                                <label htmlFor="Department_Name" className="form-label">
                                   Department Name:
                                   <span className="text-danger">*</span>
                                 </label>
                                 <input
                                   type="text"
-                                  className={`form-control ${
-                                    errors.Department_Name ? "is-invalid" : ""
-                                  }`}
+                                  className={`form-control ${errors.Department_Name ? "is-invalid" : ""}`}
                                   id="Department_Name"
                                   name="Department_Name"
                                   value={formData.Department_Name}
@@ -749,41 +752,26 @@ const BillMaterial = () => {
                                   placeholder="Enter department name"
                                 />
                                 {errors.Department_Name && (
-                                  <div className="invalid-feedback">
-                                    {errors.Department_Name}
-                                  </div>
+                                  <div className="invalid-feedback">{errors.Department_Name}</div>
                                 )}
                               </div>
                               <div className="col-md-5">
-                                <label
-                                  htmlFor="Short_Name"
-                                  className="form-label"
-                                >
+                                <label htmlFor="Short_Name" className="form-label">
                                   Short Name:
                                 </label>
                                 <input
                                   type="text"
-                                  className={`form-control ${
-                                    errors.Short_Name ? "is-invalid" : ""
-                                  }`}
+                                  className={`form-control ${errors.Short_Name ? "is-invalid" : ""}`}
                                   id="Short_Name"
                                   name="Short_Name"
                                   value={formData.Short_Name}
                                   onChange={handleInputChange}
                                   placeholder="Enter short name"
                                 />
-                                {errors.Short_Name && (
-                                  <div className="invalid-feedback">
-                                    {errors.Short_Name}
-                                  </div>
-                                )}
+                                {errors.Short_Name && <div className="invalid-feedback">{errors.Short_Name}</div>}
                               </div>
                               <div className="col-md-2">
-                                <button
-                                  type="submit"
-                                  className="bomButton"
-                                  style={{ marginTop: "31px" }}
-                                >
+                                <button type="submit" className="bomButton" style={{ marginTop: "31px" }}>
                                   {isEditing ? "Update" : "Save"}
                                 </button>
                               </div>
@@ -819,9 +807,7 @@ const BillMaterial = () => {
                                           <FaTrash
                                             className="text-danger mx-2"
                                             style={{ cursor: "pointer" }}
-                                            onClick={() =>
-                                              handleDelete(item.id)
-                                            }
+                                            onClick={() => handleDelete(item.id)}
                                           />
                                         </td>
                                       </tr>
@@ -847,10 +833,7 @@ const BillMaterial = () => {
                       <div className="card">
                         <div className="card-header d-flex justify-content-between">
                           <span>Standard Routing Master</span>
-                          <button
-                            className="Closebom"
-                            onClick={toggleCardStandard}
-                          >
+                          <button className="Closebom" onClick={toggleCardStandard}>
                             X
                           </button>
                         </div>
@@ -863,10 +846,7 @@ const BillMaterial = () => {
                       <div className="card">
                         <div className="card-header d-flex justify-content-between">
                           <span>BOM Item Group Details</span>
-                          <button
-                            className="Closebom"
-                            onClick={toggleCardBomitem}
-                          >
+                          <button className="Closebom" onClick={toggleCardBomitem}>
                             X
                           </button>
                         </div>
@@ -894,16 +874,18 @@ const BillMaterial = () => {
                         <div className="col-md-1 mt-2">
                           <label>Select Item:</label>
                         </div>
-                        <div
-                          className="col-md-2 mt-1 position-relative"
-                          ref={dropdownRef}
-                        >
+                        <div className="col-md-2 mt-1 position-relative" ref={dropdownRef}>
                           <input
                             type="text"
                             className="form-control"
                             placeholder="Search by part number"
                             value={searchTerm}
                             onChange={handleSearchChange}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                handleSearch()
+                              }
+                            }}
                           />
                           {showDropdown && searchResults.length > 0 && (
                             <div
@@ -923,10 +905,7 @@ const BillMaterial = () => {
                           )}
                         </div>
                         <div className="col-md-2">
-                          <button
-                            className="materialbtn me-2"
-                            onClick={handleSearch}
-                          >
+                          <button className="materialbtn me-2" onClick={handleSearch}>
                             Search
                           </button>
                           <button className="materialbtn" onClick={handleClear}>
@@ -947,9 +926,7 @@ const BillMaterial = () => {
                           <button className="materialbtn">Copy BOM</button>
                         </div>
                         <div className="col-md-2">
-                          <p style={{ color: "blue", marginTop: "10px" }}>
-                            Calculate RM Wt
-                          </p>
+                          <p style={{ color: "blue", marginTop: "10px" }}>Calculate RM Wt</p>
                         </div>
                       </div>
 
@@ -960,15 +937,14 @@ const BillMaterial = () => {
                           {selectedItem.id})
                         </div>
                       )} */}
+                      
                       <div className="row mt-3">
                         <div className="col text-start">
                           <div className="tabs">
                             <ul className="nav nav-tabs">
                               <li className="nav-item">
                                 <button
-                                  className={`nav-link ${
-                                    activeTab === "BOM" ? "active" : ""
-                                  }`}
+                                  className={`nav-link ${activeTab === "BOM" ? "active" : ""}`}
                                   onClick={() => setActiveTab("BOM")}
                                 >
                                   BOM
@@ -976,371 +952,417 @@ const BillMaterial = () => {
                               </li>
                               <li className="nav-item">
                                 <button
-                                  className={`nav-link ${
-                                    activeTab === "BOM History" ? "active" : ""
-                                  }`}
+                                  className={`nav-link ${activeTab === "BOM History" ? "active" : ""}`}
                                   onClick={() => setActiveTab("BOM History")}
                                 >
                                   BOM History
                                 </button>
                               </li>
                             </ul>
-                            <div
-                              className="tab-content"
-                              style={{ border: "none" }}
-                            >
+                            <div className="tab-content" style={{ border: "none" }}>
                               {activeTab === "BOM" && (
                                 <div className="tab-pane fade show active">
                                   <div className="row">
                                     <div className="col-md-1">
-                                      <input
-                                        type="checkbox"
-                                        id="manualCheckbox"
-                                      />
-                                      <label
-                                        htmlFor="manualCheckbox"
-                                        className="ms-2"
-                                      >
+                                      <input type="checkbox" id="manualCheckbox" />
+                                      <label htmlFor="manualCheckbox" className="ms-2">
                                         Manual
                                       </label>
                                     </div>
                                     <div className="col-md-4">
-                                      <input
-                                        type="checkbox"
-                                        id="routingCheckbox"
-                                      />
-                                      <label
-                                        htmlFor="routingCheckbox"
-                                        className="ms-2"
-                                      >
+                                      <input type="checkbox" id="routingCheckbox" />
+                                      <label htmlFor="routingCheckbox" className="ms-2">
                                         Standard Routing
                                       </label>
                                     </div>
                                   </div>
-         {/* BOM Form Section - First Row */}
-      <div className="row mb-3 text-start mt-4">
-        <div className="col-md-1">
-          <label>Op No:</label>
-          <input type="text" className="form-control" name="OPNo" value={formData1.OPNo} onChange={handleChange} />
-        </div>
-        <div className="col-md-2">
-          <label>Part Code:</label>
-          <div className="row align-items-center">
-            <div className="col position-relative" ref={partCodeDropdownRef}>
-              <select className="form-control" name="PartCode" value={formData1.PartCode} onChange={handleChange}>
-                <option value="">Select Part Code</option>
-                {partCodeDropdownData.map((item, index) => (
-                  <option key={index} value={item.PartCode}>
-                    {item.Operation} | {item.PartCode} 
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-auto">
-              <button className="btn btn-outline-primary" onClick={toggleCardPlus1}>
-                <FaPlus />
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-2">
-          <label>BOM Part Type:</label>
-          <div className="row mt-2">
-            {["RM", "COM", "BOM"].map((type) => (
-              <div key={type} className="col-md-4 d-flex">
-                <input
-                  type="checkbox"
-                  id={type}
-                  name="BOMPartType"
-                  value={type}
-                  checked={formData1.BOMPartType.includes(type)}
-                  onChange={() => handleBOMPartTypeChange(type)}
-                />
-                <label htmlFor={type} className="ms-2">
-                  {type}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
+                                  {/* BOM Form Section - First Row */}
+                                  <div className="row mb-3 text-start mt-4">
+                                                <div className="col-md-2">
+                                      <label>BOM Part Type:</label>
+                                      <div className="row mt-2">
+                                        {["RM", "COM", "BOM"].map((type) => (
+                                          <div key={type} className="col-md-4 d-flex">
+                                            <input
+                                              type="checkbox"
+                                              id={type}
+                                              name="BOMPartType"
+                                              value={type}
+                                              checked={formData1.BOMPartType.includes(type)}
+                                              onChange={() => handleBOMPartTypeChange(type)}
+                                            />
+                                            <label htmlFor={type} className="ms-2">
+                                              {type}
+                                            </label>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
 
-        {(formData1.BOMPartType.includes("RM") || formData1.BOMPartType.includes("COM")) && (
-          <div className="col-md-2">
-            <label>Bom Part Code:</label>
-            <select className="form-control" name="BomPartCode" value={formData1.BomPartCode} onChange={handleChange}>
-              <option value="">Select Bom Part Code</option>
-              {formData1.BOMPartType.includes("RM") &&
-                bomOptions.map((item) => (
-                  <option key={item.id} value={item.Part_Code}>
-                    {item.part_no} | {item.Part_Code} | {item.Name_Description}
-                  </option>
-                ))}
-              {formData1.BOMPartType.includes("COM") &&
-                bomOptions.map((item, index) => (
-                  <option key={item.id || index} value={item.PartCode}>
-                    {item.OPNo} | {item.PartCode} | {item.Operation} 
-                  </option>
-                ))}
-            </select>
-          </div>
-        )}
+                                    {(formData1.BOMPartType.includes("RM") ||
+                                      formData1.BOMPartType.includes("COM")) && (
+                                      <div className="col-md-2">
+                                        <label>Bom Part Code:</label>
+                                        <select
+                                          className="form-control"
+                                          name="BomPartCode"
+                                          value={formData1.BomPartCode}
+                                          onChange={handleChange}
+                                        >
+                                          <option value="">Select Bom Part Code</option>
+                                          {formData1.BOMPartType.includes("RM") &&
+                                            bomOptions.map((item) => (
+                                              <option key={item.id} value={item.Part_Code}>
+                                                {item.part_no} | {item.Part_Code} | {item.Name_Description}
+                                              </option>
+                                            ))}
+                                          {formData1.BOMPartType.includes("COM") &&
+                                            bomOptions.map((item, index) => (
+                                              <option key={item.id || index} value={item.PartCode}>
+                                                {item.OPNo} | {item.Operation} | {item.PartCode}
+                                              </option>
+                                            ))}
+                                        </select>
+                                      </div>
+                                    )}
+                                    <div className="col-md-1">
+                                      <label>Op No:</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="OPNo"
+                                        value={formData1.OPNo}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-2">
+                                      <label>Part Code:</label>
+                                      <div className="row align-items-center">
+                                        <div className="col position-relative" ref={partCodeDropdownRef}>
+                                          <select
+                                            className="form-control"
+                                            name="PartCode"
+                                            value={formData1.PartCode}
+                                            onChange={handleChange}
+                                          >
+                                            <option value="">Select Part Code</option>
+                                            {partCodeDropdownData.map((item, index) => (
+                                              <option key={index} value={item.PartCode}>
+                                                {item.Operation} | {item.PartCode} 
+                                              </option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div className="col-auto">
+                                          <button className="btn btn-outline-primary" onClick={toggleCardPlus1}>
+                                            <FaPlus />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                        
 
-        <div className="col-md-1">                                      
-          <label>Qty : Kg</label>
-          <input type="text" className="form-control" name="QtyKg" value={formData1.QtyKg} onChange={handleChange} />
-        </div>
-        <div className="col-md-1">
-          <label>Scrap Code</label>
-          <select className="form-control" name="ScrapCode" value={formData1.ScrapCode} onChange={handleChange}>
-            <option value="">Select</option>
-            {scrapOptions.map((item, index) => (
-              <option key={index} value={item.part_no}>
-                {item.part_no} || {item.Name_Description}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="col-md-1">
-          <label>Scrap Qty</label>
-          <input
-            type="text"
-            className="form-control"
-            name="ScracpQty"
-            value={formData1.ScracpQty}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col-md-1">
-          <label>QC</label>
-          <input type="text" className="form-control" name="QC" value={formData1.QC} onChange={handleChange} />
-        </div>
-        <div className="col-md-1">
-          <label>Ass Prod</label>
-          <select className="form-control" name="AssProd" value={formData1.AssProd} onChange={handleChange}>
-            <option value="">Select</option>
-            <option value="NO">No</option>
-            <option value="Yes">Yes</option>
-          </select>
-        </div>
-      </div>
+                                    <div className="col-md-1">
+                                      <label>Qty : Kg</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="QtyKg"
+                                        value={formData1.QtyKg}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>Scrap Code</label>
+                                      <select
+                                        className="form-control"
+                                        name="ScrapCode"
+                                        value={formData1.ScrapCode}
+                                        onChange={handleChange}
+                                      >
+                                        <option value="">Select</option>
+                                        {scrapOptions.map((item, index) => (
+                                          <option key={index} value={item.part_no}>
+                                            {item.part_no} || {item.Name_Description}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>Scrap Qty</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="ScracpQty"
+                                        value={formData1.ScracpQty}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>QC</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="QC"
+                                        value={formData1.QC}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>Ass Prod</label>
+                                      <select
+                                        className="form-control"
+                                        name="AssProd"
+                                        value={formData1.AssProd}
+                                        onChange={handleChange}
+                                      >
+                                        <option value="">Select</option>
+                                        <option value="NO">No</option>
+                                        <option value="Yes">Yes</option>
+                                      </select>
+                                    </div>
+                                  </div>
 
-      {/* BOM Form Section - Second Row (Additional Fields) */}
-      <div className="row mb-3 text-start">
-        <div className="col-md-1">
-          <label>Prod Qty:</label>
-          <input
-            type="text"
-            className="form-control"
-            name="ProdQty"
-            value={formData1.ProdQty}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col-md-1">
-          <label>WIP Wt:</label>
-          <input type="text" className="form-control" name="WipWt" value={formData1.WipWt} onChange={handleChange} />
-        </div>
-        <div className="col-md-1">
-          <label>WIP Rate:</label>
-          <input
-            type="text"
-            className="form-control"
-            name="WipRate"
-            value={formData1.WipRate}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col-md-1">
-          <label>Piece Rate:</label>
-          <input
-            type="text"
-            className="form-control"
-            name="PieceRate"
-            value={formData1.PieceRate}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col-md-1">
-          <label>OP Rate:</label>
-          <input type="text" className="form-control" name="OPRate" value={formData1.OPRate} onChange={handleChange} />
-        </div>
-        <div className="col-md-1 d-flex align-items-end mb-1">
-          <button className="btn btn-success me-2" onClick={handleSave1} disabled={isLoading || !selectedItem}>
-            {editingId ? "Update" : "Save"}
-          </button>
-        </div>
-      </div>
+                                  {/* BOM Form Section - Second Row (Additional Fields) */}
+                                  <div className="row mb-3 text-start">
+                                    <div className="col-md-1">
+                                      <label>Prod Qty:</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="ProdQty"
+                                        value={formData1.ProdQty}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>WIP Wt:</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="WipWt"
+                                        value={formData1.WipWt}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>WIP Rate:</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="WipRate"
+                                        value={formData1.WipRate}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>Piece Rate:</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="PieceRate"
+                                        value={formData1.PieceRate}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1">
+                                      <label>OP Rate:</label>
+                                      <input
+                                        type="text"
+                                        className="form-control"
+                                        name="OPRate"
+                                        value={formData1.OPRate}
+                                        onChange={handleChange}
+                                      />
+                                    </div>
+                                    <div className="col-md-1 d-flex align-items-end mb-1">
+                                      <button
+                                        className="btn btn-success me-2"
+                                        onClick={handleSave1}
+                                        disabled={isLoading || !selectedItem}
+                                      >
+                                        {editingId ? "Update" : "Save"}
+                                      </button>
+                                    </div>
+                                  </div>
 
-      {/* BOM Table */}
-      <div className="table-responsive">
-        <table className="table table-bordered mt-3">
-          <thead>
-            <tr>
-              <th>Sr.</th>
-              <th>OP No</th>
-              <th>Part Code</th>
-              <th>BOM Part Type</th>
-              <th>BOM Part Code</th>
-              <th>Qty</th>
-              <th>Scrap Code</th>
-              <th>Scrap Qty</th>
-              <th>QC</th>
-              <th>Prod Qty</th>
-              <th>Ass Prod</th>
-              <th>WIP Wt</th>
-              <th>WIP Rate</th>
-              <th>Piece Rate</th>
-              <th>OP Rate</th>
-              <th>Operation</th>
-              {/* <th>BOM Part Desc</th> */}
-              <th>Edit</th>
-              <th>Del</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableData.length > 0 ? (
-              tableData.map((item, index) => (
-                <tr key={item.id || index}>
-                  <td>{index + 1}</td>
-                  <td>{item.OPNo}</td>
-                  <td>{item.PartCode}</td>
-                  <td>{item.BOMPartType}</td>
-                  <td>{item.BomPartCode}</td>
-                  <td>{item.QtyKg}</td>
-                  <td>{item.ScrapCode}</td>
-                  <td>{item.ScracpQty}</td>
-                  <td>{item.QC}</td>
-                  <td>{item.ProdQty}</td>
-                  <td>{item.AssProd}</td>
-                  <td>{item.WipWt}</td>
-                  <td>{item.WipRate}</td>
-                  <td>{item.PieceRate}</td>
-                  <td>{item.OPRate}</td>
-                  <td>{item.Operation}</td>
-                  {/* <td>{item.BomPartDesc}</td> */}
-                  <td>
-                    <button className="btn" onClick={() => handleEdit1(item)}>
-                      <FaEdit />
-                    </button>
-                  </td>
-                  <td>
-                    <button className="btn" onClick={() => handleDelete1(item.id)}>
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="19" className="text-center">
-                  {selectedItem ? "No BOM items found for this item. You can add new ones." : "No data available"}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                                  {/* BOM Table */}
+                                  <div className="table-responsive">
+                                    <table className="table table-bordered mt-3">
+                                      <thead>
+                                        <tr>
+                                          <th>Sr.</th>
+                                          <th>OP No</th>
+                                          <th>Part Code</th>
+                                          <th>BOM Part Type</th>
+                                          <th>BOM Part Code</th>
+                                          <th>Qty</th>
+                                          <th>Scrap Code</th>
+                                          <th>Scrap Qty</th>
+                                          <th>QC</th>
+                                          <th>Prod Qty</th>
+                                          <th>Ass Prod</th>
+                                          <th>WIP Wt</th>
+                                          <th>WIP Rate</th>
+                                          <th>Piece Rate</th>
+                                          <th>OP Rate</th>
+                                          <th>Operation</th>
+                                          {/* <th>BOM Part Desc</th> */}
+                                          <th>Edit</th>
+                                          <th>Del</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {tableData.length > 0 ? (
+                                          tableData.map((item, index) => (
+                                            <tr key={item.id || index}>
+                                              <td>{index + 1}</td>
+                                              <td>{item.OPNo}</td>
+                                              <td>{item.PartCode}</td>
+                                              <td>{item.BOMPartType}</td>
+                                              <td>{item.BomPartCode}</td>
+                                              <td>{item.QtyKg}</td>
+                                              <td>{item.ScrapCode}</td>
+                                              <td>{item.ScracpQty}</td>
+                                              <td>{item.QC}</td>
+                                              <td>{item.ProdQty}</td>
+                                              <td>{item.AssProd}</td>
+                                              <td>{item.WipWt}</td>
+                                              <td>{item.WipRate}</td>
+                                              <td>{item.PieceRate}</td>
+                                              <td>{item.OPRate}</td>
+                                              <td>{item.Operation}</td>
+                                              {/* <td>{item.BomPartDesc}</td> */}
+                                              <td>
+                                                <button className="btn" onClick={() => handleEdit1(item)}>
+                                                  <FaEdit />
+                                                </button>
+                                              </td>
+                                              <td>
+                                                <button className="btn" onClick={() => handleDelete1(item.id)}>
+                                                  <FaTrash />
+                                                </button>
+                                              </td>
+                                            </tr>
+                                          ))
+                                        ) : (
+                                          <tr>
+                                            <td colSpan="19" className="text-center">
+                                              {selectedItem
+                                                ? "No BOM items found for this item. You can add new ones."
+                                                : "No data available"}
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
 
-      {/* BOM Item Part Master Modal */}
-      {cardBomPlus && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-50"
-          style={{ zIndex: 1055 }}
-        >
-          <div
-            className="bg-white rounded p-4"
-            style={{ width: "90%", maxWidth: "700px", maxHeight: "90vh", overflowY: "auto" }}
-          >
-            <div className="row align-items-center mb-3">
-              <div className="col-md-10 text-start">
-                <h6>BOM : Item Part Master</h6>
-              </div>
-              <div className="col-md-2 text-end">
-                <button className="btn btn-outline-secondary" onClick={closeCard}>
-                  <FaTimes />
-                </button>
-              </div>
-            </div>
+                                  {/* BOM Item Part Master Modal */}
+                                  {cardBomPlus && (
+                                    <div
+                                      className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-50"
+                                      style={{ zIndex: 1055 }}
+                                    >
+                                      <div
+                                        className="bg-white rounded p-4"
+                                        style={{
+                                          width: "90%",
+                                          maxWidth: "700px",
+                                          maxHeight: "90vh",
+                                          overflowY: "auto",
+                                        }}
+                                      >
+                                        <div className="row align-items-center mb-3">
+                                          <div className="col-md-10 text-start">
+                                            <h6>BOM : Item Part Master</h6>
+                                          </div>
+                                          <div className="col-md-2 text-end">
+                                            <button className="btn btn-outline-secondary" onClick={closeCard}>
+                                              <FaTimes />
+                                            </button>
+                                          </div>
+                                        </div>
 
-            {/* Form Section */}
-            <div className="row mb-3">
-              <div className="col-md-3">
-                <label>Operation</label>
-                <select
-                  className="form-control"
-                  value={selectedOperation}
-                  onChange={(e) => setSelectedOperation(e.target.value)}
-                >
-                  <option value="">Select Operation</option>
-                  {operationList.map((op, idx) => (
-                    <option key={idx} value={op.Operation_Name}>
-                      {op.Operation_Name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                                        {/* Form Section */}
+                                        <div className="row mb-3">
+                                          <div className="col-md-3">
+                                            <label>Operation</label>
+                                            <select
+                                              className="form-control"
+                                              value={selectedOperation}
+                                              onChange={(e) => setSelectedOperation(e.target.value)}
+                                            >
+                                              <option value="">Select Operation</option>
+                                              {operationList.map((op, idx) => (
+                                                <option key={idx} value={op.Operation_Name}>
+                                                  {op.Operation_Name}
+                                                </option>
+                                              ))}
+                                            </select>
+                                          </div>
 
-              <div className="col-md-3">
-                <label>Part Code</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={combinedPartCode}
-                  onChange={(e) => setCombinedPartCode(e.target.value)}
-                />
-              </div>
+                                          <div className="col-md-3">
+                                            <label>Part Code</label>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              value={combinedPartCode}
+                                              onChange={(e) => setCombinedPartCode(e.target.value)}
+                                            />
+                                          </div>
 
-              <div className="col-md-3 d-flex align-items-end">
-                <button className="btn btn-primary" onClick={handleSave2}>
-                  {editId2 ? "Update" : "Save"}
-                </button>
-              </div>
-            </div>
+                                          <div className="col-md-3 d-flex align-items-end">
+                                            <button className="btn btn-primary" onClick={handleSave2}>
+                                              {editId2 ? "Update" : "Save"}
+                                            </button>
+                                          </div>
+                                        </div>
 
-            {/* Table Section */}
-            <div className="table-responsive">
-              <table className="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Sr.</th>
-                    <th>Part Code</th>
-                    <th>Operation</th>
-                    <th>Edit</th>
-                    <th>Delete</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bomList.length > 0 ? (
-                    bomList.map((item, index) => (
-                      <tr key={item.id}>
-                        <td>{index + 1}</td>
-                        <td>{item.PartCode}</td>
-                        <td>{item.Operation}</td>
-                        <td>
-                          <button className="btn" onClick={() => handleEdit2(item)}>
-                            <FaEdit />
-                          </button>
-                        </td>
-                        <td>
-                          <button className="btn" onClick={() => handleDelete2(item.id)}>
-                            <FaTrash />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="text-center text-muted">
-                        No data available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
+                                        {/* Table Section */}
+                                        <div className="table-responsive">
+                                          <table className="table table-bordered">
+                                            <thead>
+                                              <tr>
+                                                <th>Sr.</th>
+                                                <th>Part Code</th>
+                                                <th>Operation</th>
+                                                <th>Edit</th>
+                                                <th>Delete</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {bomList.length > 0 ? (
+                                                bomList.map((item, index) => (
+                                                  <tr key={item.id}>
+                                                    <td>{index + 1}</td>
+                                                    <td>{item.PartCode}</td>
+                                                    <td>{item.Operation}</td>
+                                                    <td>
+                                                      <button className="btn" onClick={() => handleEdit2(item)}>
+                                                        <FaEdit />
+                                                      </button>
+                                                    </td>
+                                                    <td>
+                                                      <button className="btn" onClick={() => handleDelete2(item.id)}>
+                                                        <FaTrash />
+                                                      </button>
+                                                    </td>
+                                                  </tr>
+                                                ))
+                                              ) : (
+                                                <tr>
+                                                  <td colSpan="5" className="text-center text-muted">
+                                                    No data available
+                                                  </td>
+                                                </tr>
+                                              )}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                               {activeTab === "BOM History" && (
@@ -1350,34 +1372,22 @@ const BillMaterial = () => {
                                       <label>Select BOM Revision:</label>
                                     </div>
                                     <div className="col-md-1">
-                                      <select
-                                        name=""
-                                        className="form-control"
-                                        style={{ marginTop: "-1px" }}
-                                      >
+                                      <select name="" className="form-control" style={{ marginTop: "-1px" }}>
                                         <option value="">Select</option>
                                         <option value="All">All</option>
-                                        <option value="Director">
-                                          Director
-                                        </option>
+                                        <option value="Director">Director</option>
                                         <option value="Admin">Admin</option>
                                         <option value="Ac">Ac</option>
                                         <option value="Sales">Sales</option>
                                         <option value="Store">Store</option>
-                                        <option value="Planning">
-                                          Planning
-                                        </option>
-                                        <option value="Purchase">
-                                          Purchase
-                                        </option>
+                                        <option value="Planning">Planning</option>
+                                        <option value="Purchase">Purchase</option>
                                         <option value="CRM">CRM</option>
                                         <option value="Account">Account</option>
                                       </select>
                                     </div>
                                     <div className="col-md-2">
-                                      <button className="btn">
-                                        Export To Excel
-                                      </button>
+                                      <button className="btn">Export To Excel</button>
                                     </div>
                                   </div>
                                   <div className="table-responsive">
@@ -1397,13 +1407,8 @@ const BillMaterial = () => {
                               <div className="ProductionDeptCard mt-5">
                                 <div className="card">
                                   <div className="card-header d-flex justify-content-between">
-                                    <h5 style={{ color: "blue" }}>
-                                      BOM : Item Part Master
-                                    </h5>
-                                    <button
-                                      className="Closebom"
-                                      onClick={toggleCardPlus}
-                                    >
+                                    <h5 style={{ color: "blue" }}>BOM : Item Part Master</h5>
+                                    <button className="Closebom" onClick={toggleCardPlus}>
                                       X
                                     </button>
                                   </div>
@@ -1411,60 +1416,38 @@ const BillMaterial = () => {
                                   <div className="card-body">
                                     <div className="row mb-3 text-start">
                                       <div className="col-md-5">
-                                        <label
-                                          htmlFor="Operator"
-                                          className="form-label"
-                                        >
+                                        <label htmlFor="Operator" className="form-label">
                                           Operation:
                                           <span className="text-danger">*</span>
                                         </label>
                                         <input
                                           type="text"
-                                          className={`form-control ${
-                                            errors.Operator ? "is-invalid" : ""
-                                          }`}
+                                          className={`form-control ${errors.Operator ? "is-invalid" : ""}`}
                                           id="Operator"
                                           name="Operator"
                                           value={formData.Operator}
                                           onChange={handleInputChange}
                                           placeholder="Enter department name"
                                         />
-                                        {errors.Operator && (
-                                          <div className="invalid-feedback">
-                                            {errors.Operator}
-                                          </div>
-                                        )}
+                                        {errors.Operator && <div className="invalid-feedback">{errors.Operator}</div>}
                                       </div>
                                       <div className="col-md-5">
-                                        <label
-                                          htmlFor="PartCode"
-                                          className="form-label"
-                                        >
+                                        <label htmlFor="PartCode" className="form-label">
                                           Part Code:
                                         </label>
                                         <input
                                           type="text"
-                                          className={`form-control ${
-                                            errors.PartCode ? "is-invalid" : ""
-                                          }`}
+                                          className={`form-control ${errors.PartCode ? "is-invalid" : ""}`}
                                           id="PartCode"
                                           name="PartCode"
                                           value={formData.PartCode}
                                           onChange={handleInputChange}
                                           placeholder="Enter short name"
                                         />
-                                        {errors.PartCode && (
-                                          <div className="invalid-feedback">
-                                            {errors.PartCode}
-                                          </div>
-                                        )}
+                                        {errors.PartCode && <div className="invalid-feedback">{errors.PartCode}</div>}
                                       </div>
                                       <div className="col-md-2">
-                                        <button
-                                          type="submit"
-                                          className="bomButton"
-                                          style={{ marginTop: "31px" }}
-                                        >
+                                        <button type="submit" className="bomButton" style={{ marginTop: "31px" }}>
                                           {isEditing ? "Update" : "Save"}
                                         </button>
                                       </div>
@@ -1503,7 +1486,7 @@ const BillMaterial = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default BillMaterial;
+export default BillMaterial
