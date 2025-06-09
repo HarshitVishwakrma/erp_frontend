@@ -34,15 +34,15 @@ const FGToFGStock = () => {
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="FgMoventStock-header">
                   <div className="row flex-nowrap align-items-center">
-                    <div className="col-md-4">
+                    <div className="col-md-5">
                       <h5 className="header-title text-start">
                         FG To FG Stock Movement (Shop-Floor)
                       </h5>
                     </div>
-                    <div className="col-md-8 text-start">
+                    <div className="col-md-7 text-start">
                       <div className="row">
                         <div className="col-md-2 d-flex flex-wrap">
-                          <select>
+                          <select className="form-select">
                             <option>Produlink</option>
                           </select>
                         </div>
@@ -50,7 +50,7 @@ const FGToFGStock = () => {
                     </div>
                   </div>
                 </div>
-                <div className="FgMoventStock-main">
+                <div className="FgMoventStock-main mt-3">
                   <div className="container-fluid text-start">
                     <div className="row">
                       <div className="col-md-4">
@@ -59,7 +59,7 @@ const FGToFGStock = () => {
                             <label>Trn No:</label>
                           </div>
                           <div className="col-md-4">
-                            <input />
+                            <input className="form-control" />
                           </div>
                           <div className="col-md-4">
                             <Cached />
@@ -70,7 +70,7 @@ const FGToFGStock = () => {
                             <label>Tran. Date:</label>
                           </div>
                           <div className="col-md-4">
-                            <input type="date" />
+                            <input className="form-control" type="date" />
                           </div>
                         </div>
                         <div className="row mt-4">
@@ -78,7 +78,7 @@ const FGToFGStock = () => {
                             <label>Item Code:</label>
                           </div>
                           <div className="col-md-8">
-                            <input />
+                            <input className="form-control" />
                           </div>
                         </div>
                         <div className="row mt-4">
@@ -86,7 +86,7 @@ const FGToFGStock = () => {
                             <label>Part Code:</label>
                           </div>
                           <div className="col-md-8">
-                            <select>
+                            <select className="form-select">
                               <option></option>
                             </select>
                           </div>
@@ -96,7 +96,7 @@ const FGToFGStock = () => {
                             <label>Heat No:</label>
                           </div>
                           <div className="col-md-8">
-                            <select>
+                            <select className="form-select">
                               <option></option>
                             </select>
                           </div>
@@ -104,7 +104,7 @@ const FGToFGStock = () => {
                       </div>
                     </div>
 
-                    <div className="FGMovementSelect">
+                    <div className="FGMovementSelect mt-3">
                       <div className="row flex-nowrap align-items-center">
                         <div className="col-md-4">
                           <h5 className="header-title text-start">
@@ -120,7 +120,7 @@ const FGToFGStock = () => {
                               <label>Item Code:</label>
                             </div>
                             <div className="col-md-8">
-                              <input />
+                              <input className="form-control" />
                             </div>
                           </div>
                           <div className="row mt-4">
@@ -128,7 +128,7 @@ const FGToFGStock = () => {
                               <label>Part Code:</label>
                             </div>
                             <div className="col-md-8">
-                              <select>
+                              <select className="form-select">
                                 <option></option>
                               </select>
                             </div>
@@ -138,7 +138,7 @@ const FGToFGStock = () => {
                               <label>Heat No:</label>
                             </div>
                             <div className="col-md-8">
-                              <select>
+                              <select className="form-select">
                                 <option></option>
                               </select>
                             </div>
@@ -148,7 +148,7 @@ const FGToFGStock = () => {
                               <label>Transfer Qty:</label>
                             </div>
                             <div className="col-md-4">
-                              <input />
+                              <input className="form-control" />
                             </div>
                             <div className="col-md-4">
                               <label>BOM WIP WT: = </label>
@@ -160,7 +160,7 @@ const FGToFGStock = () => {
                               <label>Remark:</label>
                             </div>
                             <div className="col-md-8">
-                              <textarea></textarea>
+                              <textarea className="form-control"></textarea>
                             </div>
                             
                             
@@ -172,7 +172,7 @@ const FGToFGStock = () => {
 
                     <div className="row text-end mt-4">
                       <div className="col-md-12">
-                        <button type="submit" className="pobtn">
+                        <button type="submit" className="vndrbtn">
                           Save
                         </button>
                       </div>

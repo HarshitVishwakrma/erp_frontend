@@ -90,7 +90,7 @@ const VenderList = () => {
               />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="VenderList1">
-                  <div className="VenderList2List-header mb-4 text-start mt-5">
+                  <div className="VenderList2List-header mb-3 text-start">
                     <div className="row align-items-center">
                       <div className="col-md-4">
                         <h5 className="header-title">
@@ -100,17 +100,17 @@ const VenderList = () => {
                       <div className="col-md-8 text-end">
                         <Link
                           to={"/Supplier-Customer-Master"}
-                          className="venbtn"
+                          className="vndrbtn"
                         >
                           Add New
                         </Link>
-                        <Link to={"/CustomerQuery"} className="venbtn">Customer - Query</Link>
+                        <Link to={"/CustomerQuery"} className="vndrbtn">Customer - Query</Link>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="VenderListMain">
-                  <div className="container-fluid mt-5">
+                  <div className="container-fluid">
                     <div className="row text-start">
                       <div className="row mb-3 text-start mt-4">
                         <label

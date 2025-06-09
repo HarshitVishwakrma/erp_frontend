@@ -6,19 +6,19 @@
   
   .PurchaseReport-header {
     margin-top: 20px;
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
  
   .PurchaseReport-main{
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 10px;
     margin-top: 80px;
     height: auto;
   }
  .PurchaseReportstatus1{
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 10px;
     height: auto;
  }

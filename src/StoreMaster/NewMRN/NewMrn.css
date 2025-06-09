@@ -3,16 +3,11 @@
   /* Header Styles */
   .Newgrn-header {
     background-color: #f8f9fa; /* Light background for header */
-    border-bottom: 1px solid #dee2e6; /* Border for header */
-    padding: 10px 15px; /* Padding around header */
-    border-radius: 5px;
+   
+   
   }
   
-  .Newgrn-header .header-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin: 0;
-  }
+ 
   /* Main Content Styles */
   .Newgrn-main {
     background-color: #f8f9fa; /* Light background for header */
@@ -22,20 +17,7 @@
   }
   
 
-  
-  .Newgrntable .table-bordered {
-    border: 1px solid #ddd;
-  }
-  
-  .Newgrntable .table-bordered th, .table-bordered td {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  
-  .Newgrntable .table thead th {
-    background-color: #3e7fc0bc;
-    font-weight: bold;
-  }
+
   
   /* Responsive Styles */
   @media (max-width: 768px) {

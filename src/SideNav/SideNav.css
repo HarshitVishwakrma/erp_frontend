@@ -7,7 +7,7 @@
   background-color: rgb(146, 54, 231);
   color: white;
   transition: left 0.3s; 
-  padding-top: 60pxz 
+  padding-top: 60px;
   z-index: 1000;
   overflow-y: auto;
   height: 100vh;
@@ -165,7 +165,7 @@
 .blueside-Nav .side-nav {
   height: 100%;
   width: 250px;
-  background-color:#1E293b;
+  background-color:#34495e;
   color: #ecf0f1;
   position: fixed;
   top: 0;
@@ -194,12 +194,10 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  font-size: 16px;
 }
 
 .blueside-Nav .side-nav ul li {
   padding: 10px 15px;
-  font-size: 14px;
 }
 
 .blueside-Nav .side-nav ul li a {
@@ -207,7 +205,6 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  font-size: 14px;
 }
 
 .blueside-Nav .side-nav ul li a:hover {
@@ -219,7 +216,7 @@
   max-width: 100px;
   margin-top: 20 auto;
   display: block;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   color: #fff;
   margin: 0;
@@ -235,7 +232,6 @@
   align-items: center;
   cursor: pointer;
   padding: 10px 15px;
-  font-size: 14px;
 }
 
 .blueside-Nav .dropdown-toggle:hover {
@@ -276,27 +272,6 @@
   border-top: 1px solid #2c3e50;
   margin: 10px 0;
 }
-
-.blueside-Nav .side-nav {
-  height: 100%;
-  width: 250px;
-  background-color: #1E293b;
-  color: #ecf0f1;
-  position: fixed;
-  top: 0;
-  left: -250px;
-  transition: left 0.3s;
-  padding-top: 60px;
-  z-index: 1000;
-  overflow-y: scroll; /* Allow scrolling */
-  -ms-overflow-style: none;  /* For Internet Explorer 10+ */
-  scrollbar-width: none;  /* For Firefox */
-}
-
-.blueside-Nav .side-nav::-webkit-scrollbar {
-  display: none;  /* For Chrome, Safari, and Opera */
-}
-
 
 /* Responsive Styles */
 @media (max-width: 1200px) {

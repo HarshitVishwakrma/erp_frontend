@@ -6,20 +6,20 @@
 
 .IndentList-header {
     margin-top: 20px;
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .IndentList-main {
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 10px;
     margin-top: 80px;
     height: auto;
 }
 
 .StoreIndentList {
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 10px;
     height: auto;
 }

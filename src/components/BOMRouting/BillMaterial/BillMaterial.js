@@ -1065,27 +1065,27 @@ const BillMaterial = () => {
         </div>
 
         {(formData1.BOMPartType.includes("RM") || formData1.BOMPartType.includes("COM")) && (
-          <div className="col-md-1">
+          <div className="col-md-2">
             <label>Bom Part Code:</label>
             <select className="form-control" name="BomPartCode" value={formData1.BomPartCode} onChange={handleChange}>
               <option value="">Select Bom Part Code</option>
               {formData1.BOMPartType.includes("RM") &&
                 bomOptions.map((item) => (
                   <option key={item.id} value={item.Part_Code}>
-                    {item.part_no} ({item.Name_Description})
+                    {item.part_no} | {item.Part_Code} | {item.Name_Description}
                   </option>
                 ))}
               {formData1.BOMPartType.includes("COM") &&
                 bomOptions.map((item, index) => (
                   <option key={item.id || index} value={item.PartCode}>
-                    {item.OPNo} ({item.Operation}) - {item.PartCode}
+                    {item.OPNo} | {item.PartCode} | {item.Operation} 
                   </option>
                 ))}
             </select>
           </div>
         )}
 
-        <div className="col-md-1">
+        <div className="col-md-1">                                      
           <label>Qty : Kg</label>
           <input type="text" className="form-control" name="QtyKg" value={formData1.QtyKg} onChange={handleChange} />
         </div>

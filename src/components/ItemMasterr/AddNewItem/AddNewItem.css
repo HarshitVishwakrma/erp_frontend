@@ -36,7 +36,7 @@ body.no-scroll {
 .top-but2 {
   margin: 20px 0;
   padding: 10px;
-  background-color: aliceblue;
+  background-color: #f8f9fa;;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .assd {
@@ -54,7 +54,7 @@ body.no-scroll {
   width: 100%;
   height: auto;
   padding: 10px;
-  background-color: aliceblue;
+  background-color: #f8f9fa;;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 .top-but2 label {

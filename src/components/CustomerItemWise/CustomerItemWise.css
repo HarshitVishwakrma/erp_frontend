@@ -46,7 +46,7 @@ body.no-scroll {
 
 .Itemwise1 {
   margin-top: 40px;
-  background-color: aliceblue;
+  background-color: #f8f9fa;;
   height: 10vh;
   padding: 20px;
   border-bottom: 2px solid #ddd; /* Add bottom border */
@@ -55,7 +55,7 @@ body.no-scroll {
 
 .rateewise {
   margin-top: 40px;
-  background-color: aliceblue;
+  background-color: #f8f9fa;;
   padding: 20px;
 }
 

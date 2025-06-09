@@ -1,19 +1,19 @@
 /* General Styles */
 .NewStoreScrapMovement {
-    background-color: white;
+    
     height: auto;
     font-family: Arial, sans-serif;
 }
 
 .ScrapMovement-header {
     margin-top: 20px;
-    background-color: aliceblue;
+     background-color: #f8f9fa;
     padding: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .ScrapMovement-main {
-    background-color: aliceblue;
+     background-color: #f8f9fa;
     padding: 20px;
     margin-top: 20px;
     height: auto;
@@ -27,7 +27,7 @@
 }
 
 .ScrapMovementtable {
-    background-color: aliceblue;
+     background-color: #f8f9fa;
     padding: 10px;
     margin-top: 20px;
 }

@@ -1,18 +1,18 @@
 /* General Styles */
 .NewStoreRMToTransaction {
-    background-color: #fff;
+    /* background-color: #fff; */
     font-family: Arial, sans-serif;
   }
   
   .RMToTransaction-header {
     margin-top: 20px;
-    background-color: aliceblue;
+     background-color: #f8f9fa;
     padding: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .RMToTransaction-main {
-    background-color: aliceblue;
+     background-color: #f8f9fa;
     padding: 20px;
     margin-top: 20px;
   }

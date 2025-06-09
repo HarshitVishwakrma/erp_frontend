@@ -210,7 +210,7 @@ const InwardChallan1 = () => {
                     </div>
                   </div>
                 </div>
-                <div className="StoreSubcon-main mt-5">
+                <div className="StoreSubcon-main mt-4">
                   <div className="storesubcon-background">
                     <div className="container-fluid text-start">
                       <div className="row mt-4">
@@ -242,12 +242,12 @@ const InwardChallan1 = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="row mt-4">
+                      <div className="row mt-2">
                         <div className="col-md-6">
                           <div className="row">
                             <div className="col-md-4">Supplier Name:</div>
                             <div className="col-md-6">
-                              <input />
+                              <input type="text" className="form-control"/>
                             </div>
                             <div className="col-md-2">
                               <button type="button" className="btn">
@@ -289,12 +289,12 @@ const InwardChallan1 = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="row mt-4 ">
+                      <div className="row mt-2 ">
                         <div className="col-md-6">
                           <div className="row ">
                             <div className="col-md-4">Item Name:</div>
                             <div className="col-md-6">
-                              <input />
+                              <input type="text" className="form-control" />
                             </div>
                             <div className="col-md-2">
                               <button type="button" className="btn">

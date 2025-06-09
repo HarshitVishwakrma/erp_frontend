@@ -7,21 +7,21 @@
   /* Header Styles */
   .NewIndent-header {
     margin-top: 20px;
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   /* Main Content Styles */
   .NewIndent-main {
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 15px;
     margin-top: 20px; /* Adjusted to be closer to the header */
   }
   
   /* Table Styles */
   .NewIndenttable {
-    background-color: aliceblue;
+    background-color: #f8f9fa;;
     padding: 15px;
     margin-top: 20px;
   }

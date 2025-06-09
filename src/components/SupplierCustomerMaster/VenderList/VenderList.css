@@ -7,137 +7,196 @@
 
 .VenderList {
   width: 100%;
-  
   height: 100vh;
 }
 
 .VenderList2List-header {
-  background-color: #f8f9fa; /* Light background for header */
-  border-bottom: 1px solid #dee2e6; /* Border for header */
-  padding: 10px 15px; /* Padding around header */
-  border-radius: 5px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6; 
+  padding: 10px 15px; 
 }
 
-.VenderList2List-header .header-title {
+.header-title {
   font-size: 20px;
   font-weight: bold;
+  color: blue;
   margin: 0;
 }
 
-
-
-.venbtn {
+.vndrbtn {
   display: inline-block;
-  border: none;
   background-color: rgba(235, 233, 233, 0.685);
-  padding: 7px 15px; /* Adjust padding for smaller screens */
-  border-radius: 10px;
-  margin: 5px;
+  padding: 5px 10px; 
+  margin-left: 5px;
   text-decoration: none;
   color: black;
 }
 .VenderListMain {
-  background-color: white;
-  height: auto;
- 
+  background-color: #f8f9fa;
+  padding: 10px;
+  font-size: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-.Vendermainbtn {
+.vndrbtn {
   border: none;
   background-color: rgba(235, 233, 233, 0.685);
-  padding: 7px 15px; /* Adjust padding for smaller screens */
-  border-radius: 10px;
-  margin: 5px;
   text-decoration: none;
   color: black;
 }
 
-.Vender3table {
-  margin-top: 80px;
-}
-.Vender3table .blue-th {
-  background-color: rgba(0, 0, 255, 0.563);
+.vndrbtn:hover{
+  background-color: #16bfff;
   color: white;
 }
-/* Add this CSS to your existing styles */
 
-/* Table styling */
-.Vender3table table {
-  border-collapse: collapse;
+.form-select{
+  font-size: 12px;
+}
+.form-control{
+  font-size: 12px;
+}
+
+label{
+  font-size: 12px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
   width: 100%;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
 }
 
-/* Table header cell */
-.Vender3table th {
-  border: 1px solid gray; /* Change color and thickness as needed */
-  padding: 8px;
-  text-align: left;
+.table th {
+  background-color: #16bfff;
+  color: white;
+  font-size: 14px;
 }
 
-/* Table data cell */
-.Vender3table td {
-  border: 1px solid gray; /* Change color and thickness as needed */
-  padding: 8px;
+th {
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+  padding: 10px;
 }
 
-/* Table row */
-.Vender3table tr {
-  border: 1px solid gray; /* Change color and thickness as needed */
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  font-size: 12px;
+  border-top: 1px solid #dee2e6;
 }
 
-/* Optional: Add styles for responsiveness */
-.Vender3table .table-responsive {
-  overflow-x: auto;
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
 }
-/* Add this CSS to your existing styles */
 
-/* Adjust background color for smaller screens */
-@media (max-width: 768px) {
-  .VenderList {
-    background-color: lightblue; /* Change to your desired background color */
+.table tbody + tbody {
+  border-top: 2px solid #dee2e6;
+}
+
+.table-sm th,
+.table-sm td {
+  padding: 0.3rem;
+}
+
+
+.pagination-container {
+  margin-top: 20px;
+}
+
+.pagination .page-item {
+  cursor: pointer;
+}
+
+.pagination .page-item.active .page-link {
+  background-color:   #16bfff;
+  border: none; 
+  border-radius: none;
+  font-size: 12px;
+  color: white;
+}
+
+.pagination .page-link {
+  color: #000;
+  font-size: 12px;
+}
+
+.pagination .page-link:hover {
+  background-color: #16bfff;
+  color: white;
+}
+
+
+/* Mobile devices (up to 576px) */
+@media (max-width: 576px) {
+  .header-title {
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .vndrbtn {
+    padding: 4px 8px;
+    margin: 5px 0;
+    text-align: center;
+    display: block;
+    width: 100%;
+  }
+
+  .form-select,
+  .form-control,
+  label {
+    font-size: 10px;
+  }
+
+  .table th,
+  .table td {
+    font-size: 10px;
+    padding: 0.4rem;
   }
 }
 
-/* Responsive table */
-.Vender3table .table-responsive {
-  overflow-x: auto;
-}
-
-/* You can keep your existing CSS for other elements */
-@media (max-width: 767.98px) {
-  .VenderList2 {
-    height: auto; /* Adjust height for smaller screens */
+/* Tablets (577px to 768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+  .header-title {
+    font-size: 18px;
   }
 
-  .VenderList2 h5 {
-    font-size: 1.2rem; /* Adjust font size */
+  .vndrbtn {
+    padding: 5px 10px;
   }
 
-  .venbtn {
-    padding: 6px 12px; /* Adjust padding */
-    font-size: 0.9rem; /* Adjust font size */
-    margin-top: 5px; /* Adjust margin */
+  .form-select,
+  .form-control,
+  label {
+    font-size: 11px;
   }
-}
 
-@media (max-width: 767.98px) {
-  .VenderListMain {
-    height: auto; /* Adjust height for smaller screens */
-  }
-  .VenderList1 {
-    height: auto;
-  }
-  .Vendermainbtn {
-    padding: 6px 12px; /* Adjust padding */
-    font-size: 0.9rem; /* Adjust font size */
-    margin-top: 5px; /* Adjust margin */
+  .table th,
+  .table td {
+    font-size: 11px;
   }
 }
 
-@media (max-width: 575.98px) {
-  .Vendermainbtn {
-    padding: 5px 10px; /* Further adjust padding for smaller screens */
-    font-size: 0.8rem; /* Further adjust font size */
-    margin: 3px; /* Further adjust margin */
+/* Laptops and desktops (769px and above) */
+@media (min-width: 769px) {
+  .header-title {
+    font-size: 20px;
+  }
+
+  .form-select,
+  .form-control,
+  label {
+    font-size: 12px;
+  }
+
+  .table th,
+  .table td {
+    font-size: 12px;
   }
 }
