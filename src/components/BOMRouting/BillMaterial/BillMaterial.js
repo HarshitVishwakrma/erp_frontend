@@ -1118,7 +1118,7 @@ const BillMaterial = () => {
           <label>Ass Prod</label>
           <select className="form-control" name="AssProd" value={formData1.AssProd} onChange={handleChange}>
             <option value="">Select</option>
-            <option value="NO">NO</option>
+            <option value="NO">No</option>
             <option value="Yes">Yes</option>
           </select>
         </div>
