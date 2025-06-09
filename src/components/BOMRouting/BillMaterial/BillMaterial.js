@@ -1031,7 +1031,7 @@ const BillMaterial = () => {
                 <option value="">Select Part Code</option>
                 {partCodeDropdownData.map((item, index) => (
                   <option key={index} value={item.PartCode}>
-                    {item.PartCode} - {item.Operation}
+                    {item.Operation} | {item.PartCode} 
                   </option>
                 ))}
               </select>
