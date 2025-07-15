@@ -59,7 +59,7 @@ const [editData, setEditData] = useState({});
 const fetchData = async () => {
   try {
     const result = await getWorkCenters();
-    setData(result);
+    setData(result.sort((a, b) => b.id - a.id));
   } catch (err) {
     setError("Failed to fetch data");
     toast.error("Error fetching data!");

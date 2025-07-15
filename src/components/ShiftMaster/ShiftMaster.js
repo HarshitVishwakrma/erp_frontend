@@ -44,7 +44,7 @@ const ShiftMaster = () => {
     const fetchData = async () => {
       try {
         const data = await fetchShiftMasters();
-        setShiftData(data);
+        setShiftData(data.sort((a, b) => b.id - a.id));
       } catch (error) {
         console.error("Error fetching shift data:", error);
         toast.error("Failed to load shift data");

@@ -9,8 +9,10 @@ import { FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import { getNextIndentNo , postIndent} from "../../Service/PurchaseApi";
+import { useNavigate } from "react-router-dom";
 const Newindent = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -193,7 +195,7 @@ const Newindent = () => {
                               <h5 className="header-title">New Indent</h5>
                             </div>
                             <div className="col-md-8 text-end">
-                              <button className="btn">Indent List</button>
+                              <button className="btn" onClick={()=>{navigate('/ListIndent')}}>Indent List</button>
                             </div>
                           </div>
                         </div>

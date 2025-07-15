@@ -68,9 +68,6 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
       // Calculate total
       const total = assessableValue + cgstAmount + sgstAmount + igstAmount
 
-      // Get existing TOC values or initialize with 0
-      const existingTOC = gstDetails.length > 0 ? gstDetails[0] : {}
-
       return {
         ItemCode: item.Item || "",
         HSN: item.HSN_SAC_Code || "",
@@ -87,125 +84,12 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
         IGST: igstRate,
         IGSTAmt: igstAmount.toFixed(2),
         Total: total.toFixed(2),
-        // Initialize TOC fields with numeric values (0) instead of null or empty string
-        TOC_AssableValue: Number(existingTOC?.TOC_AssableValue || 0),
-        TOC_PackCharges: Number(existingTOC?.TOC_PackCharges || 0),
-        TOC_TransportCost: Number(existingTOC?.TOC_TransportCost || 0),
-        TOC_Insurance: Number(existingTOC?.TOC_Insurance || 0),
-        TOC_InstallationCharges: Number(existingTOC?.TOC_InstallationCharges || 0),
-        TOC_CGST: Number(existingTOC?.TOC_CGST || 0),
-        TOC_SGST: Number(existingTOC?.TOC_SGST || 0),
-        TOC_IGST: Number(existingTOC?.TOC_IGST || 0),
-        TOC_VAT: Number(existingTOC?.TOC_VAT || 0),
-        TOC_CESS: Number(existingTOC?.TOC_CESS || 0),
-        TOC_TDS: Number(existingTOC?.TOC_TDS || 0),
-        GR_Total: Number(existingTOC?.GR_Total || 0),
       }
     })
 
-    if (calculatedGSTDetails.length > 0) {
-      // Calculate totals for the TOC section
-      const totals = calculatedGSTDetails.reduce(
-        (acc, item) => {
-          acc.subTotal += Number(item.SubTotal) || 0
-          acc.assessableValue += Number(item.AssValue) || 0
-          acc.cgst += Number(item.CGSTAmt) || 0
-          acc.sgst += Number(item.SGSTAmt) || 0
-          acc.igst += Number(item.IGSTAmt) || 0
-          acc.total += Number(item.Total) || 0
-          return acc
-        },
-        { subTotal: 0, assessableValue: 0, cgst: 0, sgst: 0, igst: 0, total: 0 },
-      )
-
-      // Update TOC_AssableValue with the total assessable value
-      calculatedGSTDetails.forEach((detail) => {
-        detail.TOC_AssableValue = totals.subTotal
-        detail.TOC_CGST = totals.cgst
-        detail.TOC_SGST = totals.sgst
-        detail.TOC_IGST = totals.igst
-      })
-
-      setGstDetails(calculatedGSTDetails)
-      updateFormData("Gst_Details", calculatedGSTDetails)
-
-      // Update parent form data with TOC fields
-      updateFormData("TOC_AssableValue", totals.subTotal)
-      updateFormData("TOC_PackCharges", Number(calculatedGSTDetails[0].TOC_PackCharges || 0))
-      updateFormData("TOC_TransportCost", Number(calculatedGSTDetails[0].TOC_TransportCost || 0))
-      updateFormData("TOC_Insurance", Number(calculatedGSTDetails[0].TOC_Insurance || 0))
-      updateFormData("TOC_InstallationCharges", Number(calculatedGSTDetails[0].TOC_InstallationCharges || 0))
-      updateFormData("TOC_CGST", totals.cgst)
-      updateFormData("TOC_SGST", totals.sgst)
-      updateFormData("TOC_IGST", totals.igst)
-      updateFormData("TOC_VAT", Number(calculatedGSTDetails[0].TOC_VAT || 0))
-      updateFormData("TOC_CESS", Number(calculatedGSTDetails[0].TOC_CESS || 0))
-      updateFormData("TOC_TDS", Number(calculatedGSTDetails[0].TOC_TDS || 0))
-
-      // Calculate and update grand total
-      const grandTotal =
-        totals.total +
-        Number(calculatedGSTDetails[0].TOC_PackCharges || 0) +
-        Number(calculatedGSTDetails[0].TOC_TransportCost || 0) +
-        Number(calculatedGSTDetails[0].TOC_Insurance || 0) +
-        Number(calculatedGSTDetails[0].TOC_InstallationCharges || 0) -
-        Number(calculatedGSTDetails[0].TOC_TDS || 0)
-
-      updateFormData("GR_Total", grandTotal)
-    } else {
-      // Initialize with empty row if no item details
-      const emptyRow = {
-        ItemCode: "",
-        HSN: "",
-        Rate: 0,
-        Qty: 0,
-        SubTotal: "0.00",
-        Discount: 0,
-        DiscountAmt: "0.00",
-        Packing: 0,
-        Transport: 0,
-        ToolAmort: 0,
-        AssValue: "0.00",
-        CGST: 0,
-        CGSTAmt: "0.00",
-        SGST: 0,
-        SGSTAmt: "0.00",
-        IGST: 0,
-        IGSTAmt: "0.00",
-        Vat: 0,
-        Cess: 0,
-        Total: "0.00",
-        TOC_AssableValue: 0,
-        TOC_PackCharges: 0,
-        TOC_TransportCost: 0,
-        TOC_Insurance: 0,
-        TOC_InstallationCharges: 0,
-        TOC_CGST: 0,
-        TOC_SGST: 0,
-        TOC_IGST: 0,
-        TOC_VAT: 0,
-        TOC_CESS: 0,
-        TOC_TDS: 0,
-        GR_Total: 0,
-      }
-      setGstDetails([emptyRow])
-      updateFormData("Gst_Details", [emptyRow])
-
-      // Initialize TOC fields in parent form data
-      updateFormData("TOC_AssableValue", 0)
-      updateFormData("TOC_PackCharges", 0)
-      updateFormData("TOC_TransportCost", 0)
-      updateFormData("TOC_Insurance", 0)
-      updateFormData("TOC_InstallationCharges", 0)
-      updateFormData("TOC_CGST", 0)
-      updateFormData("TOC_SGST", 0)
-      updateFormData("TOC_IGST", 0)
-      updateFormData("TOC_VAT", 0)
-      updateFormData("TOC_CESS", 0)
-      updateFormData("TOC_TDS", 0)
-      updateFormData("GR_Total", 0)
-    }
-  }, [gstDetails, itemDetails, updateFormData])
+    setGstDetails(calculatedGSTDetails.length > 0 ? calculatedGSTDetails : [{}])
+    updateFormData("Gst_Details", calculatedGSTDetails)
+  }, [itemDetails, updateFormData])
 
   const addNewRow = () => {
     setGstDetails([
@@ -213,36 +97,36 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
       {
         ItemCode: "",
         HSN: "",
-        Rate: 0,
-        Qty: 0,
-        SubTotal: "0.00",
-        Discount: 0,
-        DiscountAmt: "0.00",
-        Packing: 0,
-        Transport: 0,
-        ToolAmort: 0,
-        AssValue: "0.00",
-        CGST: 0,
-        CGSTAmt: "0.00",
-        SGST: 0,
-        SGSTAmt: "0.00",
-        IGST: 0,
-        IGSTAmt: "0.00",
-        Vat: 0,
-        Cess: 0,
-        Total: "0.00",
-        TOC_AssableValue: gstDetails[0]?.TOC_AssableValue || 0,
-        TOC_PackCharges: gstDetails[0]?.TOC_PackCharges || 0,
-        TOC_TransportCost: gstDetails[0]?.TOC_TransportCost || 0,
-        TOC_Insurance: gstDetails[0]?.TOC_Insurance || 0,
-        TOC_InstallationCharges: gstDetails[0]?.TOC_InstallationCharges || 0,
-        TOC_CGST: gstDetails[0]?.TOC_CGST || 0,
-        TOC_SGST: gstDetails[0]?.TOC_SGST || 0,
-        TOC_IGST: gstDetails[0]?.TOC_IGST || 0,
-        TOC_VAT: gstDetails[0]?.TOC_VAT || 0,
-        TOC_CESS: gstDetails[0]?.TOC_CESS || 0,
-        TOC_TDS: gstDetails[0]?.TOC_TDS || 0,
-        GR_Total: gstDetails[0]?.GR_Total || 0,
+        Rate: "",
+        Qty: "",
+        SubTotal: "",
+        Discount: "",
+        DiscountAmt: "",
+        Packing: "",
+        Transport: "",
+        ToolAmort: "",
+        AssValue: "",
+        CGST: "",
+        CGSTAmt: "",
+        SGST: "",
+        SGSTAmt: "",
+        IGST: "",
+        IGSTAmt: "",
+        Vat: "",
+        Cess: "",
+        Total: "",
+        TOC_AssableValue: "",
+        TOC_PackCharges: "",
+        TOC_TransportCost: "",
+        TOC_Insurance: "",
+        TOC_InstallationCharges: "",
+        TOC_CGST: "",
+        TOC_SGST: "",
+        TOC_IGST: "",
+        TOC_VAT: "",
+        TOC_CESS: "",
+        TOC_TDS: "",
+        GR_Total: "",
       },
     ])
   }
@@ -255,19 +139,8 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
     }
 
     const updatedDetails = [...gstDetails]
-
-    // Convert empty strings to 0 for numeric fields
-    if (field.startsWith("TOC_") && value === "") {
-      value = "0"
-    }
-
     updatedDetails[index][field] =
-      field === "Rate" ||
-      field === "Qty" ||
-      field === "CGST" ||
-      field === "SGST" ||
-      field === "IGST" ||
-      field.startsWith("TOC_")
+      field === "Rate" || field === "Qty" || field === "CGST" || field === "SGST" || field === "IGST"
         ? Number(value) || 0
         : value
 
@@ -324,58 +197,12 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
       updatedDetails[index].Total = total.toFixed(2)
     }
 
-    // Handle TOC field changes - update all rows with the same TOC values
-    if (field.startsWith("TOC_")) {
-      const numericValue = Number(value) || 0
-      updatedDetails.forEach((detail, idx) => {
-        updatedDetails[idx][field] = numericValue
-      })
-
-      // Update the parent form data with individual TOC fields
-      updateFormData(field, numericValue)
-    }
-
-    // Recalculate grand total when TOC fields change
-    if (field.startsWith("TOC_") || field === "GR_Total") {
-      const totals = calculateTotals(updatedDetails)
-      const tocCharges =
-        Number(updatedDetails[0].TOC_PackCharges || 0) +
-        Number(updatedDetails[0].TOC_TransportCost || 0) +
-        Number(updatedDetails[0].TOC_Insurance || 0) +
-        Number(updatedDetails[0].TOC_InstallationCharges || 0) -
-        Number(updatedDetails[0].TOC_TDS || 0)
-
-      const grandTotal = totals.total + tocCharges
-
-      updatedDetails.forEach((detail, idx) => {
-        updatedDetails[idx].GR_Total = grandTotal
-      })
-
-      // Update the parent form data with the grand total
-      updateFormData("GR_Total", grandTotal)
-    }
-
     setGstDetails(updatedDetails)
     updateFormData("Gst_Details", updatedDetails)
-
-    // Update all TOC fields in parent form data
-    if (field.startsWith("TOC_") || field === "GR_Total") {
-      updateFormData("TOC_AssableValue", totals.subTotal)
-      updateFormData("TOC_PackCharges", Number(updatedDetails[0].TOC_PackCharges || 0))
-      updateFormData("TOC_TransportCost", Number(updatedDetails[0].TOC_TransportCost || 0))
-      updateFormData("TOC_Insurance", Number(updatedDetails[0].TOC_Insurance || 0))
-      updateFormData("TOC_InstallationCharges", Number(updatedDetails[0].TOC_InstallationCharges || 0))
-      updateFormData("TOC_CGST", totals.cgst)
-      updateFormData("TOC_SGST", totals.sgst)
-      updateFormData("TOC_IGST", totals.igst)
-      updateFormData("TOC_VAT", Number(updatedDetails[0].TOC_VAT || 0))
-      updateFormData("TOC_CESS", Number(updatedDetails[0].TOC_CESS || 0))
-      updateFormData("TOC_TDS", Number(updatedDetails[0].TOC_TDS || 0))
-    }
   }
 
-  const calculateTotals = (details = gstDetails) => {
-    const totals = details.reduce(
+  const calculateTotals = () => {
+    const totals = gstDetails.reduce(
       (acc, item) => {
         acc.subTotal += Number(item.SubTotal) || 0
         acc.discountAmt += Number(item.DiscountAmt) || 0
@@ -392,23 +219,6 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
   }
 
   const totals = calculateTotals()
-
-  // Calculate TOC totals
-  const tocTotals = {
-    packCharges: Number(gstDetails[0]?.TOC_PackCharges) || 0,
-    transportCost: Number(gstDetails[0]?.TOC_TransportCost) || 0,
-    insurance: Number(gstDetails[0]?.TOC_Insurance) || 0,
-    installationCharges: Number(gstDetails[0]?.TOC_InstallationCharges) || 0,
-    tds: Number(gstDetails[0]?.TOC_TDS) || 0,
-  }
-
-  const grandTotal =
-    totals.total +
-    tocTotals.packCharges +
-    tocTotals.transportCost +
-    tocTotals.insurance +
-    tocTotals.installationCharges -
-    tocTotals.tds
 
   return (
     <div className="GStDetails">
@@ -591,16 +401,27 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
       <div className="gsttable">
         <table className="table table-bordered table-responsive">
           <tbody>
+                <tbody>
             {gstDetails.length > 0 ? (
               <>
                 <tr>
                   <td>TOC Assable Value:</td>
                   <td>
-                    <input type="number" className="form-control" value={totals.subTotal.toFixed(2)} readOnly />
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={gstDetails[0].TOC_AssableValue || ""}
+                      onChange={(e) => handleInputChange(0, "TOC_AssableValue", e.target.value)}
+                    />
                   </td>
                   <td>CGST:</td>
                   <td>
-                    <input type="number" className="form-control" value={totals.cgst.toFixed(2)} readOnly />
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={totals.cgst.toFixed(2)}
+                      onChange={(e) => handleInputChange(0, "TOC_CGST", e.target.value)}
+                    />
                   </td>
                 </tr>
                 <tr>
@@ -611,13 +432,18 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                     <input
                       type="number"
                       className="form-control"
-                      value={Number(gstDetails[0].TOC_PackCharges || 0)}
+                      value={gstDetails[0].TOC_PackCharges || ""}
                       onChange={(e) => handleInputChange(0, "TOC_PackCharges", e.target.value)}
                     />
                   </td>
                   <td>SGST:</td>
                   <td>
-                    <input type="number" className="form-control" value={totals.sgst.toFixed(2)} readOnly />
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={totals.sgst.toFixed(2)}
+                      onChange={(e) => handleInputChange(0, "TOC_SGST", e.target.value)}
+                    />
                   </td>
                 </tr>
                 <tr>
@@ -628,13 +454,18 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                     <input
                       type="number"
                       className="form-control"
-                      value={Number(gstDetails[0].TOC_TransportCost || 0)}
+                      value={gstDetails[0].TOC_TransportCost || ""}
                       onChange={(e) => handleInputChange(0, "TOC_TransportCost", e.target.value)}
                     />
                   </td>
                   <td>IGST:</td>
                   <td>
-                    <input type="number" className="form-control" value={totals.igst.toFixed(2)} readOnly />
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={totals.igst.toFixed(2)}
+                      onChange={(e) => handleInputChange(0, "TOC_IGST", e.target.value)}
+                    />
                   </td>
                 </tr>
                 <tr>
@@ -645,7 +476,7 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                     <input
                       type="number"
                       className="form-control"
-                      value={Number(gstDetails[0].TOC_Insurance || 0)}
+                      value={gstDetails[0].TOC_Insurance || ""}
                       onChange={(e) => handleInputChange(0, "TOC_Insurance", e.target.value)}
                     />
                   </td>
@@ -654,7 +485,7 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                     <input
                       type="number"
                       className="form-control"
-                      value={Number(gstDetails[0].TOC_VAT || 0)}
+                      value={gstDetails[0].TOC_VAT || ""}
                       onChange={(e) => handleInputChange(0, "TOC_VAT", e.target.value)}
                     />
                   </td>
@@ -667,7 +498,7 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                     <input
                       type="number"
                       className="form-control"
-                      value={Number(gstDetails[0].TOC_InstallationCharges || 0)}
+                      value={gstDetails[0].TOC_InstallationCharges || ""}
                       onChange={(e) => handleInputChange(0, "TOC_InstallationCharges", e.target.value)}
                     />
                   </td>
@@ -676,7 +507,7 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                     <input
                       type="number"
                       className="form-control"
-                      value={Number(gstDetails[0].TOC_CESS || 0)}
+                      value={gstDetails[0].TOC_CESS || ""}
                       onChange={(e) => handleInputChange(0, "TOC_CESS", e.target.value)}
                     />
                   </td>
@@ -689,13 +520,18 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                     <input
                       type="number"
                       className="form-control"
-                      value={Number(gstDetails[0].TOC_TDS || 0)}
+                      value={gstDetails[0].TOC_TDS || ""}
                       onChange={(e) => handleInputChange(0, "TOC_TDS", e.target.value)}
                     />
                   </td>
                   <td>GRAND TOTAL:</td>
                   <td>
-                    <input type="number" className="form-control" value={grandTotal.toFixed(2)} readOnly />
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={totals.total.toFixed(2)}
+                      onChange={(e) => handleInputChange(0, "GR_Total", e.target.value)}
+                    />
                   </td>
                 </tr>
               </>
@@ -704,6 +540,7 @@ const GSTDetails = ({ updateFormData = () => {}, itemDetails = [] }) => {
                 <td colSpan="4">No GST details available</td>
               </tr>
             )}
+          </tbody>
           </tbody>
         </table>
       </div>

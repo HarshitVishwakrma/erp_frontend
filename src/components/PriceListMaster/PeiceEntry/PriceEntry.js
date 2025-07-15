@@ -49,7 +49,7 @@ const PriceEntry = () => {
 
   useEffect(() => {
     fetchPriceListEntries()
-      .then((data) => setPriceEntries(data))
+      .then((data) => setPriceEntries(data.sort((a, b) => b.id - a.id)))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 

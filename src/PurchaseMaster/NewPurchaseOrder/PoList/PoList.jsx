@@ -208,7 +208,7 @@ const PoList = () => {
                             <td>{order.User}</td>
                               <td>
                                       <a
-  href={`http://3.7.91.234:8000${order.View}`}
+  href={`http://127.0.0.1:8000${order.View}`}
   target="_blank"
   rel="noopener noreferrer"
   className="btn btn-sm btn-primary"

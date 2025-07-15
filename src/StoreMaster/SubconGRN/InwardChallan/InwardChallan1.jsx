@@ -9,15 +9,65 @@ import { Link } from "react-router-dom";
 import { saveInwardChallan } from "../../../Service/StoreApi.jsx";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaCalculator } from "react-icons/fa";
+
+const today = new Date().toISOString().split("T")[0];
+const now = new Date();
+const pad2 = (n) => n.toString().padStart(2, "0");
+
+const currentTime = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+
+const getInitialItem = () => ({
+  item_code: "",
+  type: "",
+  description: "",
+  store: "",
+  suppRefNo: "",
+  qtyNo: "",
+  qtyKg: "",
+  process: "",
+  pkg: "",
+  wRate: "",
+});
 
 const InwardChallan1 = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [gateEntries, setGateEntries] = useState([]);
+  const [selectedGateEntry, setSelectedGateEntry] = useState();
+  const [challanNumbers, setChallanNumbers] = useState([]);
+  const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [showItemList, setShowItemList] = useState(false);
+  const [searchItemText, setSearchItemText] = useState("");
+  const [selectedItem, setSelectedItem] = useState(getInitialItem());
+  const [currentItems, setCurrentItems] = useState([]);
+  const [selectedOutWardChallan, setSelectedOutwardChallan] = useState();
+  const [PO, setPO] = useState([]);
+  const [gstDetails, setGstDetails] = useState({
+    cgst: 0,
+    sgst: 0,
+    igst: 0,
+    assetValue: 0,
+    total: 0,
+  });
+
+  const fetchGateEntries = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/Store/general-details/");
+      const resData = await res.json();
+      console.log(resData);
+      setGateEntries(resData);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
 
   useEffect(() => {
+    fetchGateEntries();
     if (sideNavOpen) {
       document.body.classList.add("side-nav-open");
     } else {
@@ -28,10 +78,10 @@ const InwardChallan1 = () => {
   // inward challan
   const [formData, setFormData] = useState({
     InwardF4No: "",
-    InwardDate: "",
-    InwardTime: "",
+    InwardDate: today,
+    InwardTime: currentTime,
     ChallanNo: "",
-    ChallanDate: "",
+    ChallanDate: today,
     GateEnrtyNo: "",
     InvoiceNo: "",
     InvoiceDate: "",
@@ -70,6 +120,84 @@ const InwardChallan1 = () => {
     }));
   };
 
+  const handleChallanSelect = (e) => {
+    const challanNo = e.target.value;
+    const chlln = challanNumbers.filter(
+      (item) => item.challan_no === challanNo
+    )[0];
+    setSelectedOutwardChallan(chlln);
+    setItems(chlln?.items);
+  };
+
+  const handleSelectItem = (item) => {
+    console.log(item);
+    setSearchItemText(item?.type || "");
+    setSelectedItem({ ...item }); // Create a copy instead of direct assignment
+    setShowItemList(false);
+  };
+
+  function handleItemChange(e) {
+    setSearchItemText(e.target.value);
+    if (e.target.value.length > 0) {
+      const filteredItems = items.filter((item) => {
+        return item.type.includes(e.target.value);
+      });
+      setFilteredItems(filteredItems);
+      setShowItemList(true);
+    } else {
+      setShowItemList(false);
+    }
+  }
+
+  const handleAddItem = () => {
+    if (!selectedItem) return;
+
+    // Create a copy of the selected item to avoid reference issues
+    const itemToAdd = { ...selectedItem };
+
+    setCurrentItems((prev) => {
+      return [...prev, itemToAdd];
+    });
+
+    setSearchItemText("");
+    setSelectedItem(getInitialItem()); // Use the function instead of the constant
+  };
+
+  const handleItemDetailChange = (index, fieldName, value) => {
+    const updatedItems = [...currentItems];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      [fieldName]: value, // dynamically add or update the field
+    };
+    setCurrentItems(updatedItems);
+  };
+
+  const handleChangeGateEntry = async (e) => {
+    const selectedGE_No = e.target.value; // this is a string
+    const entryObj = gateEntries.find(
+      (ent) => String(ent.GE_No) === selectedGE_No // match string → string
+    );
+    setSelectedGateEntry(entryObj);
+    // if you also need it in your main formData:
+    setFormData((prev) => ({ ...prev, GateEntryNo: selectedGE_No }));
+
+    const supplier = entryObj?.Supp_Cust?.replace(/^\d+\s*-\s*/, "");
+
+    const res = await fetch(
+      "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + supplier
+    );
+    const resData = await res.json();
+    console.log(resData);
+    setChallanNumbers(resData.challans);
+
+    const res2 = await fetch(
+      "http://127.0.0.1:8000/Store/newjobworkpodetails/?supplier=" + supplier
+    );
+    const resData2 = await res2.json();
+
+    setPO(resData2.purchase_orders);
+  };
+
   // Form validation logic
   const validate = () => {
     const newErrors = {};
@@ -79,11 +207,96 @@ const InwardChallan1 = () => {
         "Please select Yes or No for Delivery In Time.";
     }
 
-    // Other validation rules...
+    // Add validation for items
+    if (currentItems.length === 0) {
+      newErrors.items = "Please add at least one item before submitting.";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+  function calculateTaxDetails(qty, rate, cgstRate, sgstRate, igstRate) {
+    // ensure inputs are numbers
+    const quantity = Number(qty) || 0;
+    const unitRate = Number(rate) || 0;
+    const cgstPercent = Number(cgstRate) || 0;
+    const sgstPercent = Number(sgstRate) || 0;
+    const igstPercent = Number(igstRate) || 0;
+
+    // base amount
+    const amount = quantity * unitRate;
+
+    // individual tax amounts
+    const cgstAmount = (amount * cgstPercent) / 100;
+    const sgstAmount = (amount * sgstPercent) / 100;
+    const igstAmount = (amount * igstPercent) / 100;
+
+    // totals
+    const totalTax = cgstAmount + sgstAmount + igstAmount;
+    const totalAmount = amount + totalTax;
+
+    return {
+      amount,
+      cgstAmount,
+      sgstAmount,
+      igstAmount,
+      totalTax,
+      totalAmount,
+    };
+  }
+
+  // Form submission handler
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!validate()) return;
+
+  //   try {
+  //     const result = await saveInwardChallan(formData);
+  //     console.log("Form Data:", formData); // Check if formData is correct
+  //     console.log("API Response:", result); // Check the response from API
+  //     if (result) {
+  //       toast.success("Data saved successfully!");
+  //       console.log("Data saved successfully:", formData);
+
+  //       // Reset form after successful submission
+  //       setFormData({
+  //         InwardF4No: "",
+  //         InwardDate: "",
+  //         InwardTime: "",
+  //         ChallanNo: "",
+  //         ChallanDate: "",
+  //         GateEnrtyNo: "",
+  //         InvoiceNo: "",
+  //         InvoiceDate: "",
+  //         EWayBillQty: "",
+  //         EWayBillNo: "",
+  //         VehicleNo: "",
+  //         LrNo: "",
+  //         Transporter: "",
+  //         PreparedBy: "",
+  //         CheckedBy: "",
+  //         TcNo: "",
+  //         TcDate: "",
+  //         Remark: "",
+  //         DeliveryInTime: "",
+
+  //         TotalItem: "",
+  //         TotalQtyNo: "",
+  //         TotalQtyKg: "",
+  //         Store: "",
+  //       });
+  //       setErrors({});
+  //     }
+  //   } catch (error) {
+  //     console.error("Error saving data:", error);
+  //     const errorMessage = JSON.parse(error.message);
+  //     for (const key in errorMessage) {
+  //       toast.error(`${key}: ${errorMessage[key][0]}`);
+  //       console.log(`${key}: ${errorMessage[key][0]}`);
+  //     }
+  //   }
+  // };
 
   // Form submission handler
   const handleSubmit = async (e) => {
@@ -91,20 +304,78 @@ const InwardChallan1 = () => {
     if (!validate()) return;
 
     try {
-      const result = await saveInwardChallan(formData);
-      console.log("Form Data:", formData); // Check if formData is correct
-      console.log("API Response:", result); // Check the response from API
+      // Prepare the nested data structure that matches your Django model
+      const submissionData = {
+        // Main InwardChallan2 fields
+        ...formData,
+
+        // Add the InwardChallanTable data (required)
+        InwardChallanTable: currentItems.map((item, index) => ({
+          OutNo: selectedOutWardChallan?.challan_no || "",
+          OutDate: selectedOutWardChallan?.challan_date || "",
+          ItemDescription: item.description || "",
+          OutIn: "In",
+          Unit: "NOS",
+          OutQty: item.qtyNo || "",
+          BalQty: item.bal_Qty || item.qtyNo || "",
+          ChallanQty: item.bal_Qty || item.qtyNo || "",
+          InQtyNOS: item.in_Qty || item.bal_Qty || item.qtyNo || "",
+          InQtyKg: item.in_Qty_kg || item.qtyKg || "",
+          JwRate: item.wRate || "",
+        })),
+
+        // Add the InwardChallanGSTDetails data (required)
+        InwardChallanGSTDetails: currentItems.map((item, index) => {
+          const poItem = PO[0]?.Item_Detail_Enter.find(
+            (poItem) => poItem.Item === item.item_code
+          );
+          const gstDetail = PO[0]?.Gst_Details.find(
+            (gst) => gst.ItemCode === item.item_code
+          );
+
+          const qty = item.bal_Qty || item.qtyNo || "";
+          const rate = poItem?.Rate || item.wRate || "";
+          const { amount, cgstAmount, sgstAmount, igstAmount } =
+            calculateTaxDetails(
+              qty,
+              rate,
+              gstDetail?.CGST || 0,
+              gstDetail?.SGST || 0,
+              gstDetail?.IGST || 0
+            );
+
+          return {
+            ItemCode: item.item_code || "",
+            SACCode: "",
+            PORate: rate,
+            RateType: "NOS",
+            Qty: qty,
+            Discount: poItem?.disc || "0",
+            PackAmt: gstDetail?.Packing || "0",
+            TransAmt: gstDetail?.Transport || "0",
+            AssValue: amount.toString(),
+            CGST: cgstAmount.toString(),
+            SGST: sgstAmount.toString(),
+            IGST: igstAmount.toString(),
+          };
+        }),
+      };
+
+      console.log("Submission Data:", submissionData); // Debug log
+
+      const result = await saveInwardChallan(submissionData);
+      console.log("API Response:", result);
+
       if (result) {
         toast.success("Data saved successfully!");
-        console.log("Data saved successfully:", formData);
 
         // Reset form after successful submission
         setFormData({
           InwardF4No: "",
-          InwardDate: "",
-          InwardTime: "",
+          InwardDate: today,
+          InwardTime: currentTime,
           ChallanNo: "",
-          ChallanDate: "",
+          ChallanDate: today,
           GateEnrtyNo: "",
           InvoiceNo: "",
           InvoiceDate: "",
@@ -119,12 +390,12 @@ const InwardChallan1 = () => {
           TcDate: "",
           Remark: "",
           DeliveryInTime: "",
-
           TotalItem: "",
           TotalQtyNo: "",
           TotalQtyKg: "",
           Store: "",
         });
+        setCurrentItems([]);
         setErrors({});
       }
     } catch (error) {
@@ -136,6 +407,66 @@ const InwardChallan1 = () => {
       }
     }
   };
+
+  const calculateGSTTotals = () => {
+    let totalAssessableValue = 0;
+    let totalCGSTAmount = 0;
+    let totalSGSTAmount = 0;
+    let totalIGSTAmount = 0;
+    let totalAmount = 0;
+
+    const calculatedItems = currentItems.map((item, index) => {
+      const poItem = PO[0]?.Item_Detail_Enter.find(
+        (poItem) => poItem.Item === item.item_code
+      );
+
+      const gstDetail = PO[0]?.Gst_Details.find(
+        (gst) => gst.ItemCode === item.item_code
+      );
+
+      const qty = item.bal_Qty;
+      const rate = poItem?.Rate;
+      const cgstPct = gstDetail?.CGST;
+      const sgstPct = gstDetail?.SGST;
+      const igstPct = gstDetail?.IGST;
+
+      let { amount, cgstAmount, sgstAmount, igstAmount, totalAmount } =
+        calculateTaxDetails(qty, rate, cgstPct, sgstPct, igstPct);
+
+      // Add to totals
+      totalAssessableValue += amount;
+      totalCGSTAmount += cgstAmount;
+      totalSGSTAmount += sgstAmount;
+      totalIGSTAmount += igstAmount;
+      totalAmount += totalAmount;
+
+      return {
+        item,
+        poItem,
+        gstDetail,
+        calculations: {
+          amount,
+          cgstAmount,
+          sgstAmount,
+          igstAmount,
+          totalAmount,
+        },
+      };
+    });
+
+    return {
+      items: calculatedItems,
+      totals: {
+        totalAssessableValue,
+        totalCGSTAmount,
+        totalSGSTAmount,
+        totalIGST: totalIGSTAmount,
+        totalAmount,
+      },
+    };
+  };
+
+  const { items: calculatedItems, totals } = calculateGSTTotals();
 
   return (
     <div className="NewStoreStoreSubcon">
@@ -221,19 +552,20 @@ const InwardChallan1 = () => {
                               <select
                                 id="routingSelect"
                                 className="form-select"
+                                onChange={handleChangeGateEntry}
                               >
                                 <option selected>Select</option>
-                                <option value="">
-                                  GE242503626|Supplier/Vendor : SANKET
-                                  ENGINEERING
-                                </option>
-                                <option value="">
-                                  GE242504231|Supplier/Vendor : SHRIPAD STEELS
-                                </option>
-                                <option value="">
-                                  GE242503626|Supplier/Vendor : SHREE CHITAMANI
-                                  HEAT TREATERS
-                                </option>
+                                {gateEntries.map((entry) => {
+                                  return (
+                                    <option
+                                      key={entry.GE_No}
+                                      value={entry.GE_No}
+                                    >
+                                      {entry.GE_No}|Supplier/Vendor :{" "}
+                                      {entry.Supp_Cust ? entry.Supp_Cust : ""}
+                                    </option>
+                                  );
+                                })}
                               </select>
                             </div>
                             <div className="col-md-2">
@@ -247,7 +579,16 @@ const InwardChallan1 = () => {
                           <div className="row">
                             <div className="col-md-4">Supplier Name:</div>
                             <div className="col-md-6">
-                              <input type="text" className="form-control"/>
+                              {/* {console.log('line number 258',selectedGateEntry.Supp_Cust)} */}
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={
+                                  selectedGateEntry?.Supp_Cust
+                                    ? selectedGateEntry.Supp_Cust
+                                    : ""
+                                }
+                              />
                             </div>
                             <div className="col-md-2">
                               <button type="button" className="btn">
@@ -263,17 +604,18 @@ const InwardChallan1 = () => {
                               <select
                                 id="routingSelect"
                                 className="form-select"
+                                onChange={handleChallanSelect}
                               >
                                 <option selected>Select</option>
-                                <option value="">
-                                  242503626| SANKET ENGINEERING
-                                </option>
-                                <option value="">
-                                  242504231| SHRIPAD STEELS
-                                </option>
-                                <option value="">
-                                  242503626| SHREE CHITAMANI HEAT TREATERS
-                                </option>
+                                {challanNumbers &&
+                                  challanNumbers.length > 0 &&
+                                  challanNumbers.map((challan) => {
+                                    return (
+                                      <option value={challan.challan_no}>
+                                        {challan?.challan_no} {challan?.vender}
+                                      </option>
+                                    );
+                                  })}
                               </select>
                             </div>
                             <div className="col-md-2">
@@ -294,10 +636,45 @@ const InwardChallan1 = () => {
                           <div className="row ">
                             <div className="col-md-4">Item Name:</div>
                             <div className="col-md-6">
-                              <input type="text" className="form-control" />
+                              <input
+                                type="text"
+                                className="form-control"
+                                onChange={handleItemChange}
+                                value={searchItemText}
+                              />
+                              {showItemList && items.length > 0 && (
+                                <ul
+                                  className="dropdown-menu show"
+                                  style={{
+                                    width: "22%",
+                                    maxHeight: "200px",
+                                    overflowY: "auto",
+                                    border: "1px solid #ccc",
+                                    zIndex: 1000,
+                                  }}
+                                >
+                                  {items.map((item) => (
+                                    <li
+                                      key={item.id}
+                                      className="dropdown-item"
+                                      onClick={() => handleSelectItem(item)}
+                                      style={{
+                                        padding: "2px",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      {item.type}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                             </div>
                             <div className="col-md-2">
-                              <button type="button" className="btn">
+                              <button
+                                type="button"
+                                className="btn"
+                                onClick={handleAddItem}
+                              >
                                 Add
                               </button>
                             </div>
@@ -327,7 +704,90 @@ const InwardChallan1 = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr></tr>
+                            {currentItems &&
+                              currentItems.length > 0 &&
+                              currentItems.map((item, index) => {
+                                return (
+                                  <>
+                                    <tr>
+                                      <td>{index + 1}</td>
+                                      <td>
+                                        {selectedOutWardChallan?.challan_date ||
+                                          ""}
+                                      </td>
+                                      <td>{item?.description || ""}</td>
+                                      <td></td>
+                                      <td>
+                                        <select
+                                          name="unit"
+                                          id="unit"
+                                          className="form-select mb-2 "
+                                          style={{ width: "75px" }}
+                                          defaultValue="NOS"
+                                        >
+                                          <option value="">NOS</option>
+                                        </select>
+                                      </td>
+                                      <td>{item?.qtyNo || ""}</td>
+                                      <td>{item?.qtyNo || ""}</td>
+                                      <td>
+                                        {" "}
+                                        <input
+                                          type="text"
+                                          name="bal_Qty"
+                                          className="form-control"
+                                          onChange={(e) => {
+                                            handleItemDetailChange(
+                                              index,
+                                              "bal_Qty",
+                                              e.target.value
+                                            );
+                                          }}
+                                        />
+                                      </td>
+                                      <td>
+                                        {" "}
+                                        <input
+                                          type="text"
+                                          name="in_Qty"
+                                          className="form-control"
+                                          onChange={(e) => {
+                                            handleItemDetailChange(
+                                              index,
+                                              "bal_Qty",
+                                              e.target.value
+                                            );
+                                          }}
+                                        />
+                                      </td>
+                                      <td>
+                                        {" "}
+                                        <input
+                                          type="text"
+                                          name="in_Qty_kg"
+                                          className="form-control"
+                                          onChange={(e) => {
+                                            handleItemDetailChange(
+                                              index,
+                                              "bal_Qty",
+                                              e.target.value
+                                            );
+                                          }}
+                                        />
+                                      </td>
+                                      <td>{item?.wRate || ""}</td>
+                                      <td>
+                                        <FaCalculator size={20}></FaCalculator>
+                                      </td>
+                                      <td>
+                                        <button className="form-control">
+                                          delete
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  </>
+                                );
+                              })}
                           </tbody>
                         </table>
                       </div>
@@ -351,7 +811,7 @@ const InwardChallan1 = () => {
                         aria-controls="pills-Gernal-Detail"
                         aria-selected="true"
                       >
-                      General Detail
+                        General Detail
                       </button>
                     </li>
                     <li className="nav-item" role="presentation">
@@ -427,7 +887,7 @@ const InwardChallan1 = () => {
                                           <th>Inward Time:</th>
                                           <td>
                                             <input
-                                              type="text"
+                                              type="time"
                                               name="InwardTime"
                                               value={formData.InwardTime}
                                               onChange={handleChange}
@@ -849,9 +1309,16 @@ const InwardChallan1 = () => {
                                                 type="submit"
                                                 className="btn"
                                               >
-                                                DocTCUpload
+                                                Save challan
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="btn"
+                                              >
+                                                Doc/Toc upload
                                               </button>
                                             </div>
+                                        
                                           </td>
                                         </tr>
                                       </tbody>
@@ -894,7 +1361,40 @@ const InwardChallan1 = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  <tr>{/* Data rows will go here */}</tr>
+                                  {calculatedItems.map((itemData, index) => {
+                                    const {
+                                      item,
+                                      poItem,
+                                      gstDetail,
+                                      calculations,
+                                    } = itemData;
+
+                                    return (
+                                      <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td>{item?.item_code || ""}</td>
+                                        <td></td>
+                                        <td>{poItem?.Rate || ""}</td>
+                                        <td>NOS</td>
+                                        <td>{item?.bal_Qty || "NA"}</td>
+                                        <td>{poItem?.disc || "0"}</td>
+                                        <td>{gstDetail?.Packing || "NA"}</td>
+                                        <td>{gstDetail?.Transport || "NA"}</td>
+                                        <td>
+                                          {calculations.amount.toFixed(2)}
+                                        </td>
+                                        <td>
+                                          {calculations.cgstAmount.toFixed(2)}
+                                        </td>
+                                        <td>
+                                          {calculations.sgstAmount.toFixed(2)}
+                                        </td>
+                                        <td>
+                                          {calculations.igstAmount.toFixed(2)}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             </div>
@@ -914,6 +1414,9 @@ const InwardChallan1 = () => {
                                               <input
                                                 type="text"
                                                 className="form-control"
+                                                value={totals.totalAssessableValue.toFixed(
+                                                  2
+                                                )}
                                               />
                                             </td>
                                           </tr>
@@ -981,6 +1484,9 @@ const InwardChallan1 = () => {
                                               <input
                                                 type="text"
                                                 className="form-control"
+                                                value={
+                                                  totals?.totalCGSTAmount || 0
+                                                }
                                               />
                                             </td>
                                           </tr>
@@ -992,6 +1498,9 @@ const InwardChallan1 = () => {
                                               <input
                                                 type="text"
                                                 className="form-control"
+                                                value={
+                                                  totals?.totalSGSTAmount || 0
+                                                }
                                               />
                                             </td>
                                           </tr>
@@ -1001,6 +1510,7 @@ const InwardChallan1 = () => {
                                               <input
                                                 type="text"
                                                 className="form-control"
+                                                value={totals?.totalIGST || 0}
                                               />
                                             </td>
                                           </tr>
@@ -1019,6 +1529,12 @@ const InwardChallan1 = () => {
                                               <input
                                                 type="text"
                                                 className="form-control"
+                                                value={
+                                                  totals?.totalCGSTAmount +
+                                                    totals?.totalAssessableValue +
+                                                    totals.totalSGSTAmount +
+                                                    totals?.totalIGST || 0
+                                                }
                                               />
                                             </td>
                                           </tr>

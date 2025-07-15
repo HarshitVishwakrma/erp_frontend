@@ -7,9 +7,12 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import "./QuotoComparisonStatement.css";
 import { addQuote, getQuotes, deleteQuote, updateQuote }  from "../../../Service/PurchaseApi.jsx";
 import { toast, ToastContainer } from "react-toastify"; // For notifications
+import { useNavigate } from "react-router-dom";
 
 const QuotoComparisonStatement = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -99,7 +102,7 @@ const QuotoComparisonStatement = () => {
   const fetchQuotes = async () => {
     try {
       const data = await getQuotes();
-      setQuotes(data);
+      setQuotes(data.sort((a, b) => b.id - a.id));
     } catch (error) {
       toast.error('Error fetching quotes');
     }
@@ -143,7 +146,7 @@ const QuotoComparisonStatement = () => {
                     </div>
                     <div className="col-md-8 text-end">
                      
-                          <button className="btn">
+                          <button onClick={()=>{navigate('/Quoto-Comparison-Statement-List')}} className="btn">
                             Quote Comp Statement List
                           </button>
                         

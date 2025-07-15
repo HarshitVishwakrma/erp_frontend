@@ -39,7 +39,7 @@ const ContractorMaster = () => {
   const loadContractors = async () => {
     try {
       const data = await fetchContractorMaster();
-      setContractorList(data);
+      setContractorList(data.sort((a, b) => b.id - a.id));
     } catch (error) {
       console.error("Error fetching contractors", error);
     }

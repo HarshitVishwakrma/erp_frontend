@@ -108,6 +108,7 @@ import UploadOperationSpeci from "./components/BOMRouting/BOMReport/UploadOperat
 
 // new indent
 import Newindent from "./PurchaseMaster/Newindent/Newindent";
+import ListIndent from "./PurchaseMaster/Newindent/Indent/ListIndent.jsx";
 import PoList from "./PurchaseMaster/NewPurchaseOrder/PoList/PoList.jsx";
 // New Purchase Order
 import NewPurchaseOrder from "./PurchaseMaster/NewPurchaseOrder/NewPurchaseOrder.jsx";
@@ -442,6 +443,9 @@ import TestReportList from "./Quality/TestMaster/TestReportList/TestReportList.j
 import TestReportNew from "./Quality/TestMaster/TestReportList/TestReportNew.jsx";
 import TestMasterNew from "./Quality/TestMaster/TestMasterNew/TestMasterNew.jsx";
 import TestMasterList from "./Quality/TestMaster/TestMasterList/TestMasterList.jsx";
+import IndentStutasReport from "./PurchaseMaster/Newindent/Indent/IndentStatasReport.jsx";
+import RFONew from "./PurchaseMaster/QuotoComparison/RFo/RFONew.jsx";
+import QuoteStatementList from "./PurchaseMaster/QuotoComparison/QuotoComparisonStatement/QuoteStatementList.jsx";
 
 function App() {
   return (
@@ -545,6 +549,7 @@ function App() {
         {/* ////////////////////////////////Purchase////////////////////////////////////////////////////////////// */}
         {/* New indent */}
         <Route path="/new-indent" element={<Newindent />} />
+        <Route path="/IndentStutasReport" element={<IndentStutasReport />} />
         {/* New Purchase Order */}
         <Route path="/new-purchase-order" element={<NewPurchaseOrder />} />
         {/* New Jobwork */}
@@ -557,11 +562,17 @@ function App() {
         <Route path="/Purchse-Mrn" element={<PurchaseMrn />} />
         {/* New Purchse Order Status */}
         <Route path="/Purchse-order-status" element={<PurchseOrderStatus />} />
+        <Route path="/ListIndent" element={<ListIndent />} />
         {/* Quoto Comparision */}
         <Route path="/Rfo" element={<Rfo />} />
+        <Route path="/RFONew" element={<RFONew />} />
         <Route
           path="/Quoto-Comparison-Statement"
           element={<QuotoComparisonStatement />}
+        />
+        <Route
+          path="/Quoto-Comparison-Statement-List"
+          element={<QuoteStatementList />}
         />
         <Route
           path="/Quoto-Comparison-Pending"

@@ -8,6 +8,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 // import NotificationAddIcon from "@mui/icons-material/NotificationAdd";
 // import us from "../assets/us.jpg";
 import user from "../assets/user-1.jpg";
+import { Home } from "@mui/icons-material";
 
 const NavBar = ({ toggleSideNav }) => {
   const navigate = useNavigate();
@@ -34,7 +35,6 @@ const NavBar = ({ toggleSideNav }) => {
     dropdownSetter((prev) => !prev);
   };
 
-
   useEffect(() => {
     // Bootstrap's JavaScript initialization (optional, only if Bootstrap JS is used)
     import("bootstrap/dist/js/bootstrap.bundle.min.js");
@@ -52,24 +52,22 @@ const NavBar = ({ toggleSideNav }) => {
 
         <div className="navbar-menu">
           {/* Create New Dropdown */}
-          
 
           {/* Mega Menu Dropdown */}
-          
         </div>
 
         <div className="navbar-actions">
-          <input
+          {/* <input
             className="navbar-search"
             type="search"
             placeholder="Search"
             aria-label="Search"
-          />
-  
+          /> */}
+
           <img className="navbar-user" src={user} alt="user" />
-          
+
           {/* Display the username and year */}
-         
+
           <label>{year}</label>
 
           {/* Admin Dropdown */}
@@ -103,6 +101,11 @@ const NavBar = ({ toggleSideNav }) => {
                 </li>
               </ul>
             )}
+          </div>
+          <div onClick={()=>{
+            navigate('/dashboard')
+          }}>
+          <Home className="navbar-icon"></Home>
           </div>
 
           <SettingsIcon className="navbar-icon" />

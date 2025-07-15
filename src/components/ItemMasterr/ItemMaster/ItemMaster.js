@@ -41,7 +41,7 @@ const ItemMaster = () => {
         setMainGroups(groupData || []);
         const itemData = await fetchItems();
         setItems(itemData || []);
-        setFilteredItems(itemData || []);
+        setFilteredItems(itemData.sort((a, b) => b.id - a.id) || []);
       } catch (error) {
         console.error("Data fetch error:", error);
       }
@@ -62,7 +62,7 @@ const ItemMaster = () => {
         item.part_no?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.Name_Description?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesMainGroup && matchesItemGroup && matchesItemGrade && matchesSearchQuery;
-    });
+    })
     setFilteredItems(filtered);
     setCurrentPage(1);
   };
@@ -211,7 +211,7 @@ const ItemMaster = () => {
                                                                       <td>
                                                                      
                                 <a
-                                        href={`http://3.7.91.234:8000${item.View}`}
+                                        href={`http://127.0.0.1:8000${item.View}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn btn-sm btn-primary"

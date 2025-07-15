@@ -82,7 +82,7 @@ const UnitConversion = () => {
     const fetchData = async () => {
       try {
         const result = await fetchUnitConversionData();
-        setData(result);
+        setData(result.sort((a, b) => b.id - a.id));
       } catch (error) {
         setError(error);
       } finally {

@@ -22,8 +22,8 @@ const GateInwardEntry = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
-const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [gateInwardData, setGateInwardData] = useState([]);
 
@@ -33,7 +33,7 @@ const itemsPerPage = 10;
 
   const fetchGateInward = async () => {
     const data = await getgateInward();
-    setGateInwardData(data);
+    setGateInwardData(data.sort((a, b) => b.id - a.id));
   };
 
   return (
@@ -49,7 +49,7 @@ const itemsPerPage = 10;
               />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="GateInward1-header  mb-4 text-start mt-5">
-                    <div className="row align-items-center">
+                  <div className="row align-items-center">
                     <div className="col-md-3">
                       <h5 className="header-title">
                         Gate Entry Inward Register
@@ -57,19 +57,16 @@ const itemsPerPage = 10;
                     </div>
 
                     <div className="col-md-9 text-end">
-                     
-                       
-                          <Link className="btn" to={"/New-Gate-Entry"}>
-                            New Gate Entry
-                          </Link>
+                      <Link className="btn" to={"/New-Gate-Entry"}>
+                        New Gate Entry
+                      </Link>
 
-                          <Link className="btn">Gate Inward Material Reg</Link>
+                      <Link className="btn">Gate Inward Material Reg</Link>
 
-                          <Link className="btn">Export Excel</Link>
+                      <Link className="btn">Export Excel</Link>
 
-                          <Link className="btn">Gate Entry Inward - Query</Link>
-                        </div>
-                  
+                      <Link className="btn">Gate Entry Inward - Query</Link>
+                    </div>
                   </div>
                 </div>
                 <div className="GateInward-main1 mt-5">
@@ -191,87 +188,101 @@ const itemsPerPage = 10;
                               <th>Challan Date</th>
                               <th>Invoice No</th>
                               <th>Invoice Date</th>
-                              
+
                               <th>User</th>
-                              
+
                               <th>Edit</th>
                               <th>View</th>
                             </tr>
                           </thead>
                           <tbody>
-     {gateInwardData
-  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-  .map((item, index) => (
-        <tr key={item.id}>
-         <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                            {gateInwardData
+                              .slice(
+                                (currentPage - 1) * itemsPerPage,
+                                currentPage * itemsPerPage
+                              )
+                              .map((item, index) => (
+                                <tr key={item.id}>
+                                  <td>
+                                    {(currentPage - 1) * itemsPerPage +
+                                      index +
+                                      1}
+                                  </td>
 
-          <td>{new Date(item.GE_Date).getFullYear()}</td>
-          <td>{item.Plant}</td>
-          <td>{item.GE_No}</td>
-          <td>{item.GE_Date}</td>
-          <td>{item.GE_Time}</td>
-          <td>{item.Type}</td>
-          <td>{item.Supp_Cust}</td>
-          <td>{item.ChallanNo}</td>
-          <td>{item.ChallanDate}</td>
-          <td>{item.InVoiceNo}</td>
-          <td>{item.Invoicedate}</td>
-         
-          <td>{item.User || "-"}</td>
-         
-          <td>
-            
-                                                <Link
-                                                  to={`/New-Gate-Entry/${item.id}`}
-                                                  className="btn btn-sm btn-warning"
-                                                >
-                                                  <FaEdit />
-                                                </Link>
-                                           
-          </td>
-        
-              <td>
-                                                <a
-                                                  href={`http://3.7.91.234:8000${item.View}`}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  className="btn btn-sm btn-primary"
-                                                >
-                                                  View
-                                                </a>
-                                              </td>
-                                            
-        </tr>
-      ))}
-    </tbody>
+                                  <td>
+                                    {new Date(item.GE_Date).getFullYear()}
+                                  </td>
+                                  <td>{item.Plant}</td>
+                                  <td>{item.GE_No}</td>
+                                  <td>{item.GE_Date}</td>
+                                  <td>{item.GE_Time}</td>
+                                  <td>{item.Type}</td>
+                                  <td>{item.Supp_Cust}</td>
+                                  <td>{item.ChallanNo}</td>
+                                  <td>{item.ChallanDate}</td>
+                                  <td>{item.InVoiceNo}</td>
+                                  <td>{item.Invoicedate}</td>
+
+                                  <td>{item.User || "-"}</td>
+
+                                  <td>
+                                    <Link
+                                      to={`/New-Gate-Entry/${item.id}`}
+                                      className="btn btn-sm btn-warning"
+                                    >
+                                      <FaEdit />
+                                    </Link>
+                                  </td>
+
+                                  <td>
+                                    <a
+                                      href={`http://127.0.0.1:8000${item.View}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn btn-sm btn-primary"
+                                    >
+                                      View
+                                    </a>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
                         </table>
                       </div>
                       <div className="d-flex justify-content-between align-items-center mt-3">
-  <button
-    className="btn btn-outline-secondary"
-    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-    disabled={currentPage === 1}
-  >
-    Previous
-  </button>
+                        <button
+                          className="btn btn-outline-secondary"
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(prev - 1, 1))
+                          }
+                          disabled={currentPage === 1}
+                        >
+                          Previous
+                        </button>
 
-  <span>Page {currentPage} of {Math.ceil(gateInwardData.length / itemsPerPage)}</span>
+                        <span>
+                          Page {currentPage} of{" "}
+                          {Math.ceil(gateInwardData.length / itemsPerPage)}
+                        </span>
 
-  <button
-    className="btn btn-outline-secondary"
-    onClick={() =>
-      setCurrentPage(prev =>
-        prev < Math.ceil(gateInwardData.length / itemsPerPage)
-          ? prev + 1
-          : prev
-      )
-    }
-    disabled={currentPage === Math.ceil(gateInwardData.length / itemsPerPage)}
-  >
-    Next
-  </button>
-</div>
-
+                        <button
+                          className="btn btn-outline-secondary"
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              prev <
+                              Math.ceil(gateInwardData.length / itemsPerPage)
+                                ? prev + 1
+                                : prev
+                            )
+                          }
+                          disabled={
+                            currentPage ===
+                            Math.ceil(gateInwardData.length / itemsPerPage)
+                          }
+                        >
+                          Next
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

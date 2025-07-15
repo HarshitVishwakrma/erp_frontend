@@ -50,8 +50,8 @@ const ScrapRejectionReport = () => {
     setIsLoading(true)
     try {
       const data = await getScrapLineRejectionReport()
-      setReportData(data)
-      setFilteredData(data)
+      setReportData(data.sort((a, b) => b.id - a.id))
+      setFilteredData(data.sort((a, b) => b.id - a.id))
     } catch (error) {
       console.error("Error fetching data:", error)
     } finally {
@@ -306,7 +306,7 @@ const ScrapRejectionReport = () => {
                                       <FaEdit />
                                     </Link>
                                     <a
-                                      href={`http://3.7.91.234:8000/Production/scrap-line-rejection/pdf/${entry.id}/`}
+                                      href={`http://127.0.0.1:8000/Production/scrap-line-rejection/pdf/${entry.id}/`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="btn btn-sm btn-primary"

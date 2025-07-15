@@ -241,8 +241,8 @@ const WorkOrderEntry = () => {
   useEffect(() => {
     const loadShifts = async () => {
       const data = await fetchShifts();
-      setShifts(data);
-      setFilteredShifts(data);
+      setShifts(data.sort((a, b) => b.id - a.id));
+      setFilteredShifts(data.sort((a, b) => b.id - a.id));
     };
     loadShifts();
   }, []);

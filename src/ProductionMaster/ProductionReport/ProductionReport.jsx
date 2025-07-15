@@ -34,7 +34,7 @@ const ProductionReport = () => {
       console.log("Fetched Data:", data); // Check the structure of the data
 
       if (Array.isArray(data)) {
-        setAssemblyData(data); // Directly set the array if data is an array
+        setAssemblyData(data.sort((a, b) => b.id - a.id)); // Directly set the array if data is an array
         setTotalItems(data.length); // Set total items based on the array length
       } else {
         console.error("Data is not an array:", data);
@@ -176,7 +176,7 @@ const ProductionReport = () => {
 
                               <td>
                                 <a
-                                  href={`http://3.7.91.234:8000${item.View}`}
+                                  href={`http://127.0.0.1:8000${item.View}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="btn btn-sm btn-primary"

@@ -42,6 +42,7 @@ const Login = () => {
       if (data.message === "Login successful") {
         // Store the full year and Shortyear in localStorage
         localStorage.setItem("accessToken", data.access);
+        console.log(data)
   localStorage.setItem("refreshToken", data.refresh);
   localStorage.setItem("username", data.username);
   localStorage.setItem("year", data.year);

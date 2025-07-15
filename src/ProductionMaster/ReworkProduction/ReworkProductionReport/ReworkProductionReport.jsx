@@ -27,7 +27,7 @@ const ReworkProductionReport = () => {
 
   const fetchData = useCallback(async () => {
     const result = await getProductDetails(filters);
-    setData(result);
+    setData(result.sort((a, b) => b.id - a.id));
   }, [filters]);
 
   // Fetch data on component mount and whenever filters change

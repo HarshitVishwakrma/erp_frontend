@@ -28,7 +28,7 @@ const GrnList = () => {
   useEffect(() => {
     getGrnDetails()
       .then(data => {
-        setGrnData(data);
+        setGrnData(data.sort((a, b) => b.id - a.id));
       })
       .catch(err => {
         console.error('Failed to load GRN data:', err);
@@ -229,7 +229,7 @@ const totalPages = Math.ceil(grnData.length / itemsPerPage);
               <button className="btn"><FaEdit/></button>
             </td>
             <td>
-              <button className="btn"> <a href={`http://3.7.91.234:8000${item.PDF_Link}`} target="_blank" rel="noopener noreferrer">👁</a></button>
+              <button className="btn"> <a href={`http://127.0.0.1:8000${item.PDF_Link}`} target="_blank" rel="noopener noreferrer">👁</a></button>
             </td>
           </tr>
         ))}

@@ -47,7 +47,7 @@ const OperatorSupervisor = () => {
   const fetchOperators = async () => {
     try {
       const data = await getOperatorList();
-      setOperatorList(data);
+      setOperatorList(data.sort((a, b) => b.id - a.id));
     } catch (err) {
       console.error("Error fetching data", err);
       toast.error("Failed to fetch data");
@@ -244,7 +244,7 @@ const handleEdit = async (id) => {
                      <tbody>
    {currentRecords.map((item, index) => (
     <tr key={index}>
-      <td>{item.id}</td>
+      <td>{index+1}</td>
       <td>{item.Name}</td>
       <td>{item.Type}</td>
       <td>{item.Department}</td>

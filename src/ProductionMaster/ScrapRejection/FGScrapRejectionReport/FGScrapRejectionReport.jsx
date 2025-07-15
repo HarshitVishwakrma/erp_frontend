@@ -48,8 +48,8 @@ const FGScrapRejectionReport = () => {
      setIsLoading(true)
      try {
        const data = await getFgScrapLineRejectionReport()
-       setReportData(data)
-       setFilteredData(data)
+       setReportData(data.sort((a, b) => b.id - a.id))
+       setFilteredData(data.sort((a, b) => b.id - a.id))
      } catch (error) {
        console.error("Error fetching data:", error)
      } finally {
@@ -316,7 +316,7 @@ const FGScrapRejectionReport = () => {
                                       <FaEdit />
                                     </Link>
                                     <a
-                                      href={`http://3.7.91.234:8000/Production/FGScrap/pdf/${entry.id}/`}
+                                      href={`http://127.0.0.1:8000/Production/FGScrap/pdf/${entry.id}/`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="btn btn-sm btn-primary"

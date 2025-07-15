@@ -54,12 +54,13 @@ const VenderList = () => {
       return matchesType && matchesQuery;
     });
     setFilteredData(filtered);
+    console.log(filtered)
     setCurrentPage(1);
     setShowData(true);
   };
 
   const handleViewAll = () => {
-    setFilteredData(supplierCustomerData);
+    setFilteredData(supplierCustomerData.sort((a, b) => b.id - a.id));
     setSearchType("");
     setSearchQuery("");
     setShowData(true);
@@ -70,7 +71,7 @@ const VenderList = () => {
   const currentRecords = filteredData.slice(
     indexOfFirstRecord,
     indexOfLastRecord
-  );
+  )
   const totalPages = Math.ceil(filteredData.length / recordsPerPage);
   const pageNumbers = Array.from(
     { length: totalPages },
@@ -245,7 +246,7 @@ const VenderList = () => {
 
                                     <td>
                                       <a
-                                        href={`http://3.7.91.234:8000${item.View}`}
+                                        href={`http://127.0.0.1:8000${item.View}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn btn-sm btn-primary"

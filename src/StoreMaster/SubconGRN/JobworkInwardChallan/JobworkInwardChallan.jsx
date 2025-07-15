@@ -11,9 +11,24 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 
 const JobworkInwardChallan = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [gateEntryData, setGateEntryData] = useState([]);
+  const [selectedGateEntry, setSelectedGateEntry] = useState();
+  const [challanNumbers, setChallanNumbers] = useState([]);
+  const [PO, setPO] = useState([]);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
+  };
+
+  const fetchGateEntryData = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/Store/general-details/");
+      const resData = await res.json();
+      console.log(resData);
+      setGateEntryData(resData);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
@@ -23,6 +38,10 @@ const JobworkInwardChallan = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  useEffect(() => {
+    fetchGateEntryData();
+  }, []);
 
   const [formData, setFormData] = useState({
     InwardF4No: "",
@@ -65,19 +84,46 @@ const JobworkInwardChallan = () => {
       DeliveryInTime: value, // Set either "yes" or "no"
     }));
   };
-  
+
   // Validate required fields
   const validate = () => {
     const newErrors = {};
 
-  if (!formData.DeliveryInTime) {
-    newErrors.DeliveryInTime = "Please select Yes or No for Delivery In Time.";
-  }
+    if (!formData.DeliveryInTime) {
+      newErrors.DeliveryInTime =
+        "Please select Yes or No for Delivery In Time.";
+    }
 
-  // Other validation rules...
-  
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
+    // Other validation rules...
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChangeGateEntry = async (e) => {
+    const selectedGE_No = e.target.value; // this is a string
+    const entryObj = gateEntryData.find(
+      (ent) => String(ent.GE_No) === selectedGE_No // match string → string
+    );
+    setSelectedGateEntry(entryObj);
+    // if you also need it in your main formData:
+    setFormData((prev) => ({ ...prev, GateEntryNo: selectedGE_No }));
+
+    const supplier = entryObj?.Supp_Cust?.replace(/^\d+\s*-\s*/, "");
+
+    const res = await fetch(
+      "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + supplier
+    );
+    const resData = await res.json();
+    console.log(resData);
+    setChallanNumbers(resData.challans);
+
+    const res2 = await fetch(
+      "http://127.0.0.1:8000/Store/newjobworkpodetails/?supplier=" + supplier
+    );
+    const resData2 = await res2.json();
+
+    setPO(resData2.purchase_orders);
   };
 
   // Handle form submission
@@ -153,18 +199,16 @@ const JobworkInwardChallan = () => {
                         </div>
                         <div className="col-md-2 mt-2">Gate Entry No:</div>
                         <div className="col-md-1">
-                          <select id="routingSelect" className="form-select">
+                          <select onChange={handleChangeGateEntry} id="routingSelect" className="form-select">
                             <option selected>Select</option>
-                            <option value="">
-                              GE242503626|Supplier/Vendor : SANKET ENGINEERING
-                            </option>
-                            <option value="">
-                              GE242504231|Supplier/Vendor : SHRIPAD STEELS
-                            </option>
-                            <option value="">
-                              GE242503626|Supplier/Vendor : SHREE CHITAMANI HEAT
-                              TREATERS
-                            </option>
+                            {gateEntryData?.map((item) => {
+                              return (
+                                <option value={item?.GE_No}>
+                                  {item?.GE_No}|Supplier/Vendor :{" "}
+                                  {item?.Supp_Cust}
+                                </option>
+                              );
+                            })}
                           </select>
                         </div>
                         <div className="col-md-1 mt-2">Customer:</div>
@@ -174,6 +218,7 @@ const JobworkInwardChallan = () => {
                             id="inputField"
                             className="form-control"
                             placeholder="Enter value"
+                            value={selectedGateEntry?.Supp_Cust?.replace(/^\d+\s*-\s*/, "")}
                           />
                         </div>
                         <div className="col-md-1 mt-1">
@@ -408,492 +453,495 @@ const JobworkInwardChallan = () => {
                       </div>
                     </div>
                   </div>
-
-                 
                 </div>
-                <div
-                    className="StoreInwardJobworkFooter"
-                    
+                <div className="StoreInwardJobworkFooter">
+                  <ul
+                    className="nav nav-pills mb-3"
+                    id="pills-tab"
+                    role="tablist"
                   >
-                    <ul
-                      className="nav nav-pills mb-3"
-                      id="pills-tab"
-                      role="tablist"
-                    >
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link active"
-                          id="pills-Gernal-Detail-tab"
-                          data-bs-toggle="pill"
-                          data-bs-target="#pills-Gernal-Detail"
-                          type="button"
-                          role="tab"
-                          aria-controls="pills-Gernal-Detail"
-                          aria-selected="true"
-                        >
-                     General Detail
-                        </button>
-                      </li>
-                    </ul>
-                    <div className="tab-content" id="pills-tabContent">
-                      <div
-                        className="tab-pane fade show active"
-                        id="pills-Gernal-Detail"
-                        role="tabpanel"
-                        aria-labelledby="pills-Gernal-Detail-tab"
-                        tabindex="0"
+                    <li className="nav-item" role="presentation">
+                      <button
+                        className="nav-link active"
+                        id="pills-Gernal-Detail-tab"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pills-Gernal-Detail"
+                        type="button"
+                        role="tab"
+                        aria-controls="pills-Gernal-Detail"
+                        aria-selected="true"
                       >
-                        <div className="StoreInwardJobworks text-start">
-                          <div className="container-fluid">
-                            <form onSubmit={handleSubmit}>
-                              <div className="row">
-                                <div className="col-md-4 text-start">
-                                  <div className="container-fluid">
-                                    <div className="table-responsive">
-                                      <table className="table table-bordered">
-                                        <tbody>
-                                          <tr>
-                                            <th className="col-md-4">
-                                              Inward F4 No:
-                                            </th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="InwardF4No"
-                                                value={formData.InwardF4No}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.InwardF4No && (
-                                                <span className="text-danger">
-                                                  {errors.InwardF4No}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Inward Date:</th>
-                                            <td>
-                                              <input
-                                                type="date"
-                                                className="form-control"
-                                                name="InwardDate"
-                                                value={formData.InwardDate}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.InwardDate && (
-                                                <span className="text-danger">
-                                                  {errors.InwardDate}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Inward Time:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="InwardTime"
-                                                value={formData.InwardTime}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.InwardTime && (
-                                                <span className="text-danger">
-                                                  {errors.InwardTime}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Challan No:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="ChallanNo"
-                                                value={formData.ChallanNo}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.ChallanNo && (
-                                                <span className="text-danger">
-                                                  {errors.ChallanNo}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Challan Date:</th>
-                                            <td>
-                                              <input
-                                                type="date"
-                                                className="form-control"
-                                                name="ChallanDate"
-                                                value={formData.ChallanDate}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.ChallanDate && (
-                                                <span className="text-danger">
-                                                  {errors.ChallanDate}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Sub Vendor:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="SubVendor"
-                                                value={formData.SubVendor}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.SubVendor && (
-                                                <span className="text-danger">
-                                                  {errors.SubVendor}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>D. C. No:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="DcNo"
-                                                value={formData.DcNo}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.DcNo && (
-                                                <span className="text-danger">
-                                                  {errors.DcNo}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="col-md-4 text-start">
-                                  {/* Second Column Group */}
-                                  <div className="container mt-4">
-                                    <div className="table-responsive text-start">
-                                      <table className="table table-bordered">
-                                        <tbody>
-                                          <tr>
-                                            <th className="col-md-4">
-                                              D.C. Date:
-                                            </th>
-                                            <td>
-                                              <input
-                                                type="date"
-                                                className="form-control"
-                                                name="DcDate"
-                                                value={formData.DcDate}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.DcDate && (
-                                                <span className="text-danger">
-                                                  {errors.DcDate}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Way Bill Qty:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="EWayBillQty"
-                                                value={formData.EWayBillQty}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.EWayBillQty && (
-                                                <span className="text-danger">
-                                                  {errors.EWayBillQty}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Way Bill No:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="EWayBillNo"
-                                                value={formData.EWayBillNo}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.EWayBillNo && (
-                                                <span className="text-danger">
-                                                  {errors.EWayBillNo}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Vehicle No:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="VehicleNo"
-                                                value={formData.VehicleNo}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.VehicleNo && (
-                                                <span className="text-danger">
-                                                  {errors.VehicleNo}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Lr No:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="LrNo"
-                                                value={formData.LrNo}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.LrNo && (
-                                                <span className="text-danger">
-                                                  {errors.LrNo}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Transporter:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="Transporter"
-                                                value={formData.Transporter}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.Transporter && (
-                                                <span className="text-danger">
-                                                  {errors.Transporter}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Prepared By:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="PreparedBy"
-                                                value={formData.PreparedBy}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.PreparedBy && (
-                                                <span className="text-danger">
-                                                  {errors.PreparedBy}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Checked By:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="CheckedBy"
-                                                value={formData.CheckedBy}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.CheckedBy && (
-                                                <span className="text-danger">
-                                                  {errors.CheckedBy}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="col-md-4 text-start">
-                                  {/* Third Column Group */}
-                                  <div className="container mt-4">
-                                    <div className="table-responsive">
-                                      <table className="table table-bordered">
-                                        <tbody>
-                                          <tr>
-                                            <th>Vehicle in Time:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="VehicleTime"
-                                                value={formData.VehicleTime}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.VehicleTime && (
-                                                <span className="text-danger">
-                                                  {errors.VehicleTime}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Tc No:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="TcNo"
-                                                value={formData.TcNo}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.TcNo && (
-                                                <span className="text-danger">
-                                                  {errors.TcNo}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Tc Date:</th>
-                                            <td>
-                                              <input
-                                                type="date"
-                                                className="form-control"
-                                                name="TcDate"
-                                                value={formData.TcDate}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.TcDate && (
-                                                <span className="text-danger">
-                                                  {errors.TcDate}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Remark:</th>
-                                            <td>
-                                              <textarea
-                                                type="text"
-                                                className="form-control"
-                                                name="Remark"
-                                                value={formData.Remark}
-                                                onChange={handleInputChange}
-                                                rows="2"
-                                              ></textarea>
-                                              {errors.Remark && (
-                                                <span className="text-danger">
-                                                  {errors.Remark}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th className="col-md-4">
-                                              Delivery in Time:
-                                            </th>
-                                            
-                                            <td>
-                                              <div className="col-md-2">
-  <input
-    type="checkbox"
-    name="DeliveryInTime"
-    checked={formData.DeliveryInTime === "yes"}
-    onChange={() => handleCheckboxChange("yes")}
-  />
-  Yes
-  <input
-    type="checkbox"
-    name="DeliveryInTime"
-    checked={formData.DeliveryInTime === "no"}
-    onChange={() => handleCheckboxChange("no")}
-  />
-  No
-  </div>
-</td>
-
-                                            
-                                          </tr>
-
-                                          <tr>
-                                            <th>Clearing Status:</th>
-                                            <td>
-                                              <select
-                                                className="form-select"
-                                                type="text"
-                                                name="ClearingStatus"
-                                                value={formData.ClearingStatus}
-                                                onChange={handleInputChange}
-                                              >
-                                                <option value="Main Store">
-                                                  select
-                                                </option>
-                                                <option value="yes">yes</option>{" "}
-                                                <option value="No">No</option>
-                                              </select>
-                                              {errors.ClearingStatus && (
-                                                <span className="text-danger">
-                                                  {errors.ClearingStatus}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <th>Vehicle Out Time:</th>
-                                            <td>
-                                              <input
-                                                type="text"
-                                                className="form-control"
-                                                name="VehicleOutTime"
-                                                value={formData.VehicleOutTime}
-                                                onChange={handleInputChange}
-                                              />
-                                              {errors.VehicleOutTime && (
-                                                <span className="text-danger">
-                                                  {errors.VehicleOutTime}
-                                                </span>
-                                              )}
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <td
-                                              colspan="2"
-                                              className="text-center"
-                                            >
-                                              <button
-                                                type="submit"
-                                                className="btn"
-                                              >
-                                                Save Challan
-                                              </button>
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                      </table>
-                                    </div>
+                        General Detail
+                      </button>
+                    </li>
+                  </ul>
+                  <div className="tab-content" id="pills-tabContent">
+                    <div
+                      className="tab-pane fade show active"
+                      id="pills-Gernal-Detail"
+                      role="tabpanel"
+                      aria-labelledby="pills-Gernal-Detail-tab"
+                      tabindex="0"
+                    >
+                      <div className="StoreInwardJobworks text-start">
+                        <div className="container-fluid">
+                          <form onSubmit={handleSubmit}>
+                            <div className="row">
+                              <div className="col-md-4 text-start">
+                                <div className="container-fluid">
+                                  <div className="table-responsive">
+                                    <table className="table table-bordered">
+                                      <tbody>
+                                        <tr>
+                                          <th className="col-md-4">
+                                            Inward F4 No:
+                                          </th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="InwardF4No"
+                                              value={formData.InwardF4No}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.InwardF4No && (
+                                              <span className="text-danger">
+                                                {errors.InwardF4No}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Inward Date:</th>
+                                          <td>
+                                            <input
+                                              type="date"
+                                              className="form-control"
+                                              name="InwardDate"
+                                              value={formData.InwardDate}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.InwardDate && (
+                                              <span className="text-danger">
+                                                {errors.InwardDate}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Inward Time:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="InwardTime"
+                                              value={formData.InwardTime}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.InwardTime && (
+                                              <span className="text-danger">
+                                                {errors.InwardTime}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Challan No:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="ChallanNo"
+                                              value={formData.ChallanNo}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.ChallanNo && (
+                                              <span className="text-danger">
+                                                {errors.ChallanNo}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Challan Date:</th>
+                                          <td>
+                                            <input
+                                              type="date"
+                                              className="form-control"
+                                              name="ChallanDate"
+                                              value={formData.ChallanDate}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.ChallanDate && (
+                                              <span className="text-danger">
+                                                {errors.ChallanDate}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Sub Vendor:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="SubVendor"
+                                              value={formData.SubVendor}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.SubVendor && (
+                                              <span className="text-danger">
+                                                {errors.SubVendor}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>D. C. No:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="DcNo"
+                                              value={formData.DcNo}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.DcNo && (
+                                              <span className="text-danger">
+                                                {errors.DcNo}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
                                   </div>
                                 </div>
                               </div>
-                            </form>
-                          </div>
+                              <div className="col-md-4 text-start">
+                                {/* Second Column Group */}
+                                <div className="container mt-4">
+                                  <div className="table-responsive text-start">
+                                    <table className="table table-bordered">
+                                      <tbody>
+                                        <tr>
+                                          <th className="col-md-4">
+                                            D.C. Date:
+                                          </th>
+                                          <td>
+                                            <input
+                                              type="date"
+                                              className="form-control"
+                                              name="DcDate"
+                                              value={formData.DcDate}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.DcDate && (
+                                              <span className="text-danger">
+                                                {errors.DcDate}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Way Bill Qty:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="EWayBillQty"
+                                              value={formData.EWayBillQty}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.EWayBillQty && (
+                                              <span className="text-danger">
+                                                {errors.EWayBillQty}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Way Bill No:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="EWayBillNo"
+                                              value={formData.EWayBillNo}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.EWayBillNo && (
+                                              <span className="text-danger">
+                                                {errors.EWayBillNo}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Vehicle No:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="VehicleNo"
+                                              value={formData.VehicleNo}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.VehicleNo && (
+                                              <span className="text-danger">
+                                                {errors.VehicleNo}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Lr No:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="LrNo"
+                                              value={formData.LrNo}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.LrNo && (
+                                              <span className="text-danger">
+                                                {errors.LrNo}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Transporter:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="Transporter"
+                                              value={formData.Transporter}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.Transporter && (
+                                              <span className="text-danger">
+                                                {errors.Transporter}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Prepared By:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="PreparedBy"
+                                              value={formData.PreparedBy}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.PreparedBy && (
+                                              <span className="text-danger">
+                                                {errors.PreparedBy}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Checked By:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="CheckedBy"
+                                              value={formData.CheckedBy}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.CheckedBy && (
+                                              <span className="text-danger">
+                                                {errors.CheckedBy}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="col-md-4 text-start">
+                                {/* Third Column Group */}
+                                <div className="container mt-4">
+                                  <div className="table-responsive">
+                                    <table className="table table-bordered">
+                                      <tbody>
+                                        <tr>
+                                          <th>Vehicle in Time:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="VehicleTime"
+                                              value={formData.VehicleTime}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.VehicleTime && (
+                                              <span className="text-danger">
+                                                {errors.VehicleTime}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Tc No:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="TcNo"
+                                              value={formData.TcNo}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.TcNo && (
+                                              <span className="text-danger">
+                                                {errors.TcNo}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Tc Date:</th>
+                                          <td>
+                                            <input
+                                              type="date"
+                                              className="form-control"
+                                              name="TcDate"
+                                              value={formData.TcDate}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.TcDate && (
+                                              <span className="text-danger">
+                                                {errors.TcDate}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Remark:</th>
+                                          <td>
+                                            <textarea
+                                              type="text"
+                                              className="form-control"
+                                              name="Remark"
+                                              value={formData.Remark}
+                                              onChange={handleInputChange}
+                                              rows="2"
+                                            ></textarea>
+                                            {errors.Remark && (
+                                              <span className="text-danger">
+                                                {errors.Remark}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th className="col-md-4">
+                                            Delivery in Time:
+                                          </th>
+
+                                          <td>
+                                            <div className="col-md-2">
+                                              <input
+                                                type="checkbox"
+                                                name="DeliveryInTime"
+                                                checked={
+                                                  formData.DeliveryInTime ===
+                                                  "yes"
+                                                }
+                                                onChange={() =>
+                                                  handleCheckboxChange("yes")
+                                                }
+                                              />
+                                              Yes
+                                              <input
+                                                type="checkbox"
+                                                name="DeliveryInTime"
+                                                checked={
+                                                  formData.DeliveryInTime ===
+                                                  "no"
+                                                }
+                                                onChange={() =>
+                                                  handleCheckboxChange("no")
+                                                }
+                                              />
+                                              No
+                                            </div>
+                                          </td>
+                                        </tr>
+
+                                        <tr>
+                                          <th>Clearing Status:</th>
+                                          <td>
+                                            <select
+                                              className="form-select"
+                                              type="text"
+                                              name="ClearingStatus"
+                                              value={formData.ClearingStatus}
+                                              onChange={handleInputChange}
+                                            >
+                                              <option value="Main Store">
+                                                select
+                                              </option>
+                                              <option value="yes">yes</option>{" "}
+                                              <option value="No">No</option>
+                                            </select>
+                                            {errors.ClearingStatus && (
+                                              <span className="text-danger">
+                                                {errors.ClearingStatus}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <th>Vehicle Out Time:</th>
+                                          <td>
+                                            <input
+                                              type="text"
+                                              className="form-control"
+                                              name="VehicleOutTime"
+                                              value={formData.VehicleOutTime}
+                                              onChange={handleInputChange}
+                                            />
+                                            {errors.VehicleOutTime && (
+                                              <span className="text-danger">
+                                                {errors.VehicleOutTime}
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td
+                                            colspan="2"
+                                            className="text-center"
+                                          >
+                                            <button
+                                              type="submit"
+                                              className="btn"
+                                            >
+                                              Save Challan
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </form>
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
               </main>
             </div>
           </div>

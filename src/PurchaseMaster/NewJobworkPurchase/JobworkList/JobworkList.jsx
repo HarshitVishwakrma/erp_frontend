@@ -35,8 +35,8 @@ useEffect(() => {
     const loadData = async () => {
       try {
         const data = await fetchJobWorkPOList();
-        setJobWorkData(data);
-        setFilteredData(data);
+        setJobWorkData(data.sort((a, b) => b.id - a.id));
+        setFilteredData(data.sort((a, b) => b.id - a.id));
       } catch (error) {
         console.error("Failed to load Job Work PO List", error);
       }
@@ -241,7 +241,7 @@ useEffect(() => {
                               <td>{item.User || "-"}</td>
                                     <td>
                                                                     <a
-                                href={`http://3.7.91.234:8000${item.View}`}
+                                href={`http://127.0.0.1:8000${item.View}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn-sm btn-primary"

@@ -58,14 +58,14 @@ const CostCenterMaster = () => {
   // Fetch cost centers for the first card
   useEffect(() => {
     fetchCostCenters()
-      .then((data) => setCostCenterData(data))
+      .then((data) => setCostCenterData(data.sort((a, b) => b.id - a.id)))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
   // Fetch cost centers for the second card
   useEffect(() => {
     fetchCostCentersAdd()
-      .then((data) => setCostCenterData1(data))
+      .then((data) => setCostCenterData1(data.sort((a, b) => b.id - a.id)))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 

@@ -3,8 +3,8 @@
 import axios from 'axios';
 
 // Services/PurchaseApi.jsx
-// const BASE_URL = "http://3.7.91.234:8000/Purchase/";
-const BASE_URL = "api/Purchase/";
+const BASE_URL = "http://127.0.0.1:8000/Purchase/";
+// const BASE_URL = "api/Purchase/";
 export const addItem = async (data) => {
     try {
         const response = await fetch(`${BASE_URL}ItemDetail/`, {
@@ -371,6 +371,8 @@ export const updatePurchaseOrder = async (id, data) => {
     if (!token) {
       throw new Error("Authentication token not found. Please login again.");
     }
+    console.log("Submitting data to update PO:", data);
+
 
     const response = await fetch(`${BASE_URL}RegisterPO_All_Series/${id}/`, {
       method: "PUT",

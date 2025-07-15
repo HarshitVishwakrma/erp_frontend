@@ -149,6 +149,14 @@ body {
     font-weight: bold;
   }
   
+
+  .custom-radio {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0;
+  }
+
+  
   /* Responsive Design */
   @media (max-width: 768px) {
     .tab-content .row {

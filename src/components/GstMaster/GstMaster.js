@@ -55,7 +55,7 @@ const GstMaster = () => {
   const fetchRecords = async () => {
     try {
       const data = await fetchGstMasterRecords();
-      setRecords(data);
+      setRecords(data.sort((a, b) => b.id - a.id));
       console.log(data);
     } catch (error) {
       console.error(error.message);

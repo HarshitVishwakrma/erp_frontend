@@ -16,10 +16,64 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 const MaterialIssueGernal = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [showItemList, setShowItemList] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
+
+  function filterItems(items, searchString) {
+    // split the input on whitespace, drop empty strings, lowercase
+    const keywords = searchString
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    // if no keywords, hide list and return full list (or empty if you prefer)
+    if (keywords.length === 0) {
+      setShowItemList(false);
+      return items;
+    }
+
+    // filter
+    const filtered = items.filter((item) => {
+      const partNo = item.part_no.toLowerCase();
+      const desc = item.Name_Description.toLowerCase();
+      // include this item if ANY keyword matches part_no OR description
+      return keywords.some((kw) => partNo.includes(kw) || desc.includes(kw));
+    });
+
+    // hide when there’s nothing to show
+    setShowItemList(filtered.length > 0);
+
+    return filtered;
+  }
+
+  const fetchItems = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(
+        "http://127.0.0.1:8000/All_Masters/api/item/summary/",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const resData = await res.json();
+      console.log(resData);
+      setItems(resData);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   useEffect(() => {
     if (sideNavOpen) {
@@ -63,12 +117,16 @@ const MaterialIssueGernal = () => {
 
   const loadMaterials = async () => {
     const data = await getMaterialGernal();
-    setMaterials(data);
+    setMaterials(data.sort((a, b) => b.id - a.id));
   };
 
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if(value == 'Item'){
+      const filtered = filterItems(items, value);
+      setFilteredItems(filtered)
+    }
     setFormData({ ...formData, [name]: value });
   };
 
@@ -130,11 +188,21 @@ const MaterialIssueGernal = () => {
 
   // Handle delete button click
   const handleDelete = async (id) => {
-   
-      await deleteMaterialGernal(id);
-      toast.success("Material deleted successfully!");
-      loadMaterials();
-    
+    await deleteMaterialGernal(id);
+    toast.success("Material deleted successfully!");
+    loadMaterials();
+  };
+
+  const handleItemSelect = (item) => {
+    setShowItemList(false);
+    setFormData((prev) => {
+      return {
+        ...prev,
+        Item: item.part_no,
+        ItemDescription: item.Name_Description,
+        Unit: item.Unit_Code,
+      };
+    });
   };
 
   return (
@@ -303,7 +371,37 @@ const MaterialIssueGernal = () => {
                                       value={formData.Item}
                                       onChange={handleChange}
                                       required
+                                      autoComplete="off"
                                     />
+                                    {showItemList && (
+                                      <ul
+                                        className="dropdown-menu show"
+                                        style={{
+                                          width: "30%",
+                                          maxHeight: "200px",
+                                          overflowY: "auto",
+                                          border: "1px solid #ccc",
+                                          zIndex: 1000,
+                                        }}
+                                      >
+                                        {filteredItems.map((item) => (
+                                          <li
+                                            key={item.part_no}
+                                            className="dropdown-item"
+                                            onClick={() =>
+                                              handleItemSelect(item)
+                                            }
+                                            style={{
+                                              padding: "5px",
+                                              cursor: "pointer",
+                                            }}
+                                          >
+                                            {item.part_no} - {item.Part_Code} -{" "}
+                                            {item.Name_Description}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
                                   </td>
                                   <td>
                                     <textarea
@@ -463,7 +561,7 @@ const MaterialIssueGernal = () => {
                             </tr>
                           </thead>
                           <tbody>
-                          {materials.map((material, index) => (
+                            {materials.map((material, index) => (
                               <tr key={material.id}>
                                 <td>{index + 1}</td>
                                 <td>{material.ItemDescription}</td>
@@ -471,11 +569,10 @@ const MaterialIssueGernal = () => {
                                 <td>{material.Qty}</td>
                                 <td>{material.StockStatus}</td>
                                 <td>{material.Machine}</td>
-                                
+
                                 <td>{material.StoreName}</td>
                                 <td>{material.MrnNo}</td>
                                 <td>{material.Employee}</td>
-                              
 
                                 <td>
                                   <FaEdit
