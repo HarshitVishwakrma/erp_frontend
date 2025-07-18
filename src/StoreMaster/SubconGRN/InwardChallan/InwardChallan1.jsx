@@ -181,7 +181,8 @@ const InwardChallan1 = () => {
     // if you also need it in your main formData:
     setFormData((prev) => ({ ...prev, GateEntryNo: selectedGE_No }));
 
-    const supplier = entryObj?.Supp_Cust?.replace(/^\d+\s*-\s*/, "");
+    const supplier = entryObj?.Supp_Cust?.replace(/^[^-]*-\s*/, '').trim();
+    
 
     const res = await fetch(
       "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + supplier

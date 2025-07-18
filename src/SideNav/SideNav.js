@@ -441,7 +441,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                       {permissions.Purchase.includes("Purchase Order List") && (
-                        <Dropdown.Item as={Link} to="/purchase-order-list">
+                        <Dropdown.Item as={Link} to="/PoList">
                           Purchase Order List
                         </Dropdown.Item>
                       )}

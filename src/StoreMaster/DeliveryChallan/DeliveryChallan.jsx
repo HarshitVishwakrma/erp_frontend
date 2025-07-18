@@ -17,6 +17,98 @@ import { saveChallanData } from "../../Service/StoreApi.jsx";
 
 const DeliveryChallan = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [suppliers, setSuppliers] = useState([]);
+  const [showSupplierList, setShowSupplierList] = useState(false);
+  const [filteredSuppliers, setFilteredSuppliers] = useState([]);
+  const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [showItemList, setShowItemList] = useState(false);
+
+  function filterSuppiers(items, searchString) {
+    // split the input on whitespace, drop empty strings, lowercase
+    const keywords = searchString
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    // if no keywords, hide list and return full list (or empty if you prefer)
+    if (keywords.length === 0) {
+      setShowSupplierList(false);
+      return items;
+    }
+
+    // filter
+    const filtered = items.filter((item) => {
+      const Name = item.Name.toLowerCase();
+      const Number = item.number.toLowerCase();
+      // include this item if ANY keyword matches part_no OR description
+      return keywords.some((kw) => Name.includes(kw) || Number.includes(kw));
+    });
+
+    // hide when there’s nothing to show
+    setShowSupplierList(filtered.length > 0);
+    return filtered;
+  }
+
+  function filterItems(items, searchString) {
+    // split the input on whitespace, drop empty strings, lowercase
+    const keywords = searchString
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    // if no keywords, hide list and return full list (or empty if you prefer)
+    if (keywords.length === 0) {
+      setShowItemList(false);
+      return items;
+    }
+
+    // filter
+    const filtered = items.filter((item) => {
+      const partNo = item.part_no.toLowerCase();
+      const desc = item.Name_Description.toLowerCase();
+      // include this item if ANY keyword matches part_no OR description
+      return keywords.some((kw) => partNo.includes(kw) || desc.includes(kw));
+    });
+
+    // hide when there’s nothing to show
+    setShowItemList(filtered.length > 0);
+
+    return filtered;
+  }
+
+  const fetchSupplierData = async () => {
+    try {
+      const res = await fetch(
+        "http://127.0.0.1:8000/Purchase/Fetch_Supplier_Code/"
+      );
+      const responseData = await res.json();
+      setSuppliers(responseData);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchItems = async () => {
+    const res = await fetch(
+      "http://127.0.0.1:8000/All_Masters/api/item/summary/",
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
+
+    const resData = await res.json();
+    setItems(resData);
+  };
+
+  useEffect(() => {
+    fetchSupplierData();
+    fetchItems();
+  }, []);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -113,11 +205,9 @@ const DeliveryChallan = () => {
 
   // Handle delete action
   const handleDelete = async (id) => {
-   
-      await deleteDeliveryChallan(id);
-      toast.success("Challan deleted successfully!");
-      loadChallans();
-    
+    await deleteDeliveryChallan(id);
+    toast.success("Challan deleted successfully!");
+    loadChallans();
   };
 
   // Second save
@@ -245,9 +335,13 @@ const DeliveryChallan = () => {
                                   </td>
                                   <td>
                                     <select className="form-select">
-                                      <option>Select</option>
-                                      <option value="Series1">Series1</option>
-                                      <option value="Series2">Series2</option>
+                                      <option value="">Select</option>
+                                      <option value="RM">RM</option>
+                                      <option value="CONSUMABLE">
+                                        CONSUMABLE
+                                      </option>
+                                      <option value="ASSET">ASSET</option>
+                                      <option value="SERVICE">SERVICE</option>
                                     </select>
                                   </td>
                                   <td>
@@ -275,10 +369,40 @@ const DeliveryChallan = () => {
                                     <input
                                       className="form-control"
                                       type="text"
+                                      onChange={(e) => {
+                                        const filtered = filterSuppiers(
+                                          suppliers,
+                                          e.target.value
+                                        );
+                                        console.log(filtered);
+                                        setFilteredSuppliers(filtered);
+                                      }}
                                     />
-                                    <button type="button" className="btn">
-                                      Search
-                                    </button>
+                                    {showSupplierList && (
+                                      <ul
+                                        className="dropdown-menu show"
+                                        style={{
+                                          width: "30%",
+                                          maxHeight: "200px",
+                                          overflowY: "auto",
+                                          border: "1px solid #ccc",
+                                          zIndex: 1000,
+                                        }}
+                                      >
+                                        {filteredSuppliers.map((item) => (
+                                          <li
+                                            key={item.part_no}
+                                            className="dropdown-item"
+                                            style={{
+                                              padding: "5px",
+                                              cursor: "pointer",
+                                            }}
+                                          >
+                                            {item.Name}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
                                   </td>
                                   <td>
                                     <select className="form-select">
@@ -326,6 +450,32 @@ const DeliveryChallan = () => {
                                         value={formData.SelectItem}
                                         onChange={handleChange}
                                       />
+                                      {showItemList && (
+                                        <ul
+                                          className="dropdown-menu show"
+                                          style={{
+                                            width: "30%",
+                                            maxHeight: "200px",
+                                            overflowY: "auto",
+                                            border: "1px solid #ccc",
+                                            zIndex: 1000,
+                                          }}
+                                        >
+                                          {filteredItems.map((item) => (
+                                            <li
+                                              key={item.part_no}
+                                              className="dropdown-item"
+                                              style={{
+                                                padding: "5px",
+                                                cursor: "pointer",
+                                              }}
+                                            >
+                                              {item.part_no} - {item.Part_Code}{" "}
+                                              - {item.Name_Description}
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
                                     </td>
                                     <td>
                                       <input
@@ -510,7 +660,7 @@ const DeliveryChallan = () => {
                                           <tr>
                                             <th>Vehicle No:</th>
                                             <td>
-                                            <input
+                                              <input
                                                 type="text"
                                                 className="form-control"
                                                 name="VehicleNo"

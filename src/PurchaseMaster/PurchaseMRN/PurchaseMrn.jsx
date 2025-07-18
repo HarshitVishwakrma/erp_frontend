@@ -410,12 +410,12 @@ const PurchaseMrn = () => {
                                   <td>{formatDate(mrn.MRN_date)}</td>
                                   <td>{mrn.MRN_time || '-'}</td>
                                   <td>
-                                    <span className={`badge ${mrn.General ? 'badge-success' : 'badge-secondary'}`}>
+                                    <span  style={{color : 'black'}} className={`badge ${mrn.General ? 'badge-success' : 'badge-secondary'}`}>
                                       {mrn.General ? 'Yes' : 'No'}
                                     </span>
                                   </td>
                                   <td>
-                                    <span className={`badge ${mrn.Work_order ? 'badge-success' : 'badge-secondary'}`}>
+                                    <span style={{color : 'black'}} className={`badge ${mrn.Work_order ? 'badge-success' : 'badge-secondary'}`}>
                                       {mrn.Work_order ? 'Yes' : 'No'}
                                     </span>
                                   </td>
