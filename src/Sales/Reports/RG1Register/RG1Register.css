@@ -8,7 +8,6 @@
     background-color: #f8f9fa; /* Light background for header */
   border-bottom: 1px solid #dee2e6; /* Border for header */
   padding: 10px 15px; /* Padding around header */
-  border-radius: 5px;
   }
   
   .RG1Register-header .header-title {
@@ -23,11 +22,9 @@
     gap: 10px;
   }
   
-  .RG1Register-Main {
+  .RG1RegisterMain {
     padding: 15px;
-    background-color: #ffffff;
-    border: 1px solid #dee2e6;
-    border-radius: 5px;
+    background-color: #f8f9fa;
   }
   
   /* Inputs and buttons for all screen sizes */
