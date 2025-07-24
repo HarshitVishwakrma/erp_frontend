@@ -503,10 +503,10 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       <span className={`arrow ${isDropdownOpen("purchaseReports") ? "open" : ""}`}> ▶</span>
                     </div>
                     <div className={`nested-dropdown-menu ${isDropdownOpen("purchaseReports") ? "show" : ""}`}>
-                      {permissions.Purchase.includes("Purchase Order List") && (
-                        <Link className="dropdown-item" to="/purchase-order-list">
+                     {permissions.Purchase.includes("Purchase Order List") && (
+                        <Dropdown.Item as={Link} to="/PoList">
                           Purchase Order List
-                        </Link>
+                        </Dropdown.Item>
                       )}
                       {permissions.Purchase.includes("Jobwork Purchase Order List") && (
                         <Link className="dropdown-item" to="/jobwork-purchase-order-list">

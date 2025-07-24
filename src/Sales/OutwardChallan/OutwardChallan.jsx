@@ -137,7 +137,7 @@ const OutwardChallan = () => {
   const fetchItemData = async () => {
     try {
       const res = await fetch(
-        "https://produlink.netlify.app/api/All_Masters/api/item/summary/",
+        "http://127.0.0.1:8000/All_Masters/api/item/summary/",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

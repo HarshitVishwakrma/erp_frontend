@@ -9,10 +9,75 @@ import Cached from "@mui/icons-material/Cached.js";
 
 const AddNewFGMovent = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [showItemList, setShowItemList] = useState(false);
+  const [selectedItem, setSelectedItem] = useState();
+  const [heatNumbers, setHeatNumbers] = useState([]);
+  const [inputValue, setInputValue] = useState("");
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
+
+  function filterItems(items, searchString) {
+    // split the input on whitespace, drop empty strings, lowercase
+    const keywords = searchString
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    // if no keywords, hide list and return full list (or empty if you prefer)
+    if (keywords.length === 0) {
+      setShowItemList(false);
+      return items;
+    }
+
+    // filter
+    const filtered = items.filter((item) => {
+      const partNo = item.part_no.toLowerCase();
+      const desc = item.Name_Description.toLowerCase();
+      // include this item if ANY keyword matches part_no OR description
+      return keywords.some((kw) => partNo.includes(kw) || desc.includes(kw));
+    });
+
+    // hide when there's nothing to show
+    setShowItemList(filtered.length > 0);
+
+    return filtered;
+  }
+
+  const fetchItems = async () => {
+    const res = await fetch(
+      "http://127.0.0.1:8000/All_Masters/api/item/summary/",
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
+
+    const resData = await res.json();
+    console.log(resData);
+    setItems(resData);
+  };
+
+  const fetchHeatNumbers = async (code) => {
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/Store/grn/heat-numbers/?item_code=${code}`
+      );
+      const resData = await res.json();
+      setHeatNumbers(resData.heat_numbers);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   useEffect(() => {
     if (sideNavOpen) {
@@ -21,6 +86,27 @@ const AddNewFGMovent = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  const handleSelectItem = async (item) => {
+    setSelectedItem(item);
+    setInputValue(item.part_no); // Set the input value to the selected item
+    setShowItemList(false);
+    fetchHeatNumbers(item.part_no); // Pass the part_no instead of the whole item
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputValue(value);
+    
+    // If user clears the input, also clear the selected item
+    if (value === "") {
+      setSelectedItem(null);
+      setHeatNumbers([]);
+    }
+    
+    const fItems = filterItems(items, value);
+    setFilteredItems(fItems);
+  };
 
   return (
     <div className="NewStoreFgMoventAdd">
@@ -82,7 +168,43 @@ const AddNewFGMovent = () => {
                             <label>FG Item:</label>
                           </div>
                           <div className="col-md-4">
-                            <input />
+                            <input
+                              type="text"
+                              name="SelectItem"
+                              className="form-control"
+                              value={inputValue}
+                              onChange={handleInputChange}
+                              autoComplete="off"
+                            />
+                            {showItemList && (
+                              <ul
+                                className="dropdown-menu show"
+                                style={{
+                                  width: "30%",
+                                  maxHeight: "200px",
+                                  overflowY: "auto",
+                                  border: "1px solid #ccc",
+                                  zIndex: 1000,
+                                }}
+                              >
+                                {filteredItems.map((item) => (
+                                  <li
+                                    key={item.part_no}
+                                    className="dropdown-item"
+                                    style={{
+                                      padding: "5px",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => {
+                                      handleSelectItem(item);
+                                    }}
+                                  >
+                                    {item.part_no} - {item.Part_Code} -{" "}
+                                    {item.Name_Description}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
                           </div>
                           <div className="col-md-4">
                             <button type="button" className="pobtn">
@@ -152,7 +274,7 @@ const AddNewFGMovent = () => {
                         </div>
                       </div>
                       <div className="col-md-4">
-                      <div className="row mt-4">
+                        <div className="row mt-4">
                           <div className="col-md-4">
                             <label>Stock View:</label>
                           </div>
@@ -168,7 +290,14 @@ const AddNewFGMovent = () => {
                           </div>
                           <div className="col-md-8">
                             <select>
-                              <option>All</option>
+                              <option value="">Select Heat Code</option>
+                              {heatNumbers.length > 0 && 
+                                heatNumbers.map((heat, index) => (
+                                  <option key={index} value={heat.heat_no}>
+                                    {heat.heat_no}
+                                  </option>
+                                ))
+                              }
                             </select>
                           </div>
                         </div>
