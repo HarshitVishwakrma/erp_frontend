@@ -43,8 +43,8 @@ const CreditListNote  = () => {
               toggleSideNav={toggleSideNav}
             />
             <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-              <div className="CreditListNote mt-5">
-                <div className="CreditListNote-header mb-4 text-start">
+              <div className="CreditListNote">
+                <div className="CreditListNote-header mb-2 text-start">
                   <div className="row align-items-center">
                     <div className="col-md-4">
                       <h5 className="header-title"> Credit Note List </h5>
@@ -52,7 +52,7 @@ const CreditListNote  = () => {
 
                     <div className="col-md-8 text-end">
                         
-                        <button type="button" className="btn" to="#/" onClick={handleButtonClick}>
+                        <button type="button" className=" vndrbtn" to="#/" onClick={handleButtonClick}>
                             Credit Note - Query
                         </button> 
                     </div>
@@ -63,7 +63,7 @@ const CreditListNote  = () => {
                 <div className="CreditListNote-Main">
                     <div className="container-fluid">
                       
-                        <div className="row g-3 text-start mt-3">  
+                        <div className="row g-3 text-start">  
 
                        <div className="col-sm-6 col-md-2 col-lg-1">
                           <label>From:</label>
@@ -90,7 +90,7 @@ const CreditListNote  = () => {
                       </div>
                         
                        <div className="col-6 col-md-2 align-items-center mt-3">
-                          <button type="button" className="btn btn-primary">
+                          <button type="button" className=" vndrbtn">
                             Search
                           </button>
                         </div>
@@ -145,8 +145,8 @@ const CreditListNote  = () => {
                                   <div className="row">
                                         <div className="col-4 text-start">Total Record : 00</div>
                                         <div className="col-2"></div>                                             <div className="col-6 text-end">Total Amount : 00.00 
-                                            <button className="btn">Bulk Print</button>
-                                            <button className="btn">Delete Selected</button>
+                                            <button className=" vndrbtn">Bulk Print</button>
+                                            <button className=" vndrbtn">Delete Selected</button>
                                        </div>
                                   </div>  
                      </div>

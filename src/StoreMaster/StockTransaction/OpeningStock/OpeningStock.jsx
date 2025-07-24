@@ -48,7 +48,7 @@ const OpeningStock = () => {
                             Opening: FG | SFG | WIP
                           </div>
                           <div className="card-body text-start">
-                            <Link className="Openingbtn mb-2">
+                            <Link className="Openingbtn mb-2" to="/Openingstockmodal">
                               Add New
                             </Link>
                              <br/>

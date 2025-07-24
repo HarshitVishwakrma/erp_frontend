@@ -2,11 +2,7 @@ import { useState } from "react";
 import "./Modal.css";
 
 function TransportModal({
-  isOpen,
-  onClose,
-  items,
-  handleSelect,
-  handleButtonClick,
+  isOpen, onClose, items, handleSelect, handleButtonClick,
 }) {
   const [transport_name, setTransportName] = useState("");
   const [ewayBillNo, setEwayBillNo] = useState("");
@@ -22,11 +18,12 @@ function TransportModal({
           </button>
         </div>
         <div className="modal-body">
+
           <div
             style={{
               display: "table",
               borderCollapse: "collapse",
-              width: "100%", // Ensure full width
+              width: "100%", 
             }}
           >
             <div style={{ display: "table-row" }}>
@@ -78,7 +75,6 @@ function TransportModal({
             </div>
           </div>
 
-          {/* Button aligned to right */}
           <div
             className="text-end"
             style={{
@@ -96,6 +92,7 @@ function TransportModal({
             >
               Save
             </button>
+              
           </div>
 
           <div className="table-responsive">
@@ -150,6 +147,7 @@ function TransportModal({
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ import Modal from "../../components/modals/Modal.jsx";
 import VehicleModal from "../../components/modals/VehicleModal.jsx";
 
 const initialItem = {
-  item_code : "",
+  item_code: "",
   type: "",
   description: "",
   store: "",
@@ -60,7 +60,7 @@ const OutwardChallan = () => {
 
   // The "entry" row
   const [currentItem, setCurrentItem] = useState({
-    item_code : "",
+    item_code: "",
     type: "",
     description: "",
     store: "",
@@ -243,7 +243,7 @@ const OutwardChallan = () => {
     }
     setItems((prev) => [...prev, currentItem]);
     setCurrentItem({
-      item_code : "",
+      item_code: "",
       type: "",
       description: "",
       store: "",
@@ -317,7 +317,7 @@ const OutwardChallan = () => {
           description: item.ItemDescription,
           type: `${item.ItemDescription} (${item.Item})`,
           qtyNo: item.Qty,
-          item_code : item.Item
+          item_code: item.Item
         };
       });
       setShowFilterDropDown(false);
@@ -872,7 +872,18 @@ const OutwardChallan = () => {
                                       onChange={handleFooterChange}
                                     />
                                   </td>
+                                  <td>Challan Due Date :</td>
+                                  <td>
+                                    <input
+                                      type="date"
+                                      className="form-control"
+                                      name="challan_due_date"
+                                      value={footerData.challan_due_date}
+                                      onChange={handleFooterChange}
+                                    />
+                                  </td>
                                 </tr>
+
                                 <tr>
                                   <td>Challan Date:</td>
                                   <td>
@@ -937,7 +948,14 @@ const OutwardChallan = () => {
                                       onChange={handleFooterChange}
                                     />
                                   </td>
+                                  <td rowSpan="2">Select Work Order:</td>
+                                  <td rowSpan="2">
+                                    <select className="form-control" name="" id="">
+                                      <option> Select Work Order </option>
+                                    </select>
+                                  </td>
                                 </tr>
+
                                 <tr>
                                   <td>Challan Time:</td>
                                   <td>
@@ -972,6 +990,7 @@ const OutwardChallan = () => {
                                     </select>
                                   </td>
                                 </tr>
+
                                 <tr>
                                   <td> D.C No:</td>
                                   <td>
@@ -1003,8 +1022,14 @@ const OutwardChallan = () => {
                                       onChange={handleFooterChange}
                                     />
                                   </td>
-                                  <td colSpan="2">
-                                    <button
+                                  <td>Ship To Add Code :</td>
+                                  <td>
+                                    <select className="form-select" name="" id="">
+                                      <option>  </option>
+                                    </select>
+                                  </td>
+                                  <td colSpan={2}>
+                                     <button
                                       className="vndrbtn btn btn-primary"
                                       onClick={handleSaveChallan}
                                     >
@@ -1012,31 +1037,69 @@ const OutwardChallan = () => {
                                     </button>
                                   </td>
                                 </tr>
+
                               </tbody>
                             </table>
                           </div>
                         </div>
                       </div>
+
+
+                      <div className="row mt-5 text-start">
+                        <div className="col-md-3">
+                          <label htmlFor=" "> Assessable Value : </label>
+                          <input type="text" placeholder=" " className="form-control" name="Vendor" value={footerData.assessable_value} onChange={handleFooterChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor=" "> CGST  :</label>
+                          <input type="text" placeholder=" " className="form-control" name="Vendor" value={footerData.cgst} onChange={handleFooterChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor=" "> SGST  :</label>
+                          <input type="text" placeholder=" " className="form-control" name="Vendor" value={footerData.sgst} onChange={handleFooterChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor=" "> IGST : </label>
+                          <input type="text" placeholder=" " className="form-control" name="Vendor" value={footerData.igst} onChange={handleFooterChange} />
+                        </div>
+                      </div>
+
+                      <div className="row mt-2 text-start">
+                        <div className="col-md-3">
+                          <label htmlFor=" "> Grand Total : </label>
+                          <input type="text" placeholder=" " className="form-control" name="Vendor" value={footerData.grand_total} onChange={handleFooterChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor=" "> LR No. :  </label>
+                          <input type="text" placeholder=" " className="form-control" name="Vendor" value={footerData.lr_no} onChange={handleFooterChange} />
+                        </div>
+                        <div className="col-md-3">
+                          <label htmlFor=" "> LR Date :  </label>
+                          <input type="date" placeholder=" " className="form-control" name="Vendor" value={footerData.lr_date} onChange={handleFooterChange} />
+                        </div>
+                      </div>
+
                     </div>
                   </div>
                 </div>
-                <Modal
-                  isOpen={showTrasportDataModel}
-                  items={transportData}
-                  onClose={() => setShowTransportDataModel(false)}
-                  handleSelect={handleSelectTransportName}
-                  handleButtonClick={handleTransportSaveButtonClick}
-                ></Modal>
-                <VehicleModal
-                  isOpen={showVehicleModal}
-                  items={vehicleData}
-                  onClose={() => setShowVehicleModal(false)}
-                  handleSelect={handleSelectVehicle}
-                  handleButtonClick={handleVehicleSave}
-                ></VehicleModal>
               </main>
             </div>
           </div>
+          <Modal
+            isOpen={showTrasportDataModel}
+            items={transportData}
+            onClose={() => setShowTransportDataModel(false)}
+            handleSelect={handleSelectTransportName}
+            handleButtonClick={handleTransportSaveButtonClick}
+          ></Modal>
+          <VehicleModal
+            isOpen={showVehicleModal}
+            items={vehicleData}
+            onClose={() => setShowVehicleModal(false)}
+            handleSelect={handleSelectVehicle}
+            handleButtonClick={handleVehicleSave}
+          ></VehicleModal>
+
         </div>
       </div>
     </div>

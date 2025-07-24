@@ -43,8 +43,8 @@ const DebitNoteList  = () => {
               toggleSideNav={toggleSideNav}
             />
             <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-              <div className="DebitNoteList mt-5">
-                <div className="DebitNoteList-header mb-4 text-start">
+              <div className="DebitNoteList">
+                <div className="DebitNoteList-header mb-2 text-start">
                   <div className="row align-items-center">
                     <div className="col-md-4">
                       <h5 className="header-title"> Debit Note List </h5>
@@ -52,7 +52,7 @@ const DebitNoteList  = () => {
 
                     <div className="col-md-8 text-end">
                         
-                        <button type="button" className="btn" to="#/" onClick={handleButtonClick}>
+                        <button type="button" className=" vndrbtn" to="#/" onClick={handleButtonClick}>
                             Debit Note - Query
                         </button> 
                     </div>
@@ -63,24 +63,24 @@ const DebitNoteList  = () => {
                 <div className="DebitNoteList-Main">
                     <div className="container-fluid">
                       
-                        <div className="row g-3 text-start mt-3">  
+                        <div className="row g-3 text-start">  
 
-                       <div className="col-sm-6 col-md-2 col-lg-1">
+                       <div className="col-sm-6 col-md-3 col-lg-3">
                           <label>From:</label>
                           <input type="date" className="form-control" />
                         </div>
 
-                        <div className="col-sm-6 col-md-2 col-lg-1">
+                        <div className="col-sm-6 col-md-3 col-lg-3">
                           <label>To:</label>
                           <input type="date" className="form-control" />
                         </div>
-                        <div className="col-sm-6 col-md-2 col-lg-1">
+                        <div className="col-sm-6 col-md-3 col-lg-3">
                         <label htmlFor="">Plant:</label>
                         <select name="" className="form-control" style={{marginTop:"-0px"}} id="">
                             <option value="">Produlink</option>
                         </select>
                       </div>
-                      <div className="col-sm-6 col-md-2 col-lg-2">
+                      <div className="col-sm-6 col-md-3 col-lg-3">
                         <label htmlFor="">Type :</label>
                         <select name="" className="form-control" style={{marginTop:"-0px"}} id="">
                             <option value="">All : Debit Note</option>
@@ -90,21 +90,21 @@ const DebitNoteList  = () => {
                         </select>
                       </div>
                   
-                      <div className="col-sm-6 col-md-2 col-lg-2">
+                      <div className="col-sm-6 col-md-3 col-lg-3">
                        <div className="form-check">
                             <input type="checkbox" className="form-check-input" id="Checkbox" />
                             <label htmlFor="Checkbox" className="form-check-label">Party Name: </label>
                         </div>
                         <input type="text"  placeholder="Name" className="form-control"/>
                       </div>
-                      <div className="col-sm-6 col-md-2 col-lg-2">
+                      <div className="col-sm-6 col-md-3 col-lg-3">
                        <div className="form-check">
                             <input type="checkbox" className="form-check-input" id="Checkbox" />
                             <label htmlFor="Checkbox" className="form-check-label"> Item : </label>
                         </div>
                         <input type="text"  placeholder="Item Code" className="form-control"/>
                       </div>
-                      <div className="col-sm-6 col-md-2 col-lg-2">
+                      <div className="col-sm-6 col-md-3 col-lg-3">
                        <div className="form-check">
                             <input type="checkbox" className="form-check-input" id="Checkbox" />
                             <label htmlFor="Checkbox" className="form-check-label">DN No : </label>
@@ -112,14 +112,11 @@ const DebitNoteList  = () => {
                         <input type="text"  placeholder=" " className="form-control"/>
                       </div>
                         
-                       <div className="col-6 col-md-2 align-items-center mt-3">
-                          <button type="button" className="btn btn-primary">
+                       <div className="col-6 col-md-2 align-items-center" style={{marginTop:"38px"}}>
+                          <button type="button" className=" vndrbtn">
                             Search
                           </button>
-                        </div>
-
-                        <div className="col-6 col-md-2 align-items-center mt-3">
-                          <button type="button" className="btn btn-primary">
+                          <button type="button" className=" vndrbtn">
                             Blue Print
                           </button>
                         </div>
@@ -129,7 +126,7 @@ const DebitNoteList  = () => {
                     </div>
                   </div>
 
-             <div className="table-responsive">
+             <div className="DebitNoteList-Main mt-2 table-responsive">
                     <table className="table table-bordered table-striped">
                       <thead>
                         <tr>
